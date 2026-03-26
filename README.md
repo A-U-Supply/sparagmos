@@ -1,12 +1,33 @@
-# σπαραγμός (sparagmos)
+```
+          .    *    .    ░    .         .    ░    .    *    .
+
+                    ░▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒░
+               ░▒▓▓                                      ▓▓▒░
+             ▒▓                                              ▓▒
+            ▓  ▄██▀ █▀▀▄ ▄▀▀▄ █▀▀▄ ▄▀▀▄ ▄▀▀▀ █▄▄█ ▄▀▀▄ ▄██▀  ▓
+            ▓  ▀▀▄█ █▀▀▀ █▀▀█ █▀▀▄ █▀▀█ █ ▀█ █ ▀ █ █  █ ▀▀▄█  ▓
+            ▓  ▀▀▀  ▀    ▀  ▀ ▀  ▀ ▀  ▀ ▀▀▀  ▀   ▀ ▀▀▀  ▀▀▀   ▓
+             ▒▓                                              ▓▒
+               ░▒▓▓                                      ▓▓▒░
+                    ░▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒░
+
+          .    ░    .         .    *    .         .    ░    .
+
+                           σπαραγμός
+                image transformation through chaos
+```
 
 Automated image destruction bot. Scrapes random images from #image-gen on Slack, applies chained glitch/decay/neural effects via YAML recipes, posts results to #img-junkyard.
 
 **Name origin:** σπαραγμός — the ritual dismemberment in Dionysian mystery rites. The ecstatic tearing apart of a body as a sacred act. Destruction is the worship.
 
+─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
+
 ## What It Does
 
 Every day, sparagmos picks a random image from the #image-gen Slack channel, selects a random destruction recipe, chains the effects together, and posts the result with full provenance. The same image through a different recipe is a completely different piece.
+
+─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
 
 ## Effects
 
@@ -34,6 +55,8 @@ Every day, sparagmos picks a random image from the #image-gen Slack channel, sel
 | `fractal_blend` | — | Mandelbrot at coordinates derived from image histogram, blend | None |
 | `spectral` | — | Treat image as spectrogram, process with audio DSP, render back | None |
 | `inpaint` | 2020s | Mask regions (random or Llama-targeted), regenerate with OpenCV | None (OpenCV) |
+
+─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
 
 ## Quickstart
 
@@ -79,6 +102,8 @@ python -m sparagmos --validate               # Validate all recipes
 python -m sparagmos --seed 42                # Deterministic run
 ```
 
+─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
+
 ## Recipes
 
 Recipes are YAML files in `recipes/` that define named pipelines of chained effects. See [docs/recipes.md](docs/recipes.md) for the full reference.
@@ -99,6 +124,8 @@ Recipes are YAML files in `recipes/` that define named pipelines of chained effe
 | spectral-autopsy | spectral (shift) → sonify (reverb) → channel_shift |
 | cellular-decay | cellular (game of life) → fractal_blend → dither |
 | ocr-feedback-loop | imagemagick (swirl) → pixel_sort → byte_corrupt → jpeg_destroy |
+
+─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
 
 ## Architecture
 
@@ -125,6 +152,8 @@ pipeline.py → effect₁ → effect₂ → ... → result
     ▼
 #img-junkyard (Slack)
 ```
+
+─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
 
 ## Development
 
@@ -167,6 +196,8 @@ uv run pytest -v -m "not slow"
 # Validate recipes
 python -m sparagmos --validate
 ```
+
+─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
 
 ## System Dependencies
 
