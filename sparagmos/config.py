@@ -136,10 +136,11 @@ def validate_recipe(recipe: Recipe) -> list[str]:
             )
             continue
 
-        # Check params
+        # Check params (resolve ranges first so validate_params gets concrete values)
         effect = known_effects[step.type]
         try:
-            effect.validate_params(step.params)
+            resolved = resolve_params(step.params, seed=0)
+            effect.validate_params(resolved)
         except Exception as e:
             errors.append(f"{step_label}: {e}")
 

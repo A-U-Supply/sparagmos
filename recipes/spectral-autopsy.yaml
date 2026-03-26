@@ -1,0 +1,22 @@
+name: Spectral Autopsy
+description: >
+  The image is dissected in the frequency domain. Spectral shifting
+  displaces spatial frequencies, sonification converts the result
+  to audio and back through reverb, and channel shifting fractures
+  the color planes of what remains.
+
+effects:
+  - type: spectral
+    params:
+      operation: shift
+      amount: [0.2, 0.6]
+
+  - type: sonify
+    params:
+      effect: reverb
+      intensity: [0.3, 0.7]
+
+  - type: channel_shift
+    params:
+      offset_r: [10, 35]
+      offset_b: [-30, -10]

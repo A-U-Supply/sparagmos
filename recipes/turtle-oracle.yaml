@@ -1,0 +1,24 @@
+name: Turtle Oracle
+description: >
+  The image is reconstructed from geometric primitives — triangles
+  that approximate but never capture the original. Pixel sorting
+  melts the shapes into streaks, and EGA dithering crushes what
+  remains into 16 prophetic colors.
+
+effects:
+  - type: primitive
+    params:
+      shapes: [30, 80]
+      shape_type: triangle
+      alpha: [100, 180]
+
+  - type: pixel_sort
+    params:
+      mode: brightness
+      direction: horizontal
+      threshold_low: [0.15, 0.3]
+      threshold_high: [0.7, 0.85]
+
+  - type: dither
+    params:
+      palette: ega
