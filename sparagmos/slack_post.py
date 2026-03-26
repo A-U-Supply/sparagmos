@@ -44,6 +44,66 @@ def format_provenance(
     return "\n".join(lines)
 
 
+def _annotate_step(step: dict) -> str:
+    """Return an annotated effect label for a single pipeline step.
+
+    Examples:
+        ``{"effect": "blend", "images": ["a", "b"], "into": "canvas"}``
+        → ``"blend(a,b→canvas)"``
+
+        ``{"effect": "deepdream", "image": "a"}``
+        → ``"deepdream(a)"``
+
+        ``{"effect": "jpeg_destroy"}``
+        → ``"jpeg_destroy"``
+    """
+    effect = step["effect"]
+    if "images" in step and "into" in step:
+        inputs = ",".join(step["images"])
+        return f"{effect}({inputs}→{step['into']})"
+    if "image" in step:
+        return f"{effect}({step['image']})"
+    return effect
+
+
+def format_provenance_multi(
+    result: PipelineResult,
+    sources: list[dict],
+    channel_name: str = "image-gen",
+) -> str:
+    """Format provenance text for multi-source pipeline results.
+
+    Args:
+        result: Pipeline result with recipe name and step metadata.
+        sources: List of source image metadata dicts (user, date, permalink).
+        channel_name: Source channel name for attribution.
+
+    Returns:
+        Formatted provenance string for Slack initial_comment.
+    """
+    chain = " → ".join(_annotate_step(step) for step in result.steps)
+
+    source_label = "source" if len(sources) == 1 else "sources"
+    attributions = ", ".join(
+        f"<@{s['user']}> ({s.get('date', 'unknown')})" for s in sources
+    )
+    source_line = f"{source_label}: {attributions} in #{channel_name}"
+
+    lines = [
+        f"~ {result.recipe_name}",
+        chain,
+        source_line,
+    ]
+
+    permalinks = [s.get("permalink", "") for s in sources if s.get("permalink")]
+    if permalinks:
+        link_label = "original" if len(permalinks) == 1 else "originals"
+        links = " · ".join(f"<{url}|view>" for url in permalinks)
+        lines.append(f"{link_label}: {links}")
+
+    return "\n".join(lines)
+
+
 def post_result(
     client: WebClient,
     channel_id: str,

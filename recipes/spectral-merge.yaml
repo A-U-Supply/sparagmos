@@ -1,0 +1,49 @@
+name: Spectral Merge
+description: >
+  Two signals in frequency space, destructively interfered. Each image is
+  spectrally filtered to different ranges. Difference blending cancels shared
+  frequencies. Dithering quantizes the interference pattern.
+
+inputs: 2
+
+steps:
+  - type: spectral
+    image: a
+    params:
+      mode: bandpass
+      low_freq: [0.1, 0.3]
+      high_freq: [0.5, 0.7]
+
+  - type: spectral
+    image: b
+    params:
+      mode: bandpass
+      low_freq: [0.3, 0.5]
+      high_freq: [0.7, 0.95]
+
+  - type: blend
+    images: [a, b]
+    into: canvas
+    params:
+      mode: difference
+      strength: [0.7, 1.0]
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [80, 160]
+      feather: [5, 15]
+
+  - type: sonify
+    image: canvas
+    params:
+      effect: echo
+      intensity: [0.3, 0.6]
+
+  - type: dither
+    image: canvas
+    params:
+      method: floyd_steinberg
+      palette: thermal

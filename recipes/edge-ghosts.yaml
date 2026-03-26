@@ -1,0 +1,58 @@
+name: Edge Ghosts
+description: >
+  Phantom outlines from one image haunting another. Edge detection extracts
+  the structural skeleton of each source. Two rounds of edge-masking create
+  layered ghosting. Spectral processing and channel shift for ethereal decay.
+
+inputs: 3
+
+steps:
+  - type: spectral
+    image: a
+    params:
+      mode: bandpass
+      low_freq: [0.05, 0.2]
+      high_freq: [0.7, 0.95]
+
+  - type: pca_decompose
+    image: b
+    params:
+      n_components: [5, 15]
+      mode: top
+
+  - type: channel_shift
+    image: c
+    params:
+      offset_r: [20, 60]
+      offset_b: [-50, -15]
+
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [40, 100]
+      feather: [5, 15]
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [50, 120]
+      feather: [3, 12]
+      invert: true
+
+  - type: spectral
+    image: canvas
+    params:
+      mode: bandpass
+      low_freq: [0.1, 0.3]
+      high_freq: [0.6, 0.9]
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [30, 90]
+      offset_g: [-15, 15]
+      offset_b: [-70, -20]

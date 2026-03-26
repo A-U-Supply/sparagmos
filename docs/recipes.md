@@ -4,6 +4,8 @@ Recipes are YAML files in `recipes/` that define named pipelines of chained effe
 
 ## Schema
 
+### Single-input recipe (original / still supported)
+
 ```yaml
 name: Human-Readable Recipe Name
 description: >
@@ -22,6 +24,53 @@ effects:
       param_name: [min, max]   # Range — random value chosen per run
       param_name: "vision"     # Resolved from Llama Vision analysis
 ```
+
+### Multi-input recipe
+
+```yaml
+name: Human-Readable Recipe Name
+description: >
+  What this recipe does.
+
+inputs: 3      # How many source images to pull (integer)
+
+steps:         # "steps" is an alias for "effects" — both work
+  # Single-image step — operates on one named image in-place
+  - type: effect_name
+    image: a                   # which named image to transform
+    params:
+      param_name: value
+
+  # Compositing step — combines two or more images
+  - type: blend                # or: collage, mask_composite, fragment
+    images: [a, b]             # source images (first is base)
+    into: canvas               # write result to this name
+    params:
+      mode: screen
+      strength: [0.6, 0.9]
+```
+
+## Named-Image Model
+
+When a recipe declares `inputs: N`, the pipeline loads that many source images and assigns them names automatically:
+
+| inputs | Names assigned |
+|--------|---------------|
+| 1 | `canvas` |
+| 2 | `a`, `b` |
+| 3 | `a`, `b`, `c` |
+| 4 | `a`, `b`, `c`, `d` |
+| N | `a` through the Nth letter |
+
+Every step operates on named images:
+
+- `image: a` — reads `a`, transforms it, writes back to `a`
+- `images: [a, b]` + `into: canvas` — composites `a` and `b`, writes to `canvas`
+- `image: canvas` — transforms the running composite
+
+`canvas` is a conventional name for the primary output. Using it consistently makes it easy to follow the flow. You can name images anything — `canvas`, `a`, `base`, `overlay` — as long as the names are consistent between steps.
+
+Single-image effects that don't specify `image:` default to `canvas` for backward compatibility.
 
 ## Parameter Types
 
@@ -159,6 +208,70 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 
 ## Example Recipes with Commentary
 
+### Voronoi Chimera — Multi-input neural/glitch fusion
+
+```yaml
+name: Voronoi Chimera
+description: >
+  Faces and forms fused at Voronoi cell boundaries. Each image gets a
+  different neural/glitch treatment before being fragmented together.
+
+inputs: 3       # pull 3 source images; they become a, b, c
+
+steps:
+  # Pre-process each input independently
+  - type: deepdream
+    image: a    # hallucinate on the first image
+    params:
+      iterations: [5, 12]
+      octave_scale: [1.3, 1.5]
+      jitter: [24, 48]
+
+  - type: pixel_sort
+    image: b    # melt the second
+    params:
+      mode: hue
+      threshold: [40, 100]
+
+  - type: dither
+    image: c    # flatten the third to 4 colors
+    params:
+      method: bayer
+      palette: cga
+
+  # Compose — cut all three into Voronoi cells, reassemble
+  - type: fragment
+    images: [a, b, c]    # three sources
+    into: canvas          # write composite here
+    params:
+      cut_mode: voronoi
+      pieces: [15, 35]
+      mix_ratio: [0.6, 0.9]
+      gap: [0, 3]
+
+  # Re-destroy the composite
+  - type: blend
+    images: [canvas, a]  # overlay original neural input on composite
+    into: canvas
+    params:
+      mode: overlay
+      strength: [0.3, 0.5]
+
+  - type: channel_shift
+    image: canvas         # fracture color planes
+    params:
+      offset_r: [30, 80]
+      offset_b: [-60, -20]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 3]
+      iterations: [15, 35]
+```
+
+**Flow:** Each input is pre-processed independently (deepdream / pixel_sort / dither), then all three are fragmented together via Voronoi tessellation into `canvas`. The composite is then further destroyed — overlay-blended with one of the originals, color-fractured, then JPEG compressed. The pre-processing step ensures each Voronoi cell region has a distinct visual character before they collide.
+
 ### VHS Meltdown — Analog decay simulation
 
 ```yaml
@@ -228,9 +341,21 @@ effects:
 
 ## Tips
 
+### Effect ordering
 - **Put lossy compression last** — it compounds everything before it
 - **Channel shift before scan lines** makes the aberration visible in the lines
 - **Neural effects first** gives them clean input to hallucinate on
-- **Use ranges liberally** — variety across runs is what makes each output unique
 - **2-4 effects per recipe** is the sweet spot; more than 5 tends to produce mud
+
+### Multi-input design patterns
+
+- **Pre-process → compose → destroy → re-compose** is the core loop: treat each input individually, smash them together, destroy the result, then optionally blend an original back in for spectral collision
+- **Vary the pre-processing** across inputs — if all inputs get the same treatment the composition will look flat; give each one a different aesthetic (neural, dithered, pixel-sorted) so the cell boundaries carry meaning
+- **Use `canvas` as your running state** — compositing steps write to `canvas`; single-image steps transform it further; you can always re-introduce a named input (`images: [canvas, a]`) to overlay the original back in
+- **Layer mask_composite progressively** — for 3+ inputs, chain multiple `mask_composite` steps: `[a, b] → canvas`, then `[canvas, c] → canvas`. Varying the `threshold` at each layer creates geological strata
+- **`into:` names are reusable** — you can write intermediate composites to names other than `canvas` (e.g. `into: mid`) and reference them later
+
+### General
+- **Use ranges liberally** — variety across runs is what makes each output unique
 - **Vision-aware effects** (seam_carve, inpaint) need `vision: true` at recipe level
+- **`steps:` and `effects:` are interchangeable** — both work as the step list key

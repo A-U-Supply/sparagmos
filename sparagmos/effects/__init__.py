@@ -152,6 +152,26 @@ class SubprocessEffect(Effect):
         return Image.open(path).convert("RGB")
 
 
+class ComposeEffect(Effect):
+    """Base class for effects that combine multiple images.
+
+    Compose effects take a list of images and produce one output.
+    Used for collaging, blending, masking, and fragmenting.
+    """
+
+    @abstractmethod
+    def compose(
+        self, images: list[Image.Image], params: dict, context: EffectContext
+    ) -> EffectResult:
+        """Combine multiple images into one."""
+
+    def apply(
+        self, image: Image.Image, params: dict, context: EffectContext
+    ) -> EffectResult:
+        """Single-image fallback — delegates to compose with one image."""
+        return self.compose([image], params, context)
+
+
 # --- Effect Registry ---
 
 _registry: dict[str, Effect] = {}
