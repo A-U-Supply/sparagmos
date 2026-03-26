@@ -105,6 +105,40 @@ def pick_random_image(
     return rng.choice(available)
 
 
+def pick_random_images(
+    files: list[dict[str, Any]],
+    recipe_slug: str,
+    n: int,
+    processed_combos: set[tuple[frozenset[str], str]],
+    seed: int,
+    max_attempts: int = 100,
+) -> list[dict[str, Any]] | None:
+    """Pick n distinct random images whose combination hasn't been used.
+
+    Args:
+        files: List of file metadata dicts.
+        recipe_slug: Current recipe slug.
+        n: Number of images to pick.
+        processed_combos: Set of (frozenset(file_ids), recipe) already done.
+        seed: RNG seed.
+        max_attempts: Max random attempts before giving up.
+
+    Returns:
+        List of n file metadata dicts, or None if impossible.
+    """
+    if len(files) < n:
+        return None
+
+    rng = random.Random(seed)
+    for _ in range(max_attempts):
+        selected = rng.sample(files, n)
+        combo = (frozenset(f["id"] for f in selected), recipe_slug)
+        if combo not in processed_combos:
+            return selected
+
+    return None
+
+
 def download_image(url: str, token: str, timeout: int = 30) -> bytes:
     """Download an image from Slack, preserving auth through redirects.
 
