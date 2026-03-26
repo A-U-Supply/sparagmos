@@ -17,7 +17,7 @@
                 image transformation through chaos
 ```
 
-Automated image destruction bot. Scrapes random images from #image-gen on Slack, applies chained glitch/decay/neural effects via YAML recipes, posts results to #img-junkyard.
+Automated image destruction bot. Scrapes random images from #image-gen on Slack, applies chained glitch/decay/neural effects via YAML recipes, posts results to #img-junkyard. Multi-input recipes pull several images and composite them together — fragmenting, masking, and blending across sources before destroying the result.
 
 **Name origin:** σπαραγμός — the ritual dismemberment in Dionysian mystery rites. The ecstatic tearing apart of a body as a sacred act. Destruction is the worship.
 
@@ -25,7 +25,7 @@ Automated image destruction bot. Scrapes random images from #image-gen on Slack,
 
 ## What It Does
 
-Every day, sparagmos picks a random image from the #image-gen Slack channel, selects a random destruction recipe, chains the effects together, and posts the result with full provenance. The same image through a different recipe is a completely different piece.
+Every day, sparagmos picks one or more random images from the #image-gen Slack channel, selects a random destruction recipe, chains the effects together, and posts the result with full provenance. Multi-input recipes pull several images and composite them — fragmenting, masking, blending — before destroying the result. The same inputs through a different recipe produce a completely different piece.
 
 ─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
 
@@ -55,6 +55,10 @@ Every day, sparagmos picks a random image from the #image-gen Slack channel, sel
 | `fractal_blend` | — | Mandelbrot at coordinates derived from image histogram, blend | None |
 | `spectral` | — | Treat image as spectrogram, process with audio DSP, render back | None |
 | `inpaint` | 2020s | Mask regions (random or Llama-targeted), regenerate with OpenCV | None (OpenCV) |
+| `collage` | — | Spatial arrangement of multiple images: grid, scatter, strips, mosaic | None |
+| `blend` | — | Pixel-level blending of two images: opacity, multiply, screen, overlay, difference | None |
+| `mask_composite` | — | Mask-based selection between two images driven by luminance, edges, or noise | None |
+| `fragment` | — | Cut images into pieces (grid, voronoi, strips, shatter) and reassemble from mixed sources | None |
 
 ─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
 
@@ -85,6 +89,9 @@ python -m sparagmos --input photo.jpg --output junked.png
 # Use a specific recipe
 python -m sparagmos --input photo.jpg --output junked.png --recipe vhs-meltdown
 
+# Multi-input recipe — pass as many images as the recipe requires
+python -m sparagmos --input a.jpg b.jpg c.jpg --output junked.png --recipe voronoi-chimera
+
 # Dry run (process but don't post to Slack)
 python -m sparagmos --dry-run
 ```
@@ -110,20 +117,20 @@ Recipes are YAML files in `recipes/` that define named pipelines of chained effe
 
 ### Included Recipes
 
-| Recipe | Effects Chain |
-|--------|-------------|
-| vhs-meltdown | crt_vhs → channel_shift → jpeg_destroy |
-| deep-fossil | deepdream → dither (thermal) → jpeg_destroy |
-| cga-nightmare | dither (CGA) → pixel_sort → crt_vhs |
-| dionysian-rite | deepdream → channel_shift → seam_carve → jpeg_destroy |
-| analog-burial | format_roundtrip (potrace) → crt_vhs → byte_corrupt |
-| byte-liturgy | byte_corrupt → channel_shift → jpeg_destroy |
-| thermal-ghost | pca_decompose (bottom 5) → dither (thermal) → channel_shift |
-| turtle-oracle | primitive (triangles) → pixel_sort → dither (EGA) |
-| eigenface-requiem | pca_decompose (top 3) → style_transfer → jpeg_destroy |
-| spectral-autopsy | spectral (shift) → sonify (reverb) → channel_shift |
-| cellular-decay | cellular (game of life) → fractal_blend → dither |
-| ocr-feedback-loop | imagemagick (swirl) → pixel_sort → byte_corrupt → jpeg_destroy |
+| Recipe | Inputs | Key Compositing |
+|--------|:------:|-----------------|
+| double-exposure | 2 | blend (screen + multiply) |
+| edge-ghosts | 3 | mask_composite ×2 (edges) |
+| exquisite-corpse | 3 | fragment (strips) |
+| feedback-loop | 2 | blend → fragment → blend |
+| fossil-record | 3 | blend (opacity) ×2 |
+| mosaic-dissolution | 5 | collage (mosaic) → fragment |
+| neural-chimera | 3 | fragment (voronoi) + style_transfer |
+| palimpsest | 4 | mask_composite ×3 (luminance) |
+| signal-bleed | 3 | collage (strips) |
+| spectral-merge | 2 | blend (difference) + mask_composite |
+| tectonic-overlap | 4 | fragment (shatter) + collage (scatter) |
+| voronoi-chimera | 3 | fragment (voronoi) + blend |
 
 ─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
 
@@ -132,9 +139,9 @@ Recipes are YAML files in `recipes/` that define named pipelines of chained effe
 ```
 #image-gen (Slack)
     │
-    │ 1. Pick random image (not previously processed)
+    │ 1. Pick N random images (recipe declares how many)
     ▼
-slack_source.py → download image, record in state.json
+slack_source.py → download images, record in state.json
     │
     │ 2. Optionally analyze with Llama Vision
     ▼
@@ -144,14 +151,19 @@ vision.py (HF Inference API)
     ▼
 config.py → load YAML, validate, roll random values
     │
-    │ 4. Execute effect chain
+    │ 4. Execute effect chain via named-image register
+    │      inputs loaded as: 1 img → "canvas"
+    │                         2 imgs → "a", "b"
+    │                         N imgs → "a" … Nth letter
     ▼
-pipeline.py → effect₁ → effect₂ → ... → result
+pipeline.py → effect₁ → effect₂ → ... → result ("canvas")
     │
     │ 5. Post to Slack (single message)
     ▼
 #img-junkyard (Slack)
 ```
+
+The pipeline maintains a **named-image register** — a dict mapping string names to PIL Images. Each step reads from and writes to named slots. Single-image steps transform a slot in place; compositing steps (`blend`, `fragment`, `collage`, `mask_composite`) read from multiple slots and write their output to a new slot.
 
 ─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
 
@@ -168,17 +180,27 @@ pipeline.py → effect₁ → effect₂ → ... → result
 
 ### Writing Recipes
 
-Create a YAML file in `recipes/`:
+Create a YAML file in `recipes/`. Single-input recipes use `effects:` and no `image:` keys. Multi-input recipes declare `inputs: N` and use `steps:`, with each step specifying `image:` (single) or `images:` + `into:` (compositing):
 
 ```yaml
 name: My Recipe
 description: What this recipe does and why.
-effects:
+inputs: 2         # omit for single-image
+
+steps:            # alias for "effects"
   - type: channel_shift
+    image: a      # operate on named input
     params:
       offset_r: [10, 50]    # range — random value each run
       offset_b: -20          # fixed value
+  - type: blend
+    images: [a, b]           # composite two images
+    into: canvas
+    params:
+      mode: screen
+      strength: [0.6, 0.9]
   - type: jpeg_destroy
+    image: canvas
     params:
       quality: [1, 5]
       iterations: [5, 20]

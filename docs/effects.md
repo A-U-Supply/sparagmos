@@ -147,3 +147,44 @@ The effect is auto-discovered by the CLI's `_register_all_effects()` function �
 **neural_doodle** — Simulated semantic style painting. Random geometric regions get different color/texture treatments, mimicking how neural doodle fills semantic regions with learned styles.
 
 **inpaint** — Masks regions and regenerates using OpenCV's PatchMatch or Telea inpainting. Random or vision-targeted masking creates surreal smooth patches in otherwise detailed images.
+
+## Compositing Effects
+
+These effects take **multiple named images** as input. In multi-input recipes, each step specifies an `images:` list (source names) and an `into:` name for the output. See [recipes.md](recipes.md) for the named-image model.
+
+**collage** — Spatial arrangement of multiple images on a canvas. Images are placed according to a layout algorithm; they can overlap, rotate, and scale independently.
+
+| Param | Description |
+|-------|-------------|
+| `layout` | Arrangement algorithm: `grid`, `scatter`, `strips`, `mosaic` |
+| `overlap` | Fraction of image area that may overlap adjacent placements (0.0–1.0) |
+| `rotation` | Max random rotation per image in degrees |
+| `scale_variance` | How much images may vary in size relative to each other (0.0–1.0) |
+| `canvas_size` | Output dimensions as `[width, height]`; defaults to largest input size |
+
+**blend** — Pixel-level blending of two images. The first image in `images:` is treated as the base; the second is composited over it at the given `strength`.
+
+| Param | Description |
+|-------|-------------|
+| `mode` | Blend algorithm: `opacity`, `multiply`, `screen`, `overlay`, `difference`, `add`, `subtract` |
+| `strength` | Blend opacity (0.0–1.0); how much of the second image is mixed in |
+| `offset_x` | Horizontal pixel offset of the top layer |
+| `offset_y` | Vertical pixel offset of the top layer |
+
+**mask_composite** — Selects between two images pixel-by-pixel using a computed mask. Where the mask is white, the second image shows; where black, the first. The mask is derived from one of the input images.
+
+| Param | Description |
+|-------|-------------|
+| `mask_source` | What drives the mask: `luminance`, `edges`, `threshold`, `noise`, `gradient` |
+| `threshold` | Cutoff value for binary mask generation (0–255) |
+| `feather` | Gaussian blur radius applied to the mask for soft edges |
+| `invert` | If true, swap which image shows through the mask |
+
+**fragment** — Cuts images into pieces and reassembles them from mixed sources. Each piece is filled from one of the input images according to `mix_ratio`.
+
+| Param | Description |
+|-------|-------------|
+| `cut_mode` | How the canvas is divided: `grid`, `voronoi`, `strips`, `shatter` |
+| `pieces` | Number of fragments (int or `[min, max]` range) |
+| `mix_ratio` | Fraction of pieces drawn from the primary vs. secondary sources (0.0–1.0) |
+| `gap` | Gap in pixels between fragments (0 = flush) |
