@@ -1,24 +1,43 @@
 name: Turtle Oracle
 description: >
-  The image is reconstructed from geometric primitives — triangles
-  that approximate but never capture the original. Pixel sorting
-  melts the shapes into streaks, and EGA dithering crushes what
-  remains into 16 prophetic colors.
+  Shattered into geometric primitives, reassembled through chaos.
+  Primitive reduces to triangles, pixel sorting melts shapes into
+  streaks, neural doodle paints random regions with clashing styles,
+  cellular automata consume edges, EGA dithering crushes palette,
+  channel shift fractures the final prediction.
 
 effects:
   - type: primitive
     params:
-      shapes: [30, 80]
+      shapes: [20, 60]
       shape_type: triangle
-      alpha: [100, 180]
+      alpha: [80, 160]
 
   - type: pixel_sort
     params:
-      mode: brightness
+      mode: saturation
       direction: horizontal
-      threshold_low: [0.15, 0.3]
-      threshold_high: [0.7, 0.85]
+      threshold_low: [0.1, 0.25]
+      threshold_high: [0.75, 0.9]
+
+  - type: neural_doodle
+    params:
+      num_regions: [6, 12]
+      region_size: [0.15, 0.35]
+      intensity: [0.6, 0.9]
+
+  - type: cellular
+    params:
+      rule: rule_110
+      generations: [20, 50]
+      threshold: [110, 160]
+      colorize: true
 
   - type: dither
     params:
       palette: ega
+
+  - type: channel_shift
+    params:
+      offset_r: [8, 25]
+      offset_b: [-25, -8]

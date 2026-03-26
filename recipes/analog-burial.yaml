@@ -1,23 +1,38 @@
 name: Analog Burial
 description: >
-  The image is vectorized, losing all photographic detail, then
-  subjected to analog CRT decay and raw byte corruption. A digital
-  artifact buried under layers of format conversion and noise.
+  Buried under layers of format conversion and analog noise. Round-tripped
+  through lossy formats five times, spectral processing warps frequencies,
+  CRT adds tracking errors, channel shift fractures remains, byte
+  corruption introduces raw data glitches, dithering reduces to Game Boy.
 
 effects:
   - type: format_roundtrip
     params:
-      chain: ["jpeg", "bmp", "jpeg"]
-      jpeg_quality: [3, 10]
+      chain: ["jpeg", "bmp", "jpeg", "bmp", "jpeg"]
+      jpeg_quality: [2, 8]
+
+  - type: spectral
+    params:
+      operation: shift
+      amount: [0.15, 0.4]
 
   - type: crt_vhs
     params:
       scan_line_density: [3, 5]
-      jitter_amount: [2, 6]
-      color_bleed: [1.0, 2.5]
-      phosphor_glow: 0.1
+      jitter_amount: [4, 12]
+      color_bleed: [2.0, 4.0]
+      phosphor_glow: [0.1, 0.2]
+
+  - type: channel_shift
+    params:
+      offset_r: [15, 50]
+      offset_b: [-45, -15]
 
   - type: byte_corrupt
     params:
-      num_flips: [50, 200]
-      mode: flip
+      num_flips: [80, 300]
+      mode: replace
+
+  - type: dither
+    params:
+      palette: gameboy

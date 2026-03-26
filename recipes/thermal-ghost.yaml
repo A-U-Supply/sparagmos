@@ -1,14 +1,26 @@
 name: Thermal Ghost
 description: >
-  The image's least significant components are extracted and rendered
-  through a thermal imaging palette. What remains is the ghost of
-  the image — structure without substance, noise without signal.
+  Noise without signal, texture without structure. Bottom PCA components
+  extracted, fractal blend weaves Mandelbrot patterns through the ghost,
+  spectral processing warps frequencies, thermal dithering renders as
+  heat vision, channel shift pulls color apart, CRT phosphor glow blooms.
 
 effects:
   - type: pca_decompose
     params:
-      n_components: [3, 8]
+      n_components: [2, 6]
       mode: bottom
+
+  - type: fractal_blend
+    params:
+      opacity: [0.3, 0.6]
+      iterations: [100, 300]
+      colormap: hot
+
+  - type: spectral
+    params:
+      operation: bandpass
+      amount: [0.3, 0.6]
 
   - type: dither
     params:
@@ -16,5 +28,13 @@ effects:
 
   - type: channel_shift
     params:
-      offset_r: [5, 25]
-      offset_b: [-20, -5]
+      offset_r: [10, 40]
+      offset_g: [-15, 15]
+      offset_b: [-35, -10]
+
+  - type: crt_vhs
+    params:
+      scan_line_density: [3, 5]
+      jitter_amount: [1, 4]
+      color_bleed: [0.5, 1.5]
+      phosphor_glow: [0.15, 0.3]

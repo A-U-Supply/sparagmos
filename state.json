@@ -12,6 +12,63 @@
       ],
       "processed_date": "2026-03-26",
       "posted_ts": ""
+    },
+    {
+      "source_file_id": "F08TVJ3M21M",
+      "source_date": "2025-05-28",
+      "source_user": "U03TD4SUDKL",
+      "recipe": "byte-liturgy",
+      "effects": [
+        "byte_corrupt",
+        "channel_shift",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-03-26",
+      "posted_ts": ""
+    },
+    {
+      "source_file_id": "F09BPUCBAMB",
+      "source_date": "2025-08-23",
+      "source_user": "U03TD7FSUAE",
+      "recipe": "cga-nightmare",
+      "effects": [
+        "dither",
+        "pixel_sort",
+        "crt_vhs"
+      ],
+      "processed_date": "2026-03-26",
+      "posted_ts": ""
+    },
+    {
+      "source_file_id": "F0895RK9YUE",
+      "source_date": "2025-01-20",
+      "source_user": "U03TFJBRK2Q",
+      "recipe": "dionysian-rite",
+      "effects": [
+        "deepdream",
+        "channel_shift",
+        "seam_carve",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-03-26",
+      "posted_ts": ""
+    },
+    {
+      "source_file_id": "F05NHEGCVMX",
+      "source_date": "2023-08-16",
+      "source_user": "U03TD4SUDKL",
+      "recipe": "byte-liturgy",
+      "effects": [
+        "datamosh",
+        "byte_corrupt",
+        "byte_corrupt",
+        "channel_shift",
+        "pixel_sort",
+        "sonify",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-03-26",
+      "posted_ts": ""
     }
   ]
 }

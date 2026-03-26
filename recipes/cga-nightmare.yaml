@@ -1,10 +1,18 @@
 name: CGA Nightmare
 description: >
-  Trapped in a 1981 graphics card. CGA's brutal 4-color palette
-  crushes all subtlety, pixel sorting melts the remains into streaks,
-  and CRT scan lines complete the period-accurate horror.
+  Trapped inside a 1981 graphics card having a seizure. Cellular
+  automata devour the image, CGA palette crushes subtlety, pixel
+  sorting melts into streaks, datamosh smears blocks, CRT scan lines
+  overlay the wreckage, and byte corruption introduces final glitches.
 
 effects:
+  - type: cellular
+    params:
+      rule: game_of_life
+      generations: [15, 40]
+      threshold: [100, 180]
+      colorize: false
+
   - type: dither
     params:
       palette: cga
@@ -13,12 +21,23 @@ effects:
     params:
       mode: brightness
       direction: horizontal
-      threshold_low: [0.1, 0.3]
-      threshold_high: [0.7, 0.9]
+      threshold_low: [0.05, 0.2]
+      threshold_high: [0.8, 0.95]
+
+  - type: datamosh
+    params:
+      mode: iframe_remove
+      corruption_amount: [0.2, 0.5]
+      block_size: [8, 16]
 
   - type: crt_vhs
     params:
       scan_line_density: [2, 3]
-      jitter_amount: [1, 3]
-      color_bleed: 0.5
-      phosphor_glow: 0.08
+      jitter_amount: [3, 10]
+      color_bleed: [1.0, 2.5]
+      phosphor_glow: [0.05, 0.15]
+
+  - type: byte_corrupt
+    params:
+      num_flips: [20, 80]
+      mode: flip

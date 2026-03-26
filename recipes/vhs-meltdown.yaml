@@ -1,23 +1,35 @@
 name: VHS Meltdown
 description: >
-  Simulates a VHS tape left in a hot car. CRT scan lines and color
-  bleeding, chromatic aberration from channel shifting, finished
-  with JPEG compression for digital rot on top of analog decay.
+  A VHS tape left in a hot car for a decade, played through a dying
+  CRT with bad capacitors. Sonification warps the signal, CRT adds
+  tracking errors, channel shift fractures color, byte corruption
+  introduces glitch artifacts, and multi-gen JPEG buries everything.
 
 effects:
+  - type: sonify
+    params:
+      effect: distortion
+      intensity: [0.3, 0.6]
+
   - type: crt_vhs
     params:
-      scan_line_density: [2, 4]
-      jitter_amount: [3, 8]
-      color_bleed: [1.0, 3.0]
-      phosphor_glow: [0.05, 0.15]
+      scan_line_density: [2, 3]
+      jitter_amount: [5, 15]
+      color_bleed: [2.0, 5.0]
+      phosphor_glow: [0.1, 0.25]
 
   - type: channel_shift
     params:
-      offset_r: [10, 40]
-      offset_b: [-30, -10]
+      offset_r: [20, 80]
+      offset_g: [5, 30]
+      offset_b: [-70, -20]
+
+  - type: byte_corrupt
+    params:
+      num_flips: [30, 120]
+      mode: flip
 
   - type: jpeg_destroy
     params:
-      quality: [2, 8]
-      iterations: [3, 10]
+      quality: [1, 3]
+      iterations: [15, 40]
