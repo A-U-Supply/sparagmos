@@ -231,3 +231,33 @@ def test_post_result_calls_upload(tmp_path):
     assert call_kwargs["channel"] == "C456"
     assert "initial_comment" in call_kwargs
     assert "Test Recipe" in call_kwargs["initial_comment"]
+
+
+def test_post_suppresses_unfurls(tmp_path):
+    """After files_upload_v2, chat_update is called with unfurl_* = False."""
+    client = MagicMock()
+    client.files_upload_v2.return_value = {
+        "ok": True,
+        "file": {
+            "shares": {
+                "public": {
+                    "C456": [{"ts": "1234567890.123456"}]
+                }
+            }
+        },
+    }
+
+    img = Image.new("RGB", (64, 64))
+    result = PipelineResult(
+        image=img,
+        recipe_name="Test Recipe",
+        steps=[{"effect": "dummy", "description": "test"}],
+    )
+    source = {"user": "U123", "date": "2026-01-15"}
+
+    post_result(client, "C456", result, source, "image-gen", tmp_path)
+
+    client.chat_update.assert_called_once()
+    update_kwargs = client.chat_update.call_args[1]
+    assert update_kwargs["unfurl_links"] is False
+    assert update_kwargs["unfurl_media"] is False

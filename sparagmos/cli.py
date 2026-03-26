@@ -326,7 +326,28 @@ def main(argv: list[str] | None = None) -> None:
                 filename="sparagmos.png",
                 initial_comment=comment,
             )
-            posted_ts = response.get("ts", "")
+
+            # Extract ts from file share data
+            posted_ts = ""
+            file_obj = response.get("file", {})
+            shares = file_obj.get("shares", {})
+            public_shares = shares.get("public", {})
+            channel_shares = public_shares.get(junkyard_id, [])
+            if channel_shares:
+                posted_ts = channel_shares[0].get("ts", "")
+
+            # Suppress URL unfurling so only the output image renders
+            if posted_ts:
+                try:
+                    client.chat_update(
+                        channel=junkyard_id,
+                        ts=posted_ts,
+                        text=comment,
+                        unfurl_links=False,
+                        unfurl_media=False,
+                    )
+                except Exception:
+                    logger.warning("Failed to suppress unfurls, continuing")
 
             # Update state
             today = datetime.now(timezone.utc).strftime("%Y-%m-%d")

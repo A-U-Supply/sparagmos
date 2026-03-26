@@ -143,4 +143,26 @@ def post_result(
         initial_comment=comment,
     )
 
-    return response.get("ts", "")
+    # Extract posted message timestamp from file share data
+    posted_ts = ""
+    file_obj = response.get("file", {})
+    shares = file_obj.get("shares", {})
+    public_shares = shares.get("public", {})
+    channel_shares = public_shares.get(channel_id, [])
+    if channel_shares:
+        posted_ts = channel_shares[0].get("ts", "")
+
+    # Suppress unfurling so source image permalink URLs don't render as previews
+    if posted_ts:
+        try:
+            client.chat_update(
+                channel=channel_id,
+                ts=posted_ts,
+                text=comment,
+                unfurl_links=False,
+                unfurl_media=False,
+            )
+        except Exception:
+            logger.warning("Failed to suppress unfurls, continuing")
+
+    return posted_ts
