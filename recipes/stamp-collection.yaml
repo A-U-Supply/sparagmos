@@ -1,0 +1,94 @@
+name: Stamp Collection
+description: >
+  Five images are each fragmented into irregular pieces — the first pass
+  shatters them into raw fragments. Then each fragment's luminance becomes a
+  hard mask to reveal the next source: pieces from image A cut into B,
+  revealing B's content through A's fragment shapes. That composite's fragments
+  cut into C. C's masked fragments cut into D. D's into E. The result is a
+  collection of nested stencils — each image visible only through the torn
+  shape of the one before it, stacked five layers deep. A final collage
+  arranges the accumulated cuts into a scattered field, and a byte corrupt
+  turns the field into damaged paper.
+
+inputs: 5
+
+steps:
+  - type: fragment
+    images: [a, b]
+    into: ab_frag
+    params:
+      cut_mode: shatter
+      pieces: [12, 28]
+      mix_ratio: [0.5, 0.8]
+      gap: [3, 10]
+
+  - type: fragment
+    images: [c, d]
+    into: cd_frag
+    params:
+      cut_mode: voronoi
+      pieces: [10, 24]
+      mix_ratio: [0.45, 0.75]
+      gap: [2, 8]
+
+  - type: dither
+    image: e
+    params:
+      method: atkinson
+      palette: bw
+
+  - type: mask_composite
+    images: [b, ab_frag]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [55, 75]
+      feather: [0, 2]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, cd_frag]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [60, 80]
+      feather: [0, 3]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [185, 215]
+      feather: [0, 2]
+      invert: true
+
+  - type: mask_composite
+    images: [canvas, ab_frag]
+    into: canvas
+    params:
+      mask_source: threshold
+      threshold: [50, 72]
+      feather: [0, 3]
+      invert: false
+
+  - type: collage
+    images: [canvas, cd_frag, e]
+    into: canvas
+    params:
+      layout: scatter
+      rotation: [10, 45]
+      scale_variance: [0.15, 0.4]
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [80, 180]
+      mode: flip
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 18]

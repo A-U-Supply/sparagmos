@@ -1,0 +1,93 @@
+name: Shape Imposition
+description: >
+  Image A is PCA-reduced to a single principal component — its entire visual
+  complexity collapsed to one axis of variation, a near-monochrome blueprint.
+  That blueprint is imposed as a hard mask onto B: A's forms cut into B's
+  surface, each bright region in A revealing B beneath. Image C is then
+  PCA-reduced to two components, a slightly richer ghost, and used as a second
+  hard mask on the already-cut composite. The two rounds of shape imposition
+  multiply the cutout geometry. Images D and E are collaged into the remaining
+  space, filling the negative shapes with new content. A final cellular
+  effect grows texture across the seams, and jpeg destroy fuses everything
+  into a single compressed wound.
+
+inputs: 5
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [1, 1]
+      mode: top
+
+  - type: channel_shift
+    image: b
+    params:
+      offset_r: [15, 50]
+      offset_b: [-40, -12]
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [2, 2]
+      mode: top
+
+  - type: dither
+    image: d
+    params:
+      method: floyd_steinberg
+      palette: cga
+
+  - type: pixel_sort
+    image: e
+    params:
+      mode: saturation
+      threshold: [35, 85]
+      direction: horizontal
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [55, 75]
+      feather: [0, 2]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [60, 80]
+      feather: [0, 3]
+      invert: false
+
+  - type: collage
+    images: [canvas, d, e]
+    into: canvas
+    params:
+      layout: scatter
+      rotation: [5, 30]
+      scale_variance: [0.1, 0.35]
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: threshold
+      threshold: [185, 215]
+      feather: [0, 2]
+      invert: true
+
+  - type: cellular
+    image: canvas
+    params:
+      scale: [20, 60]
+      threshold: [80, 160]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [12, 28]

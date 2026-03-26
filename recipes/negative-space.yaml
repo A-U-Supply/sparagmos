@@ -1,0 +1,85 @@
+name: Negative Space
+description: >
+  Two masking operations, each using the opposite of what the other reveals.
+  Image A's dark regions cut out shapes and fill them with B: the negative
+  space of A becomes a window into B. Independently, image C's bright regions
+  cut shapes into D: the positive space of C becomes a window into D. The two
+  composites — one built from darkness, one from light — are then blended
+  together, their opposing thresholds creating a push-pull geometry where
+  every bright cut in one is a dark fill in the other. A final pixel sort
+  and jpeg destroy collapse the opposition into a single degraded surface
+  where the original distinction between positive and negative has been lost.
+
+inputs: 4
+
+steps:
+  - type: dither
+    image: a
+    params:
+      method: atkinson
+      palette: bw
+
+  - type: spectral
+    image: b
+    params:
+      operation: bandpass
+      amount: [0.35, 0.65]
+
+  - type: dither
+    image: c
+    params:
+      method: bayer
+      palette: bw
+
+  - type: channel_shift
+    image: d
+    params:
+      offset_r: [18, 52]
+      offset_b: [-42, -12]
+
+  - type: mask_composite
+    images: [b, a]
+    into: dark_cut
+    params:
+      mask_source: luminance
+      threshold: [185, 220]
+      feather: [0, 2]
+      invert: true
+
+  - type: mask_composite
+    images: [d, c]
+    into: light_cut
+    params:
+      mask_source: luminance
+      threshold: [50, 75]
+      feather: [0, 2]
+      invert: false
+
+  - type: blend
+    images: [dark_cut, light_cut]
+    into: canvas
+    params:
+      mode: screen
+      strength: [0.5, 0.8]
+
+  - type: mask_composite
+    images: [canvas, dark_cut]
+    into: canvas
+    params:
+      mask_source: threshold
+      threshold: [60, 90]
+      feather: [0, 3]
+      invert: false
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [45, 95]
+      direction: vertical
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [10, 24]

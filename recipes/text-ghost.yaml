@@ -1,0 +1,86 @@
+name: Text Ghost
+description: >
+  Image A is PCA-decomposed to just 1-2 principal components — its texture
+  and color stripped away until only the structural ghost remains, nearly
+  monochrome. A hard threshold mask uses this ghost to cut image B's content
+  through A's shapes: the skeleton of A, filled with B. The composite is
+  blended with C to haunt the cutout with a third presence. D's luminance
+  then re-masks the whole surface at an inverted threshold, punching negative
+  holes through what was just built. CRT noise and jpeg decay finish the work,
+  aging the phantom image into the screen it was never meant to survive.
+
+inputs: 4
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [1, 2]
+      mode: top
+
+  - type: channel_shift
+    image: b
+    params:
+      offset_r: [15, 45]
+      offset_g: [-10, 10]
+      offset_b: [-35, -8]
+
+  - type: spectral
+    image: c
+    params:
+      operation: bandpass
+      amount: [0.4, 0.7]
+
+  - type: dither
+    image: d
+    params:
+      method: bayer
+      palette: bw
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [60, 80]
+      feather: [0, 2]
+      invert: false
+
+  - type: blend
+    images: [canvas, c]
+    into: canvas
+    params:
+      mode: screen
+      strength: [0.3, 0.55]
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [180, 215]
+      feather: [0, 3]
+      invert: true
+      mask_image: d
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: threshold
+      threshold: [45, 70]
+      feather: [0, 1]
+      invert: false
+
+  - type: crt_vhs
+    image: canvas
+    params:
+      jitter_amount: [4, 12]
+      color_bleed: [2.0, 5.0]
+      scan_line_density: [2, 3]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [10, 22]

@@ -1,0 +1,93 @@
+name: Photogram
+description: >
+  In the darkroom, a photogram is made by placing objects directly on
+  light-sensitive paper and exposing it. The object's silhouette burns into
+  the emulsion — a shadow that is also a shape. Here image A is PCA-reduced
+  to near-silhouette, its surface detail burned away to form. A hard threshold
+  mask imposes A's silhouette onto B: the paper below the object, filled with
+  B's content. A second PCA pass reduces the composite further, and that
+  reduced form is used to impose C's shapes onto the result. A third pass
+  layers D's silhouette into the accumulated photogram. The final image is
+  a contact print of four separate exposures, each one's shape still legible
+  inside the body of the next.
+
+inputs: 4
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [1, 2]
+      mode: top
+
+  - type: spectral
+    image: b
+    params:
+      operation: bandpass
+      amount: [0.3, 0.6]
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [1, 2]
+      mode: top
+
+  - type: dither
+    image: d
+    params:
+      method: floyd_steinberg
+      palette: bw
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [55, 75]
+      feather: [0, 2]
+      invert: false
+
+  - type: pca_decompose
+    image: canvas
+    params:
+      n_components: [2, 3]
+      mode: top
+
+  - type: mask_composite
+    images: [c, canvas]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [60, 80]
+      feather: [0, 2]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [185, 215]
+      feather: [0, 3]
+      invert: true
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: threshold
+      threshold: [50, 72]
+      feather: [0, 2]
+      invert: false
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [60, 140]
+      mode: flip
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [10, 22]

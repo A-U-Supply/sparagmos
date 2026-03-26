@@ -1,0 +1,112 @@
+name: Mask Feedback
+description: >
+  A chain of masks where each output becomes the input mask for the next stage.
+  Image A is masked onto B using A's luminance — B's content cut into A's
+  shapes. The result is channel-shifted and spectrally degraded, then used as
+  the mask source to cut C into the composite: the destroyed output of the first
+  masking is now the stencil for the second. That result is pixel-sorted and
+  byte-corrupted, then used as the mask source to cut D into the accumulation.
+  By the third pass the mask has folded back on itself three times — a shape
+  cutting a shape cutting a shape. Image E is blended in as a final substrate,
+  and CRT noise completes the loop, making the feedback visible as signal decay.
+
+inputs: 5
+
+steps:
+  - type: channel_shift
+    image: a
+    params:
+      offset_r: [20, 55]
+      offset_b: [-45, -12]
+
+  - type: spectral
+    image: b
+    params:
+      operation: bandpass
+      amount: [0.35, 0.65]
+
+  - type: dither
+    image: c
+    params:
+      method: bayer
+      palette: cga
+
+  - type: pixel_sort
+    image: d
+    params:
+      mode: brightness
+      threshold: [50, 100]
+      direction: vertical
+
+  - type: pca_decompose
+    image: e
+    params:
+      n_components: [3, 7]
+      mode: top
+
+  - type: mask_composite
+    images: [b, a]
+    into: stage1
+    params:
+      mask_source: luminance
+      threshold: [55, 75]
+      feather: [0, 2]
+      invert: false
+
+  - type: channel_shift
+    image: stage1
+    params:
+      offset_r: [30, 80]
+      offset_g: [-20, 20]
+      offset_b: [-65, -20]
+
+  - type: spectral
+    image: stage1
+    params:
+      operation: highpass
+      amount: [0.4, 0.7]
+
+  - type: mask_composite
+    images: [c, stage1]
+    into: stage2
+    params:
+      mask_source: luminance
+      threshold: [60, 80]
+      feather: [0, 3]
+      invert: false
+
+  - type: pixel_sort
+    image: stage2
+    params:
+      mode: saturation
+      threshold: [40, 90]
+      direction: horizontal
+
+  - type: byte_corrupt
+    image: stage2
+    params:
+      num_flips: [60, 140]
+      mode: flip
+
+  - type: mask_composite
+    images: [d, stage2]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [185, 215]
+      feather: [0, 2]
+      invert: true
+
+  - type: blend
+    images: [canvas, e]
+    into: canvas
+    params:
+      mode: overlay
+      strength: [0.3, 0.55]
+
+  - type: crt_vhs
+    image: canvas
+    params:
+      jitter_amount: [5, 14]
+      color_bleed: [2.5, 6.0]
+      scan_line_density: [2, 3]

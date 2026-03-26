@@ -1,0 +1,86 @@
+name: Contrast Surgery
+description: >
+  Image A undergoes extreme channel surgery — massive RGB offsets pull its
+  color registers apart until the content nearly dissolves into chromatic
+  aberration. The fractured A is then used as a hard threshold mask to impose
+  its structure onto B: wherever A's channels have accumulated enough value to
+  cross the threshold, B's content shows through the wound. C's edge structure
+  then re-masks the composite, carving secondary incisions along structural
+  boundaries. Image D is blended in as a final layer before a byte corrupt
+  and spectral pass scatter the result into frequency noise and bit-level
+  damage. The surgery leaves no clean seams.
+
+inputs: 4
+
+steps:
+  - type: channel_shift
+    image: a
+    params:
+      offset_r: [60, 120]
+      offset_g: [-40, 40]
+      offset_b: [-100, -40]
+
+  - type: spectral
+    image: b
+    params:
+      operation: bandpass
+      amount: [0.3, 0.6]
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [2, 4]
+      mode: top
+
+  - type: pixel_sort
+    image: d
+    params:
+      mode: brightness
+      threshold: [55, 105]
+      direction: vertical
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: threshold
+      threshold: [50, 75]
+      feather: [0, 3]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [55, 85]
+      feather: [0, 2]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [185, 220]
+      feather: [0, 3]
+      invert: true
+
+  - type: blend
+    images: [canvas, d]
+    into: canvas
+    params:
+      mode: overlay
+      strength: [0.3, 0.55]
+
+  - type: spectral
+    image: canvas
+    params:
+      operation: highpass
+      amount: [0.4, 0.7]
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [70, 160]
+      mode: flip

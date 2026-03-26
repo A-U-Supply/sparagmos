@@ -1,0 +1,83 @@
+name: Stencil Burn
+description: >
+  Image A is dithered to a near-binary stencil — its shapes reduced to stark
+  positive and negative space. That stencil is used as a hard luminance mask
+  to cut image B into image C: where A was bright, you see B's content filling
+  the shape; where A was dark, C underlies everything. Image D's edge structure
+  then re-masks the composite, carving secondary cuts through the already-cut
+  surface. Pixel sort drags the cutout edges into streaks of color, and
+  byte corruption chars the result like something pulled from a fire.
+
+inputs: 4
+
+steps:
+  - type: dither
+    image: a
+    params:
+      method: atkinson
+      palette: bw
+
+  - type: channel_shift
+    image: b
+    params:
+      offset_r: [20, 55]
+      offset_b: [-40, -10]
+
+  - type: pixel_sort
+    image: c
+    params:
+      mode: brightness
+      threshold: [60, 110]
+      direction: horizontal
+
+  - type: pca_decompose
+    image: d
+    params:
+      n_components: [2, 4]
+      mode: top
+
+  - type: mask_composite
+    images: [b, c]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [50, 75]
+      feather: [0, 2]
+      mask_image: a
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [55, 85]
+      feather: [0, 3]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [185, 220]
+      feather: [0, 2]
+      invert: true
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [40, 90]
+      direction: vertical
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [80, 180]
+      mode: flip
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 18]

@@ -1,0 +1,90 @@
+name: Letterpress
+description: >
+  Image A is dithered with Atkinson, which creates the tight, typographic
+  dot-and-space pattern that letterpress printing once left in paper. The
+  dithered A becomes a hard luminance mask, its dots cutting into image B:
+  B's content shows through A's ink pattern, as if B were the ink and A
+  were the plate. Image C's edge structure then re-masks the composite,
+  cutting secondary lines through the dot-field like a second pass through
+  the press with a different plate. Image D is fragmented into pieces and
+  scattered behind — the backing material bleeding through the gaps. A
+  final channel shift pulls the color registers apart, the way cheap
+  letterpress misregistered its colors into chromatic halos.
+
+inputs: 4
+
+steps:
+  - type: dither
+    image: a
+    params:
+      method: atkinson
+      palette: bw
+
+  - type: pixel_sort
+    image: b
+    params:
+      mode: brightness
+      threshold: [50, 100]
+      direction: horizontal
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [2, 4]
+      mode: top
+
+  - type: crt_vhs
+    image: d
+    params:
+      jitter_amount: [5, 14]
+      color_bleed: [2.5, 6.0]
+      scan_line_density: [2, 3]
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [50, 70]
+      feather: [0, 1]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [55, 80]
+      feather: [0, 2]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [185, 215]
+      feather: [0, 3]
+      invert: true
+
+  - type: fragment
+    images: [canvas, d]
+    into: canvas
+    params:
+      cut_mode: voronoi
+      pieces: [18, 40]
+      mix_ratio: [0.25, 0.5]
+      gap: [1, 5]
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [20, 60]
+      offset_g: [-12, 12]
+      offset_b: [-50, -15]
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [50, 120]
+      mode: flip

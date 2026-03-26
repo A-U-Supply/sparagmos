@@ -1,0 +1,86 @@
+name: Binary Archaeology
+description: >
+  Each of the four images is dithered to a different binary palette — different
+  dithering algorithms reducing each to its own distinct pattern of black and
+  white. The first dithered image masks the second: A's positive space filled
+  with B's content. The result masks the third: the growing composite's shapes
+  cut into C. That masks the fourth: three layers of accumulated stenciling
+  finally cutting into D. Four deep, the shapes have propagated through every
+  image in the chain. Byte corruption then degrades the archaeological record,
+  scattering bits through the layered binary structure as if the medium itself
+  has been buried and unearthed.
+
+inputs: 4
+
+steps:
+  - type: dither
+    image: a
+    params:
+      method: atkinson
+      palette: bw
+
+  - type: dither
+    image: b
+    params:
+      method: floyd_steinberg
+      palette: bw
+
+  - type: dither
+    image: c
+    params:
+      method: bayer
+      palette: bw
+
+  - type: dither
+    image: d
+    params:
+      method: ordered
+      palette: bw
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [55, 75]
+      feather: [0, 2]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [60, 80]
+      feather: [0, 2]
+      invert: true
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [50, 70]
+      feather: [0, 3]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: threshold
+      threshold: [185, 215]
+      feather: [0, 2]
+      invert: true
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [100, 250]
+      mode: flip
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [6, 15]

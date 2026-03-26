@@ -1,0 +1,94 @@
+name: Silhouette Swap
+description: >
+  A chain of five images where each one's PCA silhouette is used as the hard
+  mask to cut the next. Image A reduced to 2 components becomes the stencil
+  that cuts B into shape. B's own silhouette then cuts C into B's ghost form.
+  C's outline cuts D, D's outline cuts E. Each successive masking inherits the
+  accumulated shape of the chain before it — a portrait made of portraits,
+  each one nested inside the contour of what came before. The five masked
+  stages are collaged together, and a final pixel sort and byte corrupt grind
+  the nesting into texture.
+
+inputs: 5
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [1, 2]
+      mode: top
+
+  - type: pca_decompose
+    image: b
+    params:
+      n_components: [1, 2]
+      mode: top
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [2, 3]
+      mode: top
+
+  - type: pca_decompose
+    image: d
+    params:
+      n_components: [1, 2]
+      mode: top
+
+  - type: mask_composite
+    images: [b, a]
+    into: ab
+    params:
+      mask_source: luminance
+      threshold: [55, 75]
+      feather: [0, 2]
+      invert: false
+
+  - type: mask_composite
+    images: [c, ab]
+    into: abc
+    params:
+      mask_source: luminance
+      threshold: [60, 80]
+      feather: [0, 3]
+      invert: false
+
+  - type: mask_composite
+    images: [d, abc]
+    into: abcd
+    params:
+      mask_source: luminance
+      threshold: [50, 70]
+      feather: [0, 2]
+      invert: false
+
+  - type: mask_composite
+    images: [e, abcd]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [65, 85]
+      feather: [0, 3]
+      invert: false
+
+  - type: collage
+    images: [canvas, ab, abc]
+    into: canvas
+    params:
+      layout: grid
+      rotation: [0, 15]
+      scale_variance: [0.0, 0.2]
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [50, 100]
+      direction: vertical
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [60, 140]
+      mode: flip

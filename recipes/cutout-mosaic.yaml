@@ -1,0 +1,93 @@
+name: Cutout Mosaic
+description: >
+  Three images are mosaiced into a grid composite — fragments locked into cells,
+  a surface of borrowed pictures. Image four is then dithered to binary and used
+  as a hard threshold mask to punch shape-cutouts through the mosaic, revealing
+  image five beneath wherever four was bright. The cutout surface is fragmented
+  again to scatter its grid into shards, and channel shift breaks its color
+  registers apart. A final jpeg destroy welds the fragments back into a single
+  slab of destroyed light.
+
+inputs: 5
+
+steps:
+  - type: dither
+    image: a
+    params:
+      method: floyd_steinberg
+      palette: cga
+
+  - type: pixel_sort
+    image: b
+    params:
+      mode: saturation
+      threshold: [40, 90]
+      direction: horizontal
+
+  - type: crt_vhs
+    image: c
+    params:
+      jitter_amount: [6, 16]
+      color_bleed: [3.0, 7.0]
+      scan_line_density: [2, 3]
+
+  - type: dither
+    image: d
+    params:
+      method: atkinson
+      palette: bw
+
+  - type: channel_shift
+    image: e
+    params:
+      offset_r: [20, 60]
+      offset_b: [-50, -15]
+
+  - type: collage
+    images: [a, b, c]
+    into: canvas
+    params:
+      layout: grid
+      rotation: [0, 5]
+      scale_variance: [0.0, 0.1]
+
+  - type: mask_composite
+    images: [e, canvas]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [50, 75]
+      feather: [0, 2]
+      invert: false
+      mask_image: d
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: threshold
+      threshold: [185, 220]
+      feather: [0, 3]
+      invert: true
+
+  - type: fragment
+    images: [canvas, b]
+    into: canvas
+    params:
+      cut_mode: shatter
+      pieces: [15, 35]
+      mix_ratio: [0.3, 0.6]
+      gap: [2, 8]
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [25, 75]
+      offset_g: [-15, 15]
+      offset_b: [-60, -20]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [10, 25]
