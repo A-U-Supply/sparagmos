@@ -1,0 +1,91 @@
+name: Hallucination Collage
+description: >
+  All five inputs are deepdreamed at escalating intensities — A barely touched at
+  5 iterations, B at 10, C at 15, D at 20, E pushed to 25 where the network
+  completely overwrites the source image with its own obsessions. Five distinct
+  hallucination states are then mosaic-collaged into a single grid: a taxonomy of
+  neural fixation at different depths. The mosaic is shattered into fragments,
+  edge-masked against the most hallucinated version (E) — the deepest dream
+  carving seams through all five states at once. Channel shift fractures the
+  registers of the collage, splitting the hallucinated forms into their spectral
+  components. A final jpeg destruction seals the taxonomy.
+
+inputs: 5
+
+steps:
+  - type: deepdream
+    image: a
+    params:
+      iterations: [5, 7]
+      octave_scale: [1.2, 1.3]
+      jitter: [16, 20]
+      learning_rate: [0.005, 0.010]
+
+  - type: deepdream
+    image: b
+    params:
+      iterations: [8, 12]
+      octave_scale: [1.3, 1.4]
+      jitter: [20, 30]
+      learning_rate: [0.008, 0.015]
+
+  - type: deepdream
+    image: c
+    params:
+      iterations: [13, 17]
+      octave_scale: [1.3, 1.5]
+      jitter: [24, 36]
+      learning_rate: [0.010, 0.018]
+
+  - type: deepdream
+    image: d
+    params:
+      iterations: [18, 22]
+      octave_scale: [1.4, 1.5]
+      jitter: [32, 44]
+      learning_rate: [0.015, 0.022]
+
+  - type: deepdream
+    image: e
+    params:
+      iterations: [23, 20]
+      octave_scale: [1.4, 1.5]
+      jitter: [40, 48]
+      learning_rate: [0.018, 0.025]
+
+  - type: collage
+    images: [a, b, c, d, e]
+    into: canvas
+    params:
+      layout: mosaic
+
+  - type: fragment
+    images: [canvas, e]
+    into: canvas
+    params:
+      cut_mode: shatter
+      pieces: [15, 35]
+      mix_ratio: [0.5, 0.8]
+      gap: [2, 8]
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 140]
+      feather: [5, 12]
+      invert: false
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [20, 55]
+      offset_g: [-10, 10]
+      offset_b: [-50, -15]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 3]
+      iterations: [15, 35]

@@ -1,0 +1,96 @@
+name: Neural Mask Cascade
+description: >
+  Four images, each deepdreamed independently, then chained through a cascade of
+  dream-as-mask operations. Dreamed A cuts into raw B using A's hallucinated
+  luminance as a stencil — B's content revealed only where A dreamed brightest.
+  Dreamed B then cuts into raw C with an edge mask — the neural forms' outlines
+  carving C into view. Dreamed C cuts into raw D with a noise mask — randomness
+  modulated by the hallucinated patterns. Finally dreamed D masks the accumulated
+  result with a threshold mask, the deepest hallucination becoming the final
+  arbiter of what survives. Four dreams, each one eating the next, a cascade of
+  neural obsession where each layer's strangeness shapes what comes after.
+  Pixel sort and jpeg destruction close the chain.
+
+inputs: 4
+
+steps:
+  - type: deepdream
+    image: a
+    params:
+      iterations: [10, 15]
+      octave_scale: [1.3, 1.5]
+      jitter: [24, 40]
+      learning_rate: [0.010, 0.020]
+
+  - type: deepdream
+    image: b
+    params:
+      iterations: [8, 13]
+      octave_scale: [1.3, 1.4]
+      jitter: [20, 36]
+      learning_rate: [0.008, 0.018]
+
+  - type: deepdream
+    image: c
+    params:
+      iterations: [12, 18]
+      octave_scale: [1.4, 1.5]
+      jitter: [28, 44]
+      learning_rate: [0.012, 0.022]
+
+  - type: deepdream
+    image: d
+    params:
+      iterations: [14, 20]
+      octave_scale: [1.4, 1.5]
+      jitter: [32, 48]
+      learning_rate: [0.014, 0.024]
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [90, 140]
+      feather: [5, 10]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [95, 145]
+      feather: [6, 12]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: noise
+      threshold: [90, 150]
+      feather: [7, 13]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: threshold
+      threshold: [95, 155]
+      feather: [8, 15]
+      invert: true
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [45, 95]
+      direction: vertical
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [14, 30]

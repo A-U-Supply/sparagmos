@@ -1,0 +1,84 @@
+name: Dream Stencil
+description: >
+  A is deepdreamed at high intensity until its surface is dense with hallucinated
+  forms — eyes inside eyes, architectural fractals, dog-faced flowers. That dreamed
+  surface is used as a luminance stencil: its bright hallucinated zones become
+  windows into B beneath, the neural patterns acting as a living cut-paper mask.
+  Wherever the dream was brightest, B shows through; the hallucinated shapes fill
+  with B's content rather than A's dream. C is blended across the stencil composite,
+  adding a third layer of material into the neural cutouts. D provides a final edge
+  mask — D's structural lines carve new geometry through the stencil, cutting the
+  hallucinated windows into smaller facets. Dither reduces the surface to ega palette.
+
+inputs: 4
+
+steps:
+  - type: deepdream
+    image: a
+    params:
+      iterations: [15, 20]
+      octave_scale: [1.4, 1.5]
+      jitter: [36, 48]
+      learning_rate: [0.015, 0.025]
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [90, 140]
+      feather: [5, 12]
+      invert: false
+
+  - type: deepdream
+    image: canvas
+    params:
+      iterations: [6, 12]
+      octave_scale: [1.2, 1.4]
+      jitter: [18, 32]
+      learning_rate: [0.006, 0.015]
+
+  - type: blend
+    images: [canvas, c]
+    into: canvas
+    params:
+      mode: screen
+      strength: [0.4, 0.7]
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [95, 145]
+      feather: [5, 12]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [100, 155]
+      feather: [8, 15]
+      invert: true
+
+  - type: deepdream
+    image: canvas
+    params:
+      iterations: [5, 8]
+      octave_scale: [1.2, 1.3]
+      jitter: [16, 24]
+      learning_rate: [0.005, 0.010]
+
+  - type: dither
+    image: canvas
+    params:
+      method: bayer
+      palette: ega
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [10, 22]

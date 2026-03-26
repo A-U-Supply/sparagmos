@@ -1,0 +1,114 @@
+name: Kaleidoscope Dream
+description: >
+  All five inputs are deepdreamed independently, each colonized by the network's
+  preferred hallucinations — eyes, pagodas, fractal dogs, feathered architectures.
+  Five dreamed surfaces are mosaic-collaged into a single grid: the kaleidoscope's
+  first arrangement. A Voronoi fragmentation shatters that mosaic, the irregular
+  cells cutting through all five dreamed images simultaneously. D's edge skeleton
+  masks the Voronoi fragments, carving hallucinated forms into finer facets.
+  A scatter re-collage flings those facets into a looser arrangement — the
+  kaleidoscope tumbled, its dreamed cells scattered across a new field. The
+  scatter collage is deepdreamed one final time, the network finding its forms
+  in the already-collaged, already-masked, already-fragmented surface.
+  Jpeg destruction — three passes — permanently seals every layer of hallucination.
+
+inputs: 5
+
+steps:
+  - type: deepdream
+    image: a
+    params:
+      iterations: [8, 13]
+      octave_scale: [1.3, 1.4]
+      jitter: [20, 36]
+      learning_rate: [0.008, 0.018]
+
+  - type: deepdream
+    image: b
+    params:
+      iterations: [10, 15]
+      octave_scale: [1.3, 1.5]
+      jitter: [24, 40]
+      learning_rate: [0.010, 0.020]
+
+  - type: deepdream
+    image: c
+    params:
+      iterations: [12, 17]
+      octave_scale: [1.4, 1.5]
+      jitter: [28, 44]
+      learning_rate: [0.012, 0.022]
+
+  - type: deepdream
+    image: d
+    params:
+      iterations: [7, 12]
+      octave_scale: [1.2, 1.4]
+      jitter: [18, 32]
+      learning_rate: [0.007, 0.016]
+
+  - type: deepdream
+    image: e
+    params:
+      iterations: [14, 20]
+      octave_scale: [1.4, 1.5]
+      jitter: [32, 48]
+      learning_rate: [0.014, 0.024]
+
+  - type: collage
+    images: [a, b, c, d, e]
+    into: canvas
+    params:
+      layout: mosaic
+
+  - type: fragment
+    images: [canvas, a]
+    into: canvas
+    params:
+      cut_mode: voronoi
+      pieces: [20, 45]
+      mix_ratio: [0.5, 0.85]
+      gap: [0, 4]
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 140]
+      feather: [5, 12]
+      invert: false
+
+  - type: collage
+    images: [canvas, c]
+    into: canvas
+    params:
+      layout: scatter
+      rotation: [10, 55]
+      scale_variance: [0.10, 0.35]
+
+  - type: deepdream
+    image: canvas
+    params:
+      iterations: [8, 14]
+      octave_scale: [1.3, 1.5]
+      jitter: [22, 40]
+      learning_rate: [0.008, 0.018]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [4, 7]
+      iterations: [5, 12]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 4]
+      iterations: [8, 18]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 2]
+      iterations: [12, 28]

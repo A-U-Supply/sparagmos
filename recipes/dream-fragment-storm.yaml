@@ -1,0 +1,93 @@
+name: Dream Fragment Storm
+description: >
+  Three images are deepdreamed — A, B, and C each acquiring dense neural
+  hallucinations. All three dreamed surfaces are shattered together into a field
+  of irregular fragments, the Voronoi tessellation cutting through all three
+  hallucinated images simultaneously. That fragmented dream-composite is then
+  deepdreamed again: the network re-hallucinates over a surface already structured
+  by its own previous hallucination, dreaming over the debris of its first dream.
+  D's edge skeleton cuts through the re-dreamed fragments. E is scatter-collaged
+  across the surface — the only undreamed material, raw fragments puncturing the
+  double-dreamed field. A final jpeg destruction in two passes compresses the storm.
+
+inputs: 5
+
+steps:
+  - type: deepdream
+    image: a
+    params:
+      iterations: [10, 16]
+      octave_scale: [1.3, 1.5]
+      jitter: [24, 40]
+      learning_rate: [0.010, 0.020]
+
+  - type: deepdream
+    image: b
+    params:
+      iterations: [12, 18]
+      octave_scale: [1.4, 1.5]
+      jitter: [30, 46]
+      learning_rate: [0.012, 0.022]
+
+  - type: deepdream
+    image: c
+    params:
+      iterations: [8, 14]
+      octave_scale: [1.3, 1.4]
+      jitter: [22, 38]
+      learning_rate: [0.008, 0.018]
+
+  - type: fragment
+    images: [a, b, c]
+    into: canvas
+    params:
+      cut_mode: shatter
+      pieces: [18, 40]
+      mix_ratio: [0.5, 0.85]
+      gap: [2, 8]
+
+  - type: deepdream
+    image: canvas
+    params:
+      iterations: [8, 14]
+      octave_scale: [1.3, 1.5]
+      jitter: [22, 40]
+      learning_rate: [0.008, 0.018]
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 140]
+      feather: [5, 12]
+      invert: false
+
+  - type: collage
+    images: [canvas, e]
+    into: canvas
+    params:
+      layout: scatter
+      rotation: [15, 60]
+      scale_variance: [0.12, 0.38]
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [95, 150]
+      feather: [7, 14]
+      invert: true
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [3, 6]
+      iterations: [6, 14]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 3]
+      iterations: [12, 28]

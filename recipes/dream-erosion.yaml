@@ -1,0 +1,86 @@
+name: Dream Erosion
+description: >
+  A is deepdreamed heavily, colonized by neural hallucinations until the original
+  photograph is barely legible beneath the network's obsessions. That dreamed surface
+  is then edge-masked onto B with a tight feather of 5 — a hard, precise cut where
+  the dream's sharpest lines punch through into B. The result is edge-masked onto C
+  with feather 15 — slightly softer, the edges beginning to dissolve at their borders.
+  That composite is edge-masked onto D with feather 25 — the dream's contours now
+  spreading and blurring, the hallucinated forms eroding as they propagate through
+  each successive layer. Progressive softening: the dream stays but its certainty
+  dissolves. A final deepdream on the composite re-hallucinates the eroded surface.
+
+inputs: 4
+
+steps:
+  - type: deepdream
+    image: a
+    params:
+      iterations: [15, 20]
+      octave_scale: [1.4, 1.5]
+      jitter: [36, 48]
+      learning_rate: [0.015, 0.025]
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [95, 140]
+      feather: [5, 5]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [95, 145]
+      feather: [12, 15]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [100, 150]
+      feather: [22, 25]
+      invert: false
+
+  - type: deepdream
+    image: canvas
+    params:
+      iterations: [8, 14]
+      octave_scale: [1.3, 1.5]
+      jitter: [22, 40]
+      learning_rate: [0.008, 0.018]
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [90, 145]
+      feather: [8, 15]
+      invert: true
+
+  - type: deepdream
+    image: canvas
+    params:
+      iterations: [5, 9]
+      octave_scale: [1.2, 1.4]
+      jitter: [16, 28]
+      learning_rate: [0.005, 0.012]
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [45, 110]
+      mode: flip
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [12, 26]
