@@ -1,9 +1,15 @@
 {
   "processed": [
     {
-      "source_file_id": "F09DZ5HJKMZ",
-      "source_date": "2025-09-08",
-      "source_user": "U03TD4SUDKL",
+      "source_file_ids": [
+        "F09DZ5HJKMZ"
+      ],
+      "source_dates": [
+        "2025-09-08"
+      ],
+      "source_users": [
+        "U03TD4SUDKL"
+      ],
       "recipe": "cellular-decay",
       "effects": [
         "cellular",
@@ -14,9 +20,15 @@
       "posted_ts": ""
     },
     {
-      "source_file_id": "F08TVJ3M21M",
-      "source_date": "2025-05-28",
-      "source_user": "U03TD4SUDKL",
+      "source_file_ids": [
+        "F08TVJ3M21M"
+      ],
+      "source_dates": [
+        "2025-05-28"
+      ],
+      "source_users": [
+        "U03TD4SUDKL"
+      ],
       "recipe": "byte-liturgy",
       "effects": [
         "byte_corrupt",
@@ -27,9 +39,15 @@
       "posted_ts": ""
     },
     {
-      "source_file_id": "F09BPUCBAMB",
-      "source_date": "2025-08-23",
-      "source_user": "U03TD7FSUAE",
+      "source_file_ids": [
+        "F09BPUCBAMB"
+      ],
+      "source_dates": [
+        "2025-08-23"
+      ],
+      "source_users": [
+        "U03TD7FSUAE"
+      ],
       "recipe": "cga-nightmare",
       "effects": [
         "dither",
@@ -40,9 +58,15 @@
       "posted_ts": ""
     },
     {
-      "source_file_id": "F0895RK9YUE",
-      "source_date": "2025-01-20",
-      "source_user": "U03TFJBRK2Q",
+      "source_file_ids": [
+        "F0895RK9YUE"
+      ],
+      "source_dates": [
+        "2025-01-20"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q"
+      ],
       "recipe": "dionysian-rite",
       "effects": [
         "deepdream",
@@ -54,9 +78,15 @@
       "posted_ts": ""
     },
     {
-      "source_file_id": "F05NHEGCVMX",
-      "source_date": "2023-08-16",
-      "source_user": "U03TD4SUDKL",
+      "source_file_ids": [
+        "F05NHEGCVMX"
+      ],
+      "source_dates": [
+        "2023-08-16"
+      ],
+      "source_users": [
+        "U03TD4SUDKL"
+      ],
       "recipe": "byte-liturgy",
       "effects": [
         "datamosh",
@@ -71,9 +101,15 @@
       "posted_ts": ""
     },
     {
-      "source_file_id": "F0A26PP324U",
-      "source_date": "2025-12-07",
-      "source_user": "U03TFJBRK2Q",
+      "source_file_ids": [
+        "F0A26PP324U"
+      ],
+      "source_dates": [
+        "2025-12-07"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q"
+      ],
       "recipe": "vhs-meltdown",
       "effects": [
         "sonify",
@@ -86,9 +122,15 @@
       "posted_ts": ""
     },
     {
-      "source_file_id": "F08UM63KFUH",
-      "source_date": "2025-05-28",
-      "source_user": "U03TFJBRK2Q",
+      "source_file_ids": [
+        "F08UM63KFUH"
+      ],
+      "source_dates": [
+        "2025-05-28"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q"
+      ],
       "recipe": "cga-nightmare",
       "effects": [
         "cellular",
@@ -102,9 +144,15 @@
       "posted_ts": ""
     },
     {
-      "source_file_id": "F04HJMH2A06",
-      "source_date": "2023-01-06",
-      "source_user": "U03TD4SUDKL",
+      "source_file_ids": [
+        "F04HJMH2A06"
+      ],
+      "source_dates": [
+        "2023-01-06"
+      ],
+      "source_users": [
+        "U03TD4SUDKL"
+      ],
       "recipe": "spectral-autopsy",
       "effects": [
         "spectral",
@@ -118,9 +166,15 @@
       "posted_ts": ""
     },
     {
-      "source_file_id": "F07STNE1MKP",
-      "source_date": "2024-10-22",
-      "source_user": "U03TD7FSUAE",
+      "source_file_ids": [
+        "F07STNE1MKP"
+      ],
+      "source_dates": [
+        "2024-10-22"
+      ],
+      "source_users": [
+        "U03TD7FSUAE"
+      ],
       "recipe": "thermal-ghost",
       "effects": [
         "pca_decompose",
@@ -129,6 +183,40 @@
         "dither",
         "channel_shift",
         "crt_vhs"
+      ],
+      "processed_date": "2026-03-26",
+      "posted_ts": ""
+    },
+    {
+      "source_file_ids": [
+        "F0AN8G62EGP",
+        "F08J69QEX5Y",
+        "F09EAL48H7D",
+        "F07QKHXEWD8"
+      ],
+      "source_dates": [
+        "2026-03-25",
+        "2025-03-18",
+        "2025-09-10",
+        "2024-10-06"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "palimpsest",
+      "effects": [
+        "pca_decompose",
+        "channel_shift",
+        "crt_vhs",
+        "pixel_sort",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "byte_corrupt",
+        "dither"
       ],
       "processed_date": "2026-03-26",
       "posted_ts": ""
