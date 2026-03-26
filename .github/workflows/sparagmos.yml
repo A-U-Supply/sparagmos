@@ -57,5 +57,10 @@ jobs:
             echo "No state changes."
           else
             git commit -m "chore: update state ($(date -u +%Y-%m-%d)) [skip ci]"
-            git push
+            for i in 1 2 3 4 5; do
+              git push && break
+              echo "Push failed (attempt $i), pulling and retrying..."
+              git pull --rebase
+              sleep $((RANDOM % 10 + 5))
+            done
           fi
