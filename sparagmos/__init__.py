@@ -1,0 +1,3 @@
+"""σπαραγμός — Automated image destruction bot."""
+
+__version__ = "0.1.0"
