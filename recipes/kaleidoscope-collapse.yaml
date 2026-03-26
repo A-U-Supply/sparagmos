@@ -1,0 +1,91 @@
+name: Kaleidoscope Collapse
+description: >
+  Five sources collaged into a mosaic, then the mosaic is shattered and
+  edge-masked against one of its own parents. The resulting fragments are
+  sorted by saturation before a second fragmentation grinds the grid into
+  dust. Each cycle compounds the previous collapse — the kaleidoscope eating
+  itself from the inside out.
+
+inputs: 5
+
+steps:
+  - type: channel_shift
+    image: a
+    params:
+      offset_r: [20, 60]
+      offset_b: [-50, -15]
+
+  - type: pixel_sort
+    image: b
+    params:
+      mode: hue
+      threshold: [30, 80]
+
+  - type: crt_vhs
+    image: c
+    params:
+      jitter_amount: [8, 18]
+      color_bleed: [3.0, 7.0]
+      scan_line_density: [2, 4]
+
+  - type: pca_decompose
+    image: d
+    params:
+      n_components: [4, 10]
+      mode: bottom
+
+  - type: dither
+    image: e
+    params:
+      method: bayer
+      palette: thermal
+
+  - type: collage
+    images: [a, b, c, d, e]
+    into: canvas
+    params:
+      layout: mosaic
+
+  - type: fragment
+    images: [canvas, a]
+    into: canvas
+    params:
+      cut_mode: grid
+      pieces: [20, 50]
+      mix_ratio: [0.4, 0.7]
+      gap: [2, 8]
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [50, 110]
+      feather: [4, 14]
+
+  - type: fragment
+    images: [canvas, c]
+    into: canvas
+    params:
+      cut_mode: voronoi
+      pieces: [18, 40]
+      mix_ratio: [0.5, 0.85]
+      gap: [0, 5]
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: saturation
+      threshold: [40, 90]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 3]
+      iterations: [18, 45]
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [80, 200]
+      mode: flip

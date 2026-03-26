@@ -1,0 +1,85 @@
+name: Mosaic Rebirth
+description: >
+  Five sources assembled into a mosaic, sorted by pixel luminance into
+  streaming vertical rivers, then shattered. Noise masking cuts random
+  windows into the scatter, and a second collage reassembles the surviving
+  fragments into a loose constellation. What emerges is not the mosaic but
+  something that has passed through it and come out the other side changed.
+
+inputs: 5
+
+steps:
+  - type: channel_shift
+    image: a
+    params:
+      offset_r: [15, 50]
+      offset_b: [-45, -12]
+
+  - type: deepdream
+    image: b
+    params:
+      iterations: [4, 10]
+      octave_scale: [1.3, 1.5]
+      jitter: [16, 40]
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [3, 8]
+      mode: bottom
+
+  - type: crt_vhs
+    image: d
+    params:
+      jitter_amount: [6, 16]
+      color_bleed: [3.0, 7.0]
+
+  - type: dither
+    image: e
+    params:
+      method: bayer
+      palette: ega
+
+  - type: collage
+    images: [a, b, c, d, e]
+    into: canvas
+    params:
+      layout: mosaic
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [30, 80]
+      direction: vertical
+
+  - type: fragment
+    images: [canvas, a]
+    into: canvas
+    params:
+      cut_mode: shatter
+      pieces: [22, 50]
+      mix_ratio: [0.4, 0.75]
+      gap: [4, 12]
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: noise
+      threshold: [80, 160]
+      feather: [5, 15]
+
+  - type: collage
+    images: [canvas, c]
+    into: canvas
+    params:
+      layout: scatter
+      rotation: [10, 45]
+      scale_variance: [0.1, 0.35]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 3]
+      iterations: [16, 40]

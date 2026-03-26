@@ -1,0 +1,80 @@
+name: Stratum Shift
+description: >
+  Four images built into geological strata through strip collage, then seam-carved
+  to warp the fault lines. Luminance masking cuts the first geological record against
+  itself. Overlay blending burns the strata together. Edge masking cuts the burn,
+  revealing buried layers. Dither reduces the exposed rock to grains.
+
+inputs: 4
+
+steps:
+  - type: channel_shift
+    image: a
+    params:
+      offset_r: [10, 40]
+      offset_b: [-30, -8]
+
+  - type: dither
+    image: b
+    params:
+      method: floyd_steinberg
+      palette: ega
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [4, 12]
+      mode: top
+
+  - type: pixel_sort
+    image: d
+    params:
+      mode: brightness
+      threshold: [60, 130]
+      direction: horizontal
+
+  - type: collage
+    images: [a, b, c, d]
+    into: canvas
+    params:
+      layout: strips
+
+  - type: seam_carve
+    image: canvas
+    params:
+      scale_x: [0.55, 0.75]
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [70, 140]
+      feather: [5, 14]
+
+  - type: blend
+    images: [canvas, b]
+    into: canvas
+    params:
+      mode: overlay
+      strength: [0.4, 0.65]
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [50, 110]
+      feather: [3, 12]
+
+  - type: dither
+    image: canvas
+    params:
+      method: bayer
+      palette: thermal
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [40, 100]
+      mode: flip

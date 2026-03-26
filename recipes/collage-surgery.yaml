@@ -1,0 +1,96 @@
+name: Collage Surgery
+description: >
+  Four images cut into strips and edge-masked three times in alternating rounds —
+  each pass strips away context to reveal what lies beneath the surface. The
+  incision reveals the next layer, which is edge-masked again to expose another.
+  Channel shift after each operation fractures the color registers of the wound.
+  The result is a body opened, rearranged, and sutured shut with jpeg artifacts.
+
+inputs: 4
+
+steps:
+  - type: pixel_sort
+    image: a
+    params:
+      mode: hue
+      threshold: [40, 100]
+
+  - type: spectral
+    image: b
+    params:
+      operation: bandpass
+      amount: [0.3, 0.6]
+
+  - type: crt_vhs
+    image: c
+    params:
+      jitter_amount: [8, 20]
+      color_bleed: [3.5, 8.0]
+      scan_line_density: [2, 4]
+
+  - type: channel_shift
+    image: d
+    params:
+      offset_r: [20, 55]
+      offset_b: [-45, -12]
+
+  - type: fragment
+    images: [a, b]
+    into: canvas
+    params:
+      cut_mode: strips
+      pieces: [6, 14]
+      mix_ratio: [0.5, 0.85]
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [40, 90]
+      feather: [3, 10]
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [20, 60]
+      offset_g: [-15, 15]
+      offset_b: [-50, -10]
+
+  - type: fragment
+    images: [canvas, d]
+    into: canvas
+    params:
+      cut_mode: strips
+      pieces: [8, 18]
+      mix_ratio: [0.4, 0.7]
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [55, 115]
+      feather: [4, 12]
+      invert: true
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [30, 80]
+      offset_g: [-20, 20]
+      offset_b: [-65, -20]
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [60, 130]
+      feather: [5, 15]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [12, 35]

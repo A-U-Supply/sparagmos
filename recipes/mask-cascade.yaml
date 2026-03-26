@@ -1,0 +1,88 @@
+name: Mask Cascade
+description: >
+  Four images layered through four successive mask operations, each using a
+  different mask source — luminance, then edges, then noise, then a gradient
+  inversion. Every pass reveals a different stratum of the underlying images.
+  The accumulation is not a blend but an excavation: each threshold cuts away
+  and exposes what was buried beneath.
+
+inputs: 4
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [3, 9]
+      mode: top
+
+  - type: spectral
+    image: b
+    params:
+      operation: bandpass
+      amount: [0.3, 0.7]
+
+  - type: pixel_sort
+    image: c
+    params:
+      mode: brightness
+      threshold: [50, 110]
+      direction: vertical
+
+  - type: crt_vhs
+    image: d
+    params:
+      jitter_amount: [6, 16]
+      color_bleed: [2.5, 6.0]
+      scan_line_density: [2, 3]
+
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [60, 120]
+      feather: [4, 12]
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [40, 100]
+      feather: [3, 10]
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: noise
+      threshold: [80, 160]
+      feather: [5, 18]
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [130, 210]
+      feather: [8, 20]
+      invert: true
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [25, 70]
+      offset_g: [-15, 15]
+      offset_b: [-55, -15]
+
+  - type: dither
+    image: canvas
+    params:
+      method: atkinson
+      palette: thermal
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [50, 140]
+      mode: flip

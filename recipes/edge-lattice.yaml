@@ -1,0 +1,95 @@
+name: Edge Lattice
+description: >
+  Edge masking applied to every consecutive pair of five images — a cascades
+  into b, b into c, c into d, d into e — building a lattice where the structural
+  bones of each image determine how much of the next bleeds through. The collaged
+  result is then pixel sorted to pull the lattice into luminance streams, and a
+  final edge mask cuts the whole structure against one of the original parents.
+
+inputs: 5
+
+steps:
+  - type: channel_shift
+    image: a
+    params:
+      offset_r: [10, 35]
+      offset_b: [-30, -8]
+
+  - type: crt_vhs
+    image: b
+    params:
+      jitter_amount: [6, 15]
+      color_bleed: [2.5, 6.0]
+      scan_line_density: [2, 4]
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [4, 10]
+      mode: top
+
+  - type: pixel_sort
+    image: d
+    params:
+      mode: hue
+      threshold: [35, 85]
+
+  - type: dither
+    image: e
+    params:
+      method: bayer
+      palette: cga
+
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [40, 90]
+      feather: [3, 10]
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [50, 105]
+      feather: [4, 12]
+      invert: true
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [55, 115]
+      feather: [4, 13]
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [60, 125]
+      feather: [5, 15]
+      invert: true
+
+  - type: collage
+    images: [canvas, a]
+    into: canvas
+    params:
+      layout: scatter
+      rotation: [10, 40]
+      scale_variance: [0.1, 0.3]
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [35, 85]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [14, 35]

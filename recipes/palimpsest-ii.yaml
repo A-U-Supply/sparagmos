@@ -1,0 +1,92 @@
+name: Palimpsest II
+description: >
+  The manuscript overwritten so many times the original is unreadable. Five
+  sources, four mask layers, each threshold deeper than the last — luminance,
+  then inverted edges, then noise, then luminance again at maximum depth. Dither
+  reduces the palimpsest to a field of medieval dots. Byte corruption ages the
+  parchment. A final jpeg destroy buries everything.
+
+inputs: 5
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [2, 7]
+      mode: top
+
+  - type: channel_shift
+    image: b
+    params:
+      offset_r: [12, 45]
+      offset_b: [-35, -10]
+
+  - type: crt_vhs
+    image: c
+    params:
+      scan_line_density: [2, 3]
+      jitter_amount: [4, 10]
+      color_bleed: [2.0, 5.0]
+
+  - type: pixel_sort
+    image: d
+    params:
+      mode: brightness
+      threshold: [55, 120]
+
+  - type: dither
+    image: e
+    params:
+      method: bayer
+      palette: gameboy
+
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [60, 110]
+      feather: [3, 10]
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [70, 130]
+      feather: [5, 14]
+      invert: true
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: noise
+      threshold: [90, 160]
+      feather: [6, 16]
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [130, 200]
+      feather: [8, 22]
+
+  - type: dither
+    image: canvas
+    params:
+      method: atkinson
+      palette: thermal
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [60, 150]
+      mode: flip
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [12, 30]

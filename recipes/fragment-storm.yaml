@@ -1,0 +1,94 @@
+name: Fragment Storm
+description: >
+  Five images shattered twice with different piece counts — first a coarse
+  shattering, then edge masking between the two rounds to cut new seams through
+  the debris. A second fine shattering grinds the survivors. Scatter collage
+  flings the pieces into a loose storm, and three successive jpeg destroys crush
+  the wreckage to powder. Each destruction pass compounds the previous.
+
+inputs: 5
+
+steps:
+  - type: channel_shift
+    image: a
+    params:
+      offset_r: [15, 50]
+      offset_b: [-45, -12]
+
+  - type: dither
+    image: b
+    params:
+      method: bayer
+      palette: gameboy
+
+  - type: pixel_sort
+    image: c
+    params:
+      mode: saturation
+      threshold: [40, 95]
+      direction: vertical
+
+  - type: crt_vhs
+    image: d
+    params:
+      jitter_amount: [8, 20]
+      color_bleed: [4.0, 8.0]
+      scan_line_density: [2, 3]
+
+  - type: pca_decompose
+    image: e
+    params:
+      n_components: [3, 8]
+      mode: bottom
+
+  - type: fragment
+    images: [a, b, c, d, e]
+    into: canvas
+    params:
+      cut_mode: shatter
+      pieces: [8, 20]
+      mix_ratio: [0.5, 0.8]
+      gap: [5, 15]
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [45, 100]
+      feather: [4, 13]
+
+  - type: fragment
+    images: [canvas, b]
+    into: canvas
+    params:
+      cut_mode: shatter
+      pieces: [25, 60]
+      mix_ratio: [0.4, 0.7]
+      gap: [2, 8]
+
+  - type: collage
+    images: [canvas, c]
+    into: canvas
+    params:
+      layout: scatter
+      rotation: [20, 70]
+      scale_variance: [0.15, 0.4]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [3, 6]
+      iterations: [5, 12]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 4]
+      iterations: [5, 12]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 2]
+      iterations: [8, 20]
