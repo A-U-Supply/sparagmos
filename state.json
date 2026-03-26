@@ -249,6 +249,36 @@
       ],
       "processed_date": "2026-03-26",
       "posted_ts": ""
+    },
+    {
+      "source_file_ids": [
+        "F05CJ3YBU4T",
+        "F081C8LG7L5",
+        "F05M7N4QB24"
+      ],
+      "source_dates": [
+        "2023-06-14",
+        "2024-11-19",
+        "2023-08-06"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q"
+      ],
+      "recipe": "holographic-interference",
+      "effects": [
+        "spectral",
+        "spectral",
+        "channel_shift",
+        "blend",
+        "blend",
+        "channel_shift",
+        "spectral",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-03-26",
+      "posted_ts": ""
     }
   ]
 }
