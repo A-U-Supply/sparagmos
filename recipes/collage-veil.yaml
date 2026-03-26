@@ -1,0 +1,100 @@
+name: Collage Veil
+description: >
+  All five images are first mosaiced into a single tiled composite — five worlds
+  locked into one grid. Then three successive edge-mask veils are pulled back in
+  sequence, each peeling away a layer to reveal a different source beneath.
+  The first veil uses B's edges to cut A's presence back into the mosaic.
+  The second veil uses C's edges to cut through the first result, adding a
+  new layer of structural revelation. The third veil uses D's edges to cut
+  through what remains — three layers of structural veil peeled back from the
+  mosaic surface. Each veil reveals more of the underlying structure. Sonify
+  adds echo resonance. E's luminance cuts a final selection through the
+  triple-veiled surface. Byte corrupt chars the layered result.
+
+inputs: 5
+
+steps:
+  - type: pixel_sort
+    image: a
+    params:
+      mode: brightness
+      threshold: [50, 100]
+      direction: horizontal
+
+  - type: dither
+    image: b
+    params:
+      method: atkinson
+      palette: ega
+
+  - type: crt_vhs
+    image: c
+    params:
+      jitter_amount: [5, 14]
+      color_bleed: [2.5, 6.0]
+      scan_line_density: [2, 3]
+
+  - type: channel_shift
+    image: d
+    params:
+      offset_r: [15, 50]
+      offset_b: [-40, -12]
+
+  - type: spectral
+    image: e
+    params:
+      operation: bandpass
+      amount: [0.3, 0.65]
+
+  - type: collage
+    images: [a, b, c, d, e]
+    into: canvas
+    params:
+      layout: mosaic
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [7, 15]
+      invert: false
+
+  - type: sonify
+    image: canvas
+    params:
+      effect: echo
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [90, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [70, 160]
+      mode: flip

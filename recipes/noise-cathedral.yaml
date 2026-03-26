@@ -41,8 +41,8 @@ steps:
     into: canvas
     params:
       mask_source: noise
-      threshold: [60, 100]
-      feather: [3, 10]
+      threshold: [90, 140]
+      feather: [6, 14]
 
   - type: mask_composite
     images: [canvas, c]
@@ -50,14 +50,14 @@ steps:
     params:
       mask_source: noise
       threshold: [100, 155]
-      feather: [5, 14]
+      feather: [6, 14]
 
   - type: mask_composite
     images: [canvas, d]
     into: canvas
     params:
       mask_source: noise
-      threshold: [145, 210]
+      threshold: [110, 165]
       feather: [7, 20]
 
   - type: fragment

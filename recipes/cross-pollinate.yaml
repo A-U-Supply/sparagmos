@@ -1,0 +1,92 @@
+name: Cross Pollinate
+description: >
+  Two parallel edge-mask chains cross-pollinate their results. A's edges cut
+  into B, making a composite of A's structure filled with B's content. C's
+  edges simultaneously cut into D, making the same kind of structural composite
+  from a different pair. Both resulting composites are then blended at screen
+  mode — the two edge-masked pairs combined, their structures layered. Image E's
+  luminance cuts a final time through the blended cross-pollination, imposing
+  E's tonal geography across the merged structural pair. Channel shift fractures
+  the cross-pollinated color registers. Jpeg destroy welds everything into a
+  single artifact.
+
+inputs: 5
+
+steps:
+  - type: channel_shift
+    image: a
+    params:
+      offset_r: [15, 50]
+      offset_b: [-40, -12]
+
+  - type: dither
+    image: b
+    params:
+      method: floyd_steinberg
+      palette: cga
+
+  - type: spectral
+    image: c
+    params:
+      operation: bandpass
+      amount: [0.3, 0.65]
+
+  - type: crt_vhs
+    image: d
+    params:
+      jitter_amount: [6, 15]
+      color_bleed: [2.5, 6.0]
+      scan_line_density: [2, 3]
+
+  - type: pca_decompose
+    image: e
+    params:
+      n_components: [5, 10]
+      mode: top
+
+  - type: mask_composite
+    images: [b, a]
+    into: pair_ab
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: mask_composite
+    images: [d, c]
+    into: pair_cd
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [7, 15]
+      invert: false
+
+  - type: blend
+    images: [pair_ab, pair_cd]
+    into: canvas
+    params:
+      mode: screen
+      strength: [0.55, 0.85]
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [90, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [25, 70]
+      offset_g: [-15, 15]
+      offset_b: [-55, -18]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [10, 24]

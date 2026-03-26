@@ -1,13 +1,15 @@
-name: Silhouette Swap
+name: Recursive Stencil
 description: >
-  A chain of five images where each one's PCA silhouette is used as the hard
-  mask to cut the next. Image A reduced to 2 components becomes the stencil
-  that cuts B into shape. B's own silhouette then cuts C into B's ghost form.
-  C's outline cuts D, D's outline cuts E. Each successive masking inherits the
-  accumulated shape of the chain before it — a portrait made of portraits,
-  each one nested inside the contour of what came before. The five masked
-  stages are collaged together, and a final pixel sort and byte corrupt grind
-  the nesting into texture.
+  Five-deep recursive stenciling where each image's PCA structure is used as
+  a luminance mask for the next. Each image is first PCA-decomposed to 5
+  components — enough structure to hold interesting content without going
+  near-solid. Then: A's PCA structure masks B, cutting B's ghost into A's
+  form. That masked AB composite masks C — A's form, filled with B, now cuts
+  C. The AB-masked result masks D — adding one more layer of nested stenciling.
+  The ABCD composite masks E — five levels of recursive stenciling, each layer
+  visible inside the contour of all the layers before it. Collage assembles
+  the stages side by side. Pixel sort and byte corrupt complete the recursive
+  surface damage.
 
 inputs: 5
 
@@ -36,9 +38,15 @@ steps:
       n_components: [4, 7]
       mode: top
 
+  - type: pca_decompose
+    image: e
+    params:
+      n_components: [4, 7]
+      mode: top
+
   - type: mask_composite
     images: [b, a]
-    into: ab
+    into: stage_ab
     params:
       mask_source: luminance
       threshold: [90, 155]
@@ -46,8 +54,17 @@ steps:
       invert: false
 
   - type: mask_composite
-    images: [c, ab]
-    into: abc
+    images: [c, stage_ab]
+    into: stage_abc
+    params:
+      mask_source: luminance
+      threshold: [90, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: mask_composite
+    images: [d, stage_abc]
+    into: stage_abcd
     params:
       mask_source: edges
       threshold: [90, 155]
@@ -55,36 +72,27 @@ steps:
       invert: false
 
   - type: mask_composite
-    images: [d, abc]
-    into: abcd
-    params:
-      mask_source: luminance
-      threshold: [90, 155]
-      feather: [6, 14]
-      invert: false
-
-  - type: mask_composite
-    images: [e, abcd]
+    images: [e, stage_abcd]
     into: canvas
     params:
-      mask_source: edges
+      mask_source: luminance
       threshold: [90, 155]
       feather: [6, 14]
       invert: false
 
   - type: collage
-    images: [canvas, ab, abc]
+    images: [canvas, stage_ab, stage_abc]
     into: canvas
     params:
       layout: grid
-      rotation: [0, 15]
+      rotation: [0, 12]
       scale_variance: [0.0, 0.2]
 
   - type: pixel_sort
     image: canvas
     params:
       mode: brightness
-      threshold: [50, 100]
+      threshold: [50, 110]
       direction: vertical
 
   - type: byte_corrupt

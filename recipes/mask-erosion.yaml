@@ -1,0 +1,88 @@
+name: Mask Erosion
+description: >
+  Three sequential edge masks with increasing feather — a progressive erosion
+  where each pass softens the structural cuts further and further. The first
+  mask uses feather 5, cutting B along A's edges with relative sharpness.
+  The second mask uses feather 12, blurring those edge cuts into wider halos
+  of soft revelation. The third uses feather 25, smearing the edges into broad
+  luminous erosion zones. With each round the structural cuts dissolve further
+  into the image, as if the stencil is being eroded from sharp blade to soft
+  brush. Image D is fragmented into the result before the final erosion pass,
+  adding new geometric texture. CRT distortion and jpeg destroy complete the
+  surface damage.
+
+inputs: 4
+
+steps:
+  - type: channel_shift
+    image: a
+    params:
+      offset_r: [15, 50]
+      offset_b: [-40, -12]
+
+  - type: spectral
+    image: b
+    params:
+      operation: bandpass
+      amount: [0.35, 0.65]
+
+  - type: dither
+    image: c
+    params:
+      method: bayer
+      palette: thermal
+
+  - type: pca_decompose
+    image: d
+    params:
+      n_components: [5, 10]
+      mode: top
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [3, 7]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [10, 15]
+      invert: false
+
+  - type: fragment
+    images: [canvas, d]
+    into: canvas
+    params:
+      cut_mode: shatter
+      pieces: [15, 35]
+      mix_ratio: [0.4, 0.7]
+      gap: [3, 9]
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [20, 30]
+      invert: false
+
+  - type: crt_vhs
+    image: canvas
+    params:
+      jitter_amount: [7, 18]
+      color_bleed: [3.0, 7.0]
+      scan_line_density: [2, 4]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [10, 24]

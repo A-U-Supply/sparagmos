@@ -1,0 +1,96 @@
+name: Gradient Reveal
+description: >
+  A three-stage revelation where each step peels back a different layer.
+  Images A and B are blended at overlay mode, their tonal geometries
+  multiplied together into a new compound image. Image C's edge structure
+  then cuts through the blend composite: wherever C has strong edges,
+  the overlay blend is revealed; elsewhere it fades. The edge-revealed
+  blend is then grid-fragmented with B, breaking the structural cuts into
+  rectangular tiles. Image D's luminance cuts a final time through the
+  tiled surface — a luminance-based selection of what tiles remain visible.
+  Pixel sort pours the surviving tiles into vertical streams. Spectral
+  shift processes the stream frequencies. CRT noise ages the result into
+  signal degradation.
+
+inputs: 4
+
+steps:
+  - type: pixel_sort
+    image: a
+    params:
+      mode: brightness
+      threshold: [50, 100]
+      direction: horizontal
+
+  - type: crt_vhs
+    image: b
+    params:
+      jitter_amount: [5, 14]
+      color_bleed: [2.5, 6.0]
+      scan_line_density: [2, 3]
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [5, 10]
+      mode: top
+
+  - type: dither
+    image: d
+    params:
+      method: floyd_steinberg
+      palette: ega
+
+  - type: blend
+    images: [a, b]
+    into: blended
+    params:
+      mode: overlay
+      strength: [0.6, 1.0]
+
+  - type: mask_composite
+    images: [blended, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [7, 15]
+      invert: false
+
+  - type: fragment
+    images: [canvas, b]
+    into: canvas
+    params:
+      cut_mode: grid
+      pieces: [14, 32]
+      mix_ratio: [0.4, 0.7]
+      gap: [2, 7]
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [90, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [50, 110]
+      direction: vertical
+
+  - type: spectral
+    image: canvas
+    params:
+      operation: shift
+      amount: [0.3, 0.6]
+
+  - type: crt_vhs
+    image: canvas
+    params:
+      jitter_amount: [6, 16]
+      color_bleed: [2.5, 6.0]
+      scan_line_density: [2, 3]

@@ -1,0 +1,98 @@
+name: Masked Tapestry
+description: >
+  Five images woven into a layered tapestry through successive masking.
+  Images A, B, and C are mosaic-collaged into a grid — three worlds tiled
+  into one surface. Image D's edge structure then cuts new geography across
+  the mosaic: D's contours as scalpel, the mosaic as patient. The edge-cut
+  mosaic is scatter-fragmented with a fifth image's structure. Image E's
+  luminance then cuts a final layer through the fragmented surface, its tonal
+  geography imposing one last round of selective revelation. Channel shift
+  fractures the color registers. Sonify adds reverb resonance. Jpeg destroy
+  compresses the layered tapestry into a single damaged artifact.
+
+inputs: 5
+
+steps:
+  - type: pixel_sort
+    image: a
+    params:
+      mode: saturation
+      threshold: [45, 95]
+      direction: horizontal
+
+  - type: crt_vhs
+    image: b
+    params:
+      jitter_amount: [6, 15]
+      color_bleed: [2.5, 6.0]
+      scan_line_density: [2, 3]
+
+  - type: dither
+    image: c
+    params:
+      method: bayer
+      palette: gameboy
+
+  - type: pca_decompose
+    image: d
+    params:
+      n_components: [5, 10]
+      mode: top
+
+  - type: channel_shift
+    image: e
+    params:
+      offset_r: [15, 50]
+      offset_b: [-40, -12]
+
+  - type: collage
+    images: [a, b, c]
+    into: canvas
+    params:
+      layout: mosaic
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [7, 15]
+      invert: false
+
+  - type: fragment
+    images: [canvas, d]
+    into: canvas
+    params:
+      cut_mode: shatter
+      pieces: [16, 35]
+      mix_ratio: [0.4, 0.7]
+      gap: [3, 9]
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [90, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [25, 70]
+      offset_g: [-15, 15]
+      offset_b: [-55, -15]
+
+  - type: sonify
+    image: canvas
+    params:
+      effect: reverb
+      intensity: [0.3, 0.6]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [10, 24]

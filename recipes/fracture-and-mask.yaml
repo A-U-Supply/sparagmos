@@ -1,0 +1,87 @@
+name: Fracture and Mask
+description: >
+  A shatter-fragment sandwich with edge and luminance masking on either side.
+  Images A and B are shatter-fragmented together — broken into irregular shards,
+  each shard a slice of both sources. C's edge structure then cuts new seams
+  across the fracture field: a structural mask imposed on the shattered surface.
+  The edge-cut fractures are scatter-collaged with C to redistribute the masked
+  shards across the frame. Image D's luminance cuts a final selection through
+  the redistributed scatter — wherever D is bright enough, the collaged fractures
+  remain visible; darker zones are suppressed. Pixel sort drags the surviving
+  pieces into directional streams. Byte corrupt finishes the fracture field
+  with bitflip damage.
+
+inputs: 4
+
+steps:
+  - type: channel_shift
+    image: a
+    params:
+      offset_r: [20, 55]
+      offset_b: [-45, -12]
+
+  - type: spectral
+    image: b
+    params:
+      operation: bandpass
+      amount: [0.35, 0.65]
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [5, 10]
+      mode: top
+
+  - type: dither
+    image: d
+    params:
+      method: floyd_steinberg
+      palette: thermal
+
+  - type: fragment
+    images: [a, b]
+    into: canvas
+    params:
+      cut_mode: shatter
+      pieces: [18, 40]
+      mix_ratio: [0.5, 0.8]
+      gap: [3, 10]
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: collage
+    images: [canvas, c]
+    into: canvas
+    params:
+      layout: scatter
+      rotation: [10, 50]
+      scale_variance: [0.1, 0.35]
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [90, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [50, 110]
+      direction: vertical
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [70, 160]
+      mode: flip

@@ -1,0 +1,92 @@
+name: Spectral Mask
+description: >
+  Four images processed spectrally and then masked in pairs, with the pair
+  results blended and dithered. Image A is spectrally shifted to emphasize
+  its low frequencies. Image B gets a bandpass to isolate mid-range. Image C
+  gets a bandpass tuned differently. Image D is left comparatively raw with
+  light spectral blur. A's edges mask B: the spectral ghost of A used as a
+  structural stencil over spectrally-processed B. C's edges simultaneously
+  mask D. The two spectrally-masked composites are blended at overlay to
+  compound their frequency structures. A final dither reduces the spectral
+  compound to a palette. Channel shift and jpeg destroy finish the
+  spectral-masked surface.
+
+inputs: 4
+
+steps:
+  - type: spectral
+    image: a
+    params:
+      operation: shift
+      amount: [0.3, 0.6]
+
+  - type: spectral
+    image: b
+    params:
+      operation: bandpass
+      amount: [0.3, 0.55]
+
+  - type: spectral
+    image: c
+    params:
+      operation: bandpass
+      amount: [0.45, 0.7]
+
+  - type: spectral
+    image: d
+    params:
+      operation: blur
+      amount: [0.2, 0.5]
+
+  - type: mask_composite
+    images: [b, a]
+    into: pair_ab
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: mask_composite
+    images: [d, c]
+    into: pair_cd
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [7, 15]
+      invert: false
+
+  - type: blend
+    images: [pair_ab, pair_cd]
+    into: canvas
+    params:
+      mode: overlay
+      strength: [0.55, 0.85]
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [90, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: dither
+    image: canvas
+    params:
+      method: atkinson
+      palette: ega
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [20, 60]
+      offset_g: [-12, 12]
+      offset_b: [-50, -15]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [10, 24]

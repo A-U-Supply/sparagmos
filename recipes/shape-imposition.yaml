@@ -17,7 +17,7 @@ steps:
   - type: pca_decompose
     image: a
     params:
-      n_components: [1, 1]
+      n_components: [4, 7]
       mode: top
 
   - type: channel_shift
@@ -29,7 +29,7 @@ steps:
   - type: pca_decompose
     image: c
     params:
-      n_components: [2, 2]
+      n_components: [4, 7]
       mode: top
 
   - type: dither
@@ -50,17 +50,17 @@ steps:
     into: canvas
     params:
       mask_source: luminance
-      threshold: [55, 75]
-      feather: [0, 2]
+      threshold: [90, 155]
+      feather: [6, 14]
       invert: false
 
   - type: mask_composite
     images: [canvas, c]
     into: canvas
     params:
-      mask_source: luminance
-      threshold: [60, 80]
-      feather: [0, 3]
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [6, 14]
       invert: false
 
   - type: collage
@@ -75,9 +75,9 @@ steps:
     images: [canvas, b]
     into: canvas
     params:
-      mask_source: threshold
-      threshold: [185, 215]
-      feather: [0, 2]
+      mask_source: luminance
+      threshold: [100, 165]
+      feather: [6, 14]
       invert: true
 
   - type: cellular

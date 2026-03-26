@@ -37,7 +37,7 @@ steps:
   - type: pca_decompose
     image: d
     params:
-      n_components: [1, 2]
+      n_components: [4, 8]
       mode: top
 
   - type: collage
@@ -50,9 +50,9 @@ steps:
     images: [canvas, d]
     into: canvas
     params:
-      mask_source: luminance
-      threshold: [55, 75]
-      feather: [0, 2]
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [6, 14]
       invert: false
 
   - type: seam_carve

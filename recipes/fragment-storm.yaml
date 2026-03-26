@@ -55,8 +55,8 @@ steps:
     into: canvas
     params:
       mask_source: edges
-      threshold: [45, 100]
-      feather: [4, 13]
+      threshold: [90, 155]
+      feather: [6, 14]
 
   - type: fragment
     images: [canvas, b]

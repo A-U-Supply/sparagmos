@@ -49,8 +49,8 @@ steps:
     into: canvas
     params:
       mask_source: luminance
-      threshold: [60, 110]
-      feather: [2, 6]
+      threshold: [90, 155]
+      feather: [6, 14]
       invert: false
 
   - type: collage
@@ -64,8 +64,8 @@ steps:
     into: canvas
     params:
       mask_source: edges
-      threshold: [45, 95]
-      feather: [1, 4]
+      threshold: [90, 155]
+      feather: [6, 14]
       invert: false
 
   - type: pixel_sort

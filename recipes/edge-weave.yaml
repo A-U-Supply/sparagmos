@@ -1,0 +1,110 @@
+name: Edge Weave
+description: >
+  Five images woven together through their own structural edges. A's edge
+  skeleton cuts B into A's silhouette — the first weave. B's edges then cut
+  C through the same logic: B's contours used as the loom. C's edges cut D,
+  propagating the structural logic one step further. The three composites
+  are grid-collaged into a single surface. D's edges then cut E through the
+  collage, a fourth edge-masking pass that spans all three prior composites
+  at once. The result is a weave of five structures, each one's contours
+  determining how the next is revealed. Spectral bandpass attenuates mid-range
+  frequencies. Channel shift fractures the registers. Byte corrupt damages
+  the whole woven surface into grain.
+
+inputs: 5
+
+steps:
+  - type: pixel_sort
+    image: a
+    params:
+      mode: brightness
+      threshold: [50, 100]
+      direction: horizontal
+
+  - type: crt_vhs
+    image: b
+    params:
+      jitter_amount: [6, 15]
+      color_bleed: [2.5, 6.0]
+      scan_line_density: [2, 3]
+
+  - type: dither
+    image: c
+    params:
+      method: floyd_steinberg
+      palette: ega
+
+  - type: spectral
+    image: d
+    params:
+      operation: bandpass
+      amount: [0.3, 0.6]
+
+  - type: channel_shift
+    image: e
+    params:
+      offset_r: [15, 50]
+      offset_b: [-40, -12]
+
+  - type: mask_composite
+    images: [b, a]
+    into: weave_ab
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: mask_composite
+    images: [c, b]
+    into: weave_bc
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [7, 15]
+      invert: false
+
+  - type: mask_composite
+    images: [d, c]
+    into: weave_cd
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: collage
+    images: [weave_ab, weave_bc, weave_cd]
+    into: canvas
+    params:
+      layout: grid
+      rotation: [0, 8]
+      scale_variance: [0.0, 0.15]
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [7, 15]
+      invert: false
+
+  - type: spectral
+    image: canvas
+    params:
+      operation: bandpass
+      amount: [0.35, 0.65]
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [20, 60]
+      offset_g: [-12, 12]
+      offset_b: [-50, -15]
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [60, 140]
+      mode: flip

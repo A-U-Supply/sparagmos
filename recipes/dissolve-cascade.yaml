@@ -46,7 +46,7 @@ steps:
     into: canvas
     params:
       mask_source: gradient
-      threshold: [70, 140]
+      threshold: [90, 155]
       feather: [6, 16]
 
   - type: blend

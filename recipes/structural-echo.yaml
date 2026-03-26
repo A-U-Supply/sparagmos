@@ -1,0 +1,97 @@
+name: Structural Echo
+description: >
+  Image A's edge structure is applied three times to create a progressive echo
+  effect. The first application uses a tight feather of 5, cutting B sharply
+  along A's contours — hard structural revelation. The second application uses
+  feather 15, blurring those same structural cuts into soft halos. The third
+  application uses feather 30, smearing A's edges into wide luminous shadows.
+  Each pass uses A's edges as the mask but with increasing softness — the
+  structure echoes itself into widening rings. The three stages are assembled
+  through a strip collage, placing the echo progression side by side. A final
+  spectral pass and pixel sort resolve the echo into frequency streams.
+
+inputs: 4
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [5, 10]
+      mode: top
+
+  - type: channel_shift
+    image: b
+    params:
+      offset_r: [20, 55]
+      offset_b: [-45, -12]
+
+  - type: dither
+    image: c
+    params:
+      method: floyd_steinberg
+      palette: thermal
+
+  - type: spectral
+    image: d
+    params:
+      operation: bandpass
+      amount: [0.3, 0.65]
+
+  - type: mask_composite
+    images: [b, a]
+    into: echo_tight
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [3, 7]
+      invert: false
+
+  - type: mask_composite
+    images: [c, a]
+    into: echo_mid
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [12, 18]
+      invert: false
+
+  - type: mask_composite
+    images: [d, a]
+    into: echo_wide
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [22, 32]
+      invert: false
+
+  - type: collage
+    images: [echo_tight, echo_mid, echo_wide]
+    into: canvas
+    params:
+      layout: strips
+
+  - type: blend
+    images: [canvas, echo_mid]
+    into: canvas
+    params:
+      mode: screen
+      strength: [0.3, 0.55]
+
+  - type: spectral
+    image: canvas
+    params:
+      operation: shift
+      amount: [0.3, 0.6]
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [50, 110]
+      direction: vertical
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [50, 120]
+      mode: flip

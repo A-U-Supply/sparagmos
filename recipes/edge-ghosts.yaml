@@ -31,16 +31,16 @@ steps:
     into: canvas
     params:
       mask_source: edges
-      threshold: [40, 100]
-      feather: [5, 15]
+      threshold: [90, 155]
+      feather: [6, 15]
 
   - type: mask_composite
     images: [canvas, c]
     into: canvas
     params:
       mask_source: edges
-      threshold: [50, 120]
-      feather: [3, 12]
+      threshold: [90, 155]
+      feather: [6, 14]
       invert: true
 
   - type: spectral

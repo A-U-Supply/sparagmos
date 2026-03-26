@@ -40,31 +40,31 @@ steps:
     into: canvas
     params:
       mask_source: luminance
-      threshold: [60, 120]
-      feather: [4, 12]
+      threshold: [90, 155]
+      feather: [6, 14]
 
   - type: mask_composite
     images: [canvas, c]
     into: canvas
     params:
       mask_source: edges
-      threshold: [40, 100]
-      feather: [3, 10]
+      threshold: [90, 155]
+      feather: [6, 14]
 
   - type: mask_composite
     images: [canvas, d]
     into: canvas
     params:
       mask_source: noise
-      threshold: [80, 160]
-      feather: [5, 18]
+      threshold: [90, 160]
+      feather: [6, 18]
 
   - type: mask_composite
     images: [canvas, a]
     into: canvas
     params:
       mask_source: luminance
-      threshold: [130, 210]
+      threshold: [100, 165]
       feather: [8, 20]
       invert: true
 

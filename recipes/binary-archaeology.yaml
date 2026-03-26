@@ -41,9 +41,9 @@ steps:
     images: [b, a]
     into: canvas
     params:
-      mask_source: luminance
-      threshold: [55, 75]
-      feather: [0, 2]
+      mask_source: edges
+      threshold: [90, 150]
+      feather: [5, 12]
       invert: false
 
   - type: mask_composite
@@ -51,26 +51,26 @@ steps:
     into: canvas
     params:
       mask_source: luminance
-      threshold: [60, 80]
-      feather: [0, 2]
+      threshold: [100, 160]
+      feather: [6, 14]
       invert: true
 
   - type: mask_composite
     images: [canvas, d]
     into: canvas
     params:
-      mask_source: luminance
-      threshold: [50, 70]
-      feather: [0, 3]
+      mask_source: edges
+      threshold: [90, 150]
+      feather: [5, 12]
       invert: false
 
   - type: mask_composite
     images: [canvas, a]
     into: canvas
     params:
-      mask_source: threshold
-      threshold: [185, 215]
-      feather: [0, 2]
+      mask_source: luminance
+      threshold: [100, 160]
+      feather: [6, 14]
       invert: true
 
   - type: byte_corrupt

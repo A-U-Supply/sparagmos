@@ -1,0 +1,94 @@
+name: Luminance Layers
+description: >
+  Four images revealed through four different luminance thresholds of the same
+  reference source. Image A is processed and used as the mask for all four
+  rounds. The first threshold (around 90) cuts B into view wherever A is
+  medium-dim. The second threshold (around 120) cuts C into view wherever A
+  is middle-bright. The third (around 150) cuts D into view at upper-midtones.
+  All three composites are assembled through a final collage into a layered
+  surface. A feather of 10 on each round ensures soft transitions that blend
+  the tonal layers together rather than cutting hard. Each threshold band
+  occupies a different zone of A's luminance range — together they tile the
+  full tonal spectrum with four different images. Seam carve warps the tonal
+  surface. Jpeg destroy fuses the layers.
+
+inputs: 4
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [5, 10]
+      mode: top
+
+  - type: channel_shift
+    image: b
+    params:
+      offset_r: [15, 50]
+      offset_b: [-40, -12]
+
+  - type: dither
+    image: c
+    params:
+      method: atkinson
+      palette: cga
+
+  - type: crt_vhs
+    image: d
+    params:
+      jitter_amount: [6, 16]
+      color_bleed: [2.5, 6.0]
+      scan_line_density: [2, 3]
+
+  - type: mask_composite
+    images: [b, a]
+    into: band1
+    params:
+      mask_source: luminance
+      threshold: [85, 105]
+      feather: [8, 12]
+      invert: false
+
+  - type: mask_composite
+    images: [c, a]
+    into: band2
+    params:
+      mask_source: luminance
+      threshold: [110, 135]
+      feather: [8, 12]
+      invert: false
+
+  - type: mask_composite
+    images: [d, a]
+    into: band3
+    params:
+      mask_source: luminance
+      threshold: [140, 165]
+      feather: [8, 12]
+      invert: false
+
+  - type: collage
+    images: [band1, band2, band3]
+    into: canvas
+    params:
+      layout: strips
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 155]
+      feather: [7, 14]
+      invert: false
+
+  - type: seam_carve
+    image: canvas
+    params:
+      scale_x: [0.6, 0.8]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [10, 24]
