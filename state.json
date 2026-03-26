@@ -220,6 +220,35 @@
       ],
       "processed_date": "2026-03-26",
       "posted_ts": ""
+    },
+    {
+      "source_file_ids": [
+        "F07U69N5D7H",
+        "F08U56VPVHN",
+        "F08U6J6QBQR"
+      ],
+      "source_dates": [
+        "2024-11-02",
+        "2025-05-21",
+        "2025-05-24"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "signal-bleed",
+      "effects": [
+        "crt_vhs",
+        "crt_vhs",
+        "crt_vhs",
+        "collage",
+        "channel_shift",
+        "byte_corrupt",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-03-26",
+      "posted_ts": ""
     }
   ]
 }
