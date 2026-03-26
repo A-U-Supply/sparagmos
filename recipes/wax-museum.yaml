@@ -1,0 +1,63 @@
+name: Wax Museum
+description: >
+  Three images each passed through style transfer — their surfaces repainted
+  in the manner of some other image, some other logic. The styled sources are
+  overlaid, then seam carving compresses and warps the composite as if it
+  were softening under heat. JPEG compression accelerates the melt. The figures
+  remain recognizable through the distortion, which is the unsettling part:
+  familiar faces gone soft, the expression still there but the flesh not quite right.
+
+inputs: 3
+
+steps:
+  - type: style_transfer
+    image: a
+    params:
+      iterations: [80, 150]
+      style_weight: [1.0e5, 1.0e6]
+      content_weight: [1.0, 10.0]
+
+  - type: style_transfer
+    image: b
+    params:
+      iterations: [60, 120]
+      style_weight: [5.0e4, 5.0e5]
+      content_weight: [1.0, 8.0]
+
+  - type: style_transfer
+    image: c
+    params:
+      iterations: [70, 130]
+      style_weight: [8.0e4, 8.0e5]
+      content_weight: [1.0, 12.0]
+
+  - type: blend
+    images: [a, b]
+    into: canvas
+    params:
+      mode: overlay
+      strength: [0.5, 0.8]
+
+  - type: blend
+    images: [canvas, c]
+    into: canvas
+    params:
+      mode: overlay
+      strength: [0.3, 0.55]
+
+  - type: seam_carve
+    image: canvas
+    params:
+      scale_x: [0.45, 0.65]
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [70, 130]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [14, 32]

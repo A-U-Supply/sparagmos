@@ -1,0 +1,62 @@
+name: Surveillance Decay
+description: >
+  Four feeds arranged in the classic CCTV quad-view — the administrative gaze
+  that watches everything and remembers nothing. Each feed has already been
+  degraded by magnetic dropout before the grid assembles. The composite is
+  subjected to further tape damage, then byte-level corruption, then JPEG
+  compression artifacts accumulate until the evidence is thoroughly ruined.
+  Whatever was captured here will not hold up in court.
+
+inputs: 4
+
+steps:
+  - type: crt_vhs
+    image: a
+    params:
+      jitter_amount: [6, 16]
+      color_bleed: [2.0, 5.0]
+      scan_line_density: [1, 3]
+
+  - type: crt_vhs
+    image: b
+    params:
+      jitter_amount: [8, 20]
+      color_bleed: [3.0, 6.0]
+      scan_line_density: [2, 4]
+
+  - type: crt_vhs
+    image: c
+    params:
+      jitter_amount: [4, 12]
+      color_bleed: [1.5, 4.0]
+
+  - type: crt_vhs
+    image: d
+    params:
+      jitter_amount: [10, 22]
+      color_bleed: [4.0, 8.0]
+      scan_line_density: [2, 5]
+
+  - type: collage
+    images: [a, b, c, d]
+    into: canvas
+    params:
+      layout: grid
+
+  - type: crt_vhs
+    image: canvas
+    params:
+      jitter_amount: [5, 14]
+      color_bleed: [2.0, 5.0]
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [80, 200]
+      mode: flip
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 3]
+      iterations: [15, 35]

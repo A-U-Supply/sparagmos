@@ -1,0 +1,61 @@
+name: Acid Wash
+description: >
+  Three images run through spectral transformation — their frequencies
+  scrambled and redistributed — before being multiplied together in a deepening
+  of color that approaches toxicity. Pixel sorting drags chromatic streaks
+  through the multiply-blended result. Dithering reduces it to a violent palette
+  that still somehow vibrates. The image is clean but it has been changed.
+
+inputs: 3
+
+steps:
+  - type: spectral
+    image: a
+    params:
+      mode: bandpass
+      low_freq: [0.08, 0.2]
+      high_freq: [0.5, 0.85]
+
+  - type: spectral
+    image: b
+    params:
+      mode: lowpass
+      high_freq: [0.3, 0.6]
+
+  - type: pixel_sort
+    image: c
+    params:
+      mode: saturation
+      threshold: [30, 80]
+
+  - type: blend
+    images: [a, b]
+    into: canvas
+    params:
+      mode: multiply
+      strength: [0.7, 1.0]
+
+  - type: blend
+    images: [canvas, c]
+    into: canvas
+    params:
+      mode: screen
+      strength: [0.3, 0.6]
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: hue
+      threshold: [40, 100]
+
+  - type: dither
+    image: canvas
+    params:
+      method: bayer
+      palette: cga
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 6]
+      iterations: [8, 18]

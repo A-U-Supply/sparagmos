@@ -1,0 +1,56 @@
+name: Data Rot
+description: >
+  Three images subjected to byte-level corruption before any composition —
+  the damage is baked in from the start, not applied as finish. The corrupted
+  sources are then fragmented into a grid and subjected to JPEG compression
+  repeatedly until the artifacts have artifacts. Pure digital entropy:
+  the image as an organism past its viable half-life, still formally present
+  but no longer intact.
+
+inputs: 3
+
+steps:
+  - type: byte_corrupt
+    image: a
+    params:
+      num_flips: [60, 150]
+      mode: flip
+
+  - type: byte_corrupt
+    image: b
+    params:
+      num_flips: [80, 180]
+      mode: flip
+
+  - type: byte_corrupt
+    image: c
+    params:
+      num_flips: [50, 120]
+      mode: flip
+
+  - type: fragment
+    images: [a, b, c]
+    into: canvas
+    params:
+      cut_mode: grid
+      pieces: [12, 30]
+      mix_ratio: [0.5, 0.85]
+      gap: [3, 12]
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [100, 250]
+      mode: flip
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [18, 50]
+      offset_b: [-40, -12]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 3]
+      iterations: [18, 40]

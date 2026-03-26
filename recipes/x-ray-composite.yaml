@@ -1,0 +1,49 @@
+name: X-Ray Composite
+description: >
+  One image is decomposed to its principal components — stripped to structural
+  essentials, the eigenfaces of matter. Its edge skeleton is then masked over
+  the second image, revealing the hidden armature beneath the surface.
+  Dithering reduces the result to the high-contrast grain of a radiograph.
+  You can see through things now, but only the outline of what was inside.
+
+inputs: 2
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [2, 6]
+      mode: top
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [60, 130]
+      feather: [4, 12]
+
+  - type: blend
+    images: [canvas, a]
+    into: canvas
+    params:
+      mode: overlay
+      strength: [0.4, 0.7]
+
+  - type: spectral
+    image: canvas
+    params:
+      mode: highpass
+      low_freq: [0.2, 0.4]
+
+  - type: dither
+    image: canvas
+    params:
+      method: atkinson
+      palette: thermal
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [10, 22]

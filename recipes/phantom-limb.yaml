@@ -1,0 +1,57 @@
+name: Phantom Limb
+description: >
+  One image's edge structure is cut out and laid over another — not the image
+  itself, only its outline, its ghost. The screen blend lets the haunting shine
+  through without fully materializing. Spectral processing attenuates frequencies
+  until the presence is felt more than seen: the sensation of a form that is
+  no longer there, but whose absence has the exact shape of what it was.
+
+inputs: 2
+
+steps:
+  - type: spectral
+    image: a
+    params:
+      mode: highpass
+      low_freq: [0.25, 0.45]
+
+  - type: pca_decompose
+    image: b
+    params:
+      n_components: [2, 5]
+      mode: top
+
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [70, 140]
+      feather: [8, 20]
+
+  - type: blend
+    images: [canvas, a]
+    into: canvas
+    params:
+      mode: screen
+      strength: [0.4, 0.75]
+
+  - type: spectral
+    image: canvas
+    params:
+      mode: bandpass
+      low_freq: [0.1, 0.3]
+      high_freq: [0.55, 0.85]
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [8, 28]
+      offset_g: [-6, 6]
+      offset_b: [-22, -6]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [10, 22]

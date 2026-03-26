@@ -1,0 +1,64 @@
+name: Holographic Interference
+description: >
+  Three images processed through spectral decomposition and channel aberration,
+  then stacked via difference and screen blending to simulate the interference
+  patterns of a holographic film. Light cancels and amplifies itself in iridescent
+  bands. The final result is chromatically shattered — a surface that shifts
+  depending on the angle you can never actually stand at.
+
+inputs: 3
+
+steps:
+  - type: spectral
+    image: a
+    params:
+      mode: bandpass
+      low_freq: [0.05, 0.2]
+      high_freq: [0.4, 0.7]
+
+  - type: spectral
+    image: b
+    params:
+      mode: highpass
+      low_freq: [0.3, 0.5]
+
+  - type: channel_shift
+    image: c
+    params:
+      offset_r: [20, 60]
+      offset_g: [-15, 15]
+      offset_b: [-50, -15]
+
+  - type: blend
+    images: [a, b]
+    into: canvas
+    params:
+      mode: difference
+      strength: [0.7, 1.0]
+
+  - type: blend
+    images: [canvas, c]
+    into: canvas
+    params:
+      mode: screen
+      strength: [0.5, 0.8]
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [10, 35]
+      offset_g: [-8, 8]
+      offset_b: [-30, -8]
+
+  - type: spectral
+    image: canvas
+    params:
+      mode: bandpass
+      low_freq: [0.15, 0.35]
+      high_freq: [0.7, 0.95]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 18]

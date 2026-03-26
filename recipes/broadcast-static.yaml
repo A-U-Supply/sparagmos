@@ -1,0 +1,52 @@
+name: Broadcast Static
+description: >
+  Three images converted to sound and back — each through a different acoustic
+  treatment, each emerging distorted in its own frequency range. Arranged
+  into a four-panel TV grid like a security station with too many feeds and
+  not enough signal. Byte corruption finishes what the transmission started.
+
+inputs: 3
+
+steps:
+  - type: sonify
+    image: a
+    params:
+      effect: reverb
+      intensity: [0.4, 0.7]
+
+  - type: sonify
+    image: b
+    params:
+      effect: distortion
+      intensity: [0.5, 0.8]
+
+  - type: sonify
+    image: c
+    params:
+      effect: chorus
+      intensity: [0.3, 0.6]
+
+  - type: collage
+    images: [a, b, c]
+    into: canvas
+    params:
+      layout: grid
+
+  - type: crt_vhs
+    image: canvas
+    params:
+      scan_line_density: [2, 4]
+      jitter_amount: [4, 12]
+      color_bleed: [2.0, 5.0]
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [50, 140]
+      mode: flip
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 20]

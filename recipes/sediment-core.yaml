@@ -1,0 +1,59 @@
+name: Sediment Core
+description: >
+  Three images arranged as horizontal strata — the slow accumulation of time
+  rendered as a geological cross-section pulled from the earth. Seam carving
+  warps the layer boundaries as pressure and heat would, folding the record.
+  Thermal dithering reduces the result to the false-color palette of scientific
+  imaging: the kind used to read what lived and died in each stratum.
+
+inputs: 3
+
+steps:
+  - type: pixel_sort
+    image: a
+    params:
+      mode: brightness
+      threshold: [60, 120]
+
+  - type: spectral
+    image: b
+    params:
+      mode: bandpass
+      low_freq: [0.05, 0.15]
+      high_freq: [0.4, 0.65]
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [3, 7]
+      mode: top
+
+  - type: collage
+    images: [a, b, c]
+    into: canvas
+    params:
+      layout: strips
+
+  - type: seam_carve
+    image: canvas
+    params:
+      scale_x: [0.55, 0.75]
+
+  - type: blend
+    images: [canvas, b]
+    into: canvas
+    params:
+      mode: overlay
+      strength: [0.3, 0.55]
+
+  - type: dither
+    image: canvas
+    params:
+      method: atkinson
+      palette: thermal
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 16]

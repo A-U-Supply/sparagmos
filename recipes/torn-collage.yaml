@@ -1,0 +1,61 @@
+name: Torn Collage
+description: >
+  Four images shattered like a mirror dropped on concrete. Each fragment gets
+  the sickly hum of magnetic tape artifacts before being scattered into a loose
+  constellation of broken pieces. The gaps between shards are deliberate wounds.
+  Whatever the images meant before is lost in the rearrangement.
+
+inputs: 4
+
+steps:
+  - type: crt_vhs
+    image: a
+    params:
+      jitter_amount: [8, 20]
+      color_bleed: [3.0, 7.0]
+
+  - type: crt_vhs
+    image: b
+    params:
+      jitter_amount: [5, 14]
+      color_bleed: [2.0, 5.0]
+
+  - type: crt_vhs
+    image: c
+    params:
+      jitter_amount: [10, 25]
+      color_bleed: [4.0, 8.0]
+
+  - type: crt_vhs
+    image: d
+    params:
+      jitter_amount: [6, 16]
+      color_bleed: [2.5, 6.0]
+
+  - type: fragment
+    images: [a, b, c, d]
+    into: canvas
+    params:
+      cut_mode: shatter
+      pieces: [20, 45]
+      mix_ratio: [0.5, 0.9]
+      gap: [8, 25]
+
+  - type: collage
+    images: [canvas, a]
+    into: canvas
+    params:
+      layout: scatter
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [15, 45]
+      offset_g: [-12, 12]
+      offset_b: [-35, -10]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 6]
+      iterations: [10, 22]
