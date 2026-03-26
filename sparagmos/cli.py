@@ -220,7 +220,11 @@ def main(argv: list[str] | None = None) -> None:
 
         ts = selected.get("timestamp", 0)
         source_date = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d") if ts else "unknown"
-        source_metadata = {"user": selected["user"], "date": source_date}
+        source_metadata = {
+            "user": selected["user"],
+            "date": source_date,
+            "permalink": selected.get("permalink", ""),
+        }
 
     # Vision analysis (if recipe needs it)
     vision_data = None

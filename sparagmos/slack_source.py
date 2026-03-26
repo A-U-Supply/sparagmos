@@ -64,6 +64,7 @@ def fetch_image_files(client: WebClient, channel_id: str) -> list[dict[str, Any]
                         "id": file_info["id"],
                         "mimetype": file_info["mimetype"],
                         "url": file_info.get("url_private_download", ""),
+                        "permalink": file_info.get("permalink", ""),
                         "name": file_info.get("name", ""),
                         "user": msg.get("user", "unknown"),
                         "timestamp": file_info.get("timestamp", 0),

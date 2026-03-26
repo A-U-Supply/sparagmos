@@ -31,12 +31,17 @@ def format_provenance(
     chain = " → ".join(step["effect"] for step in result.steps)
     user = source.get("user", "unknown")
     date = source.get("date", "unknown")
+    permalink = source.get("permalink", "")
 
-    return (
-        f"~ {result.recipe_name}\n"
-        f"{chain}\n"
-        f"source: image by <@{user}> in #{channel_name} ({date})"
-    )
+    lines = [
+        f"~ {result.recipe_name}",
+        chain,
+        f"source: image by <@{user}> in #{channel_name} ({date})",
+    ]
+    if permalink:
+        lines.append(f"original: <{permalink}|view>")
+
+    return "\n".join(lines)
 
 
 def post_result(
