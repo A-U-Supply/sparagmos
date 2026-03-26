@@ -17,7 +17,7 @@ steps:
     image: a
     params:
       method: atkinson
-      palette: bw
+      palette: thermal
 
   - type: spectral
     image: b
@@ -29,7 +29,7 @@ steps:
     image: c
     params:
       method: bayer
-      palette: bw
+      palette: thermal
 
   - type: channel_shift
     image: d

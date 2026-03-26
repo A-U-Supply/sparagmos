@@ -63,7 +63,7 @@ steps:
   - type: spectral
     image: stage1
     params:
-      operation: highpass
+      operation: bandpass
       amount: [0.4, 0.7]
 
   - type: mask_composite

@@ -35,7 +35,7 @@ steps:
     image: d
     params:
       method: bayer
-      palette: bw
+      palette: thermal
 
   - type: mask_composite
     images: [b, a]

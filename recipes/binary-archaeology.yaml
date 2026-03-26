@@ -17,25 +17,25 @@ steps:
     image: a
     params:
       method: atkinson
-      palette: bw
+      palette: thermal
 
   - type: dither
     image: b
     params:
       method: floyd_steinberg
-      palette: bw
+      palette: thermal
 
   - type: dither
     image: c
     params:
       method: bayer
-      palette: bw
+      palette: thermal
 
   - type: dither
     image: d
     params:
       method: ordered
-      palette: bw
+      palette: thermal
 
   - type: mask_composite
     images: [b, a]

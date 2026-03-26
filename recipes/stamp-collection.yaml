@@ -35,7 +35,7 @@ steps:
     image: e
     params:
       method: atkinson
-      palette: bw
+      palette: thermal
 
   - type: mask_composite
     images: [b, ab_frag]

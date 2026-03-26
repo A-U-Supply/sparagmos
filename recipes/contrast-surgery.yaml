@@ -76,7 +76,7 @@ steps:
   - type: spectral
     image: canvas
     params:
-      operation: highpass
+      operation: bandpass
       amount: [0.4, 0.7]
 
   - type: byte_corrupt

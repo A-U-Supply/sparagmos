@@ -15,7 +15,7 @@ steps:
     image: a
     params:
       method: atkinson
-      palette: bw
+      palette: thermal
 
   - type: channel_shift
     image: b
