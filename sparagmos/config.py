@@ -47,7 +47,13 @@ def load_recipe(path: Path) -> Recipe:
     with open(path) as f:
         data = yaml.safe_load(f)
 
-    # Accept "steps" as an alias for "effects"
+    # Accept "steps" as an alias for "effects"; error if both present
+    has_steps = "steps" in data
+    has_effects = "effects" in data
+    if has_steps and has_effects:
+        raise ValueError(
+            f"Recipe {path.name} has both 'steps:' and 'effects:' keys. Use one or the other."
+        )
     raw_steps = data.get("steps", data.get("effects", []))
 
     effects = []
@@ -126,12 +132,16 @@ def _valid_image_names(inputs: int) -> set[str]:
     inputs=2 → {"a", "b", "canvas"}
     inputs=3 → {"a", "b", "c", "canvas"}
     etc.
+
+    For single-input recipes (inputs=1), only "canvas" is valid because
+    the pipeline loads the single image as "canvas", not "a".
     """
     names: set[str] = {"canvas"}
-    letters = "abcdefghijklmnopqrstuvwxyz"
-    for idx in range(inputs):
-        if idx < len(letters):
-            names.add(letters[idx])
+    if inputs > 1:
+        letters = "abcdefghijklmnopqrstuvwxyz"
+        for idx in range(inputs):
+            if idx < len(letters):
+                names.add(letters[idx])
     return names
 
 
