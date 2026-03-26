@@ -69,6 +69,69 @@
       ],
       "processed_date": "2026-03-26",
       "posted_ts": ""
+    },
+    {
+      "source_file_id": "F0A26PP324U",
+      "source_date": "2025-12-07",
+      "source_user": "U03TFJBRK2Q",
+      "recipe": "vhs-meltdown",
+      "effects": [
+        "sonify",
+        "crt_vhs",
+        "channel_shift",
+        "byte_corrupt",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-03-26",
+      "posted_ts": ""
+    },
+    {
+      "source_file_id": "F08UM63KFUH",
+      "source_date": "2025-05-28",
+      "source_user": "U03TFJBRK2Q",
+      "recipe": "cga-nightmare",
+      "effects": [
+        "cellular",
+        "dither",
+        "pixel_sort",
+        "datamosh",
+        "crt_vhs",
+        "byte_corrupt"
+      ],
+      "processed_date": "2026-03-26",
+      "posted_ts": ""
+    },
+    {
+      "source_file_id": "F04HJMH2A06",
+      "source_date": "2023-01-06",
+      "source_user": "U03TD4SUDKL",
+      "recipe": "spectral-autopsy",
+      "effects": [
+        "spectral",
+        "sonify",
+        "pix2pix",
+        "datamosh",
+        "channel_shift",
+        "crt_vhs"
+      ],
+      "processed_date": "2026-03-26",
+      "posted_ts": ""
+    },
+    {
+      "source_file_id": "F07STNE1MKP",
+      "source_date": "2024-10-22",
+      "source_user": "U03TD7FSUAE",
+      "recipe": "thermal-ghost",
+      "effects": [
+        "pca_decompose",
+        "fractal_blend",
+        "spectral",
+        "dither",
+        "channel_shift",
+        "crt_vhs"
+      ],
+      "processed_date": "2026-03-26",
+      "posted_ts": ""
     }
   ]
 }
