@@ -28,7 +28,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--input",
-        help="Local image file to process (skips Slack scraping)",
+        nargs="+",
+        help="Local image file(s) to process (skips Slack scraping)",
     )
     parser.add_argument(
         "--output",
@@ -167,18 +168,43 @@ def main(argv: list[str] | None = None) -> None:
             logger.error("Unknown recipe: %s. Available: %s", args.recipe, sorted(recipes.keys()))
             sys.exit(1)
         recipe_slug = args.recipe
+        recipe = recipes[recipe_slug]
+        # Validate input count when --input is provided
+        if args.input is not None and len(args.input) != recipe.inputs:
+            logger.error(
+                "Recipe '%s' expects %d input(s) but %d file(s) provided",
+                recipe_slug,
+                recipe.inputs,
+                len(args.input),
+            )
+            sys.exit(1)
     else:
         rng = random.Random(seed)
-        recipe_slug = rng.choice(list(recipes.keys()))
+        # Filter recipes by input count when --input files are given
+        if args.input is not None:
+            n_inputs = len(args.input)
+            matching = {k: v for k, v in recipes.items() if v.inputs == n_inputs}
+            if not matching:
+                logger.error(
+                    "No recipes accept %d input(s). Available input counts: %s",
+                    n_inputs,
+                    sorted({v.inputs for v in recipes.values()}),
+                )
+                sys.exit(1)
+            recipe_slug = rng.choice(list(matching.keys()))
+        else:
+            recipe_slug = rng.choice(list(recipes.keys()))
+        recipe = recipes[recipe_slug]
 
-    recipe = recipes[recipe_slug]
     logger.info("Using recipe: %s (%s)", recipe_slug, recipe.name)
 
-    # Get source image
-    if args.input:
-        # Local mode
-        source_image = Image.open(args.input).convert("RGB")
-        source_metadata = {"user": "local", "date": "local"}
+    # Get source image(s)
+    # source_images is always a list; source_metadata_list is a list of dicts
+    if args.input is not None:
+        # Local mode — args.input is a list of paths (nargs="+")
+        source_images = [Image.open(p).convert("RGB") for p in args.input]
+        source_metadata_list = [{"user": "local", "date": "local"} for _ in args.input]
+        selected_list = [{"id": Path(p).name} for p in args.input]
     else:
         # Slack mode
         from slack_sdk import WebClient
@@ -186,6 +212,7 @@ def main(argv: list[str] | None = None) -> None:
             find_channel_id,
             fetch_image_files,
             pick_random_image,
+            pick_random_images,
             download_image,
         )
         from sparagmos.state import State
@@ -209,24 +236,37 @@ def main(argv: list[str] | None = None) -> None:
             logger.error("No images found in #image-gen")
             sys.exit(1)
 
-        selected = pick_random_image(files, recipe_slug, state.processed_pairs(), seed)
-        if not selected:
-            logger.warning("All images processed with recipe %s", recipe_slug)
-            sys.exit(0)
+        if recipe.inputs == 1:
+            selected = pick_random_image(files, recipe_slug, state.processed_pairs(), seed)
+            if not selected:
+                logger.warning("All images processed with recipe %s", recipe_slug)
+                sys.exit(0)
+            selected_list = [selected]
+        else:
+            selected_list = pick_random_images(
+                files, recipe_slug, recipe.inputs, state.processed_combos(), seed
+            )
+            if not selected_list:
+                logger.warning(
+                    "No unused %d-image combinations for recipe %s", recipe.inputs, recipe_slug
+                )
+                sys.exit(0)
 
-        logger.info("Selected image: %s", selected["id"])
-        image_bytes = download_image(selected["url"], token)
-        source_image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        source_images = []
+        source_metadata_list = []
+        for sel in selected_list:
+            logger.info("Selected image: %s", sel["id"])
+            image_bytes = download_image(sel["url"], token)
+            source_images.append(Image.open(io.BytesIO(image_bytes)).convert("RGB"))
+            ts = sel.get("timestamp", 0)
+            source_date = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d") if ts else "unknown"
+            source_metadata_list.append({
+                "user": sel["user"],
+                "date": source_date,
+                "permalink": sel.get("permalink", ""),
+            })
 
-        ts = selected.get("timestamp", 0)
-        source_date = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d") if ts else "unknown"
-        source_metadata = {
-            "user": selected["user"],
-            "date": source_date,
-            "permalink": selected.get("permalink", ""),
-        }
-
-    # Vision analysis (if recipe needs it)
+    # Vision analysis (if recipe needs it) — analyze the first source image
     vision_data = None
     if recipe.vision:
         hf_token = os.environ.get("HF_TOKEN")
@@ -234,14 +274,23 @@ def main(argv: list[str] | None = None) -> None:
             logger.warning("HF_TOKEN not set, skipping vision analysis")
         else:
             from sparagmos.vision import analyze_image
-            vision_data = analyze_image(source_image, token=hf_token)
+            vision_data = analyze_image(source_images[0], token=hf_token)
 
     # Run pipeline
-    from sparagmos.pipeline import run_pipeline
+    from sparagmos.pipeline import run_pipeline, IMAGE_NAMES
+
+    # Build pipeline call arguments based on input count
+    if recipe.inputs == 1:
+        pipeline_kwargs = {"image": source_images[0]}
+    else:
+        pipeline_kwargs = {"images": dict(zip(IMAGE_NAMES, source_images))}
+
+    # Use first source metadata for single-image compat; multi posts use all
+    source_metadata = source_metadata_list[0]
 
     with tempfile.TemporaryDirectory(prefix="sparagmos_") as tmp:
         result = run_pipeline(
-            image=source_image,
+            **pipeline_kwargs,
             recipe=recipe,
             seed=seed,
             temp_dir=Path(tmp),
@@ -260,23 +309,31 @@ def main(argv: list[str] | None = None) -> None:
                 logger.info("  %s: %s", step["effect"], step["resolved_params"])
         else:
             # Post to Slack
-            from sparagmos.slack_post import post_result
+            from sparagmos.slack_post import format_provenance_multi
 
             junkyard_id = find_channel_id(client, "img-junkyard")
             if not junkyard_id:
                 logger.error("Channel #img-junkyard not found")
                 sys.exit(1)
 
-            posted_ts = post_result(
-                client, junkyard_id, result, source_metadata, "image-gen", Path(tmp)
+            comment = format_provenance_multi(result, source_metadata_list, "image-gen")
+            image_path = Path(tmp) / "sparagmos_output.png"
+            result.image.save(image_path, "PNG")
+            logger.info("Posting to channel %s with comment:\n%s", junkyard_id, comment)
+            response = client.files_upload_v2(
+                channel=junkyard_id,
+                file=str(image_path),
+                filename="sparagmos.png",
+                initial_comment=comment,
             )
+            posted_ts = response.get("ts", "")
 
             # Update state
             today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-            state.add(
-                source_file_id=selected["id"],
-                source_date=source_metadata["date"],
-                source_user=source_metadata["user"],
+            state.add_multi(
+                source_file_ids=[s["id"] for s in selected_list],
+                source_dates=[m["date"] for m in source_metadata_list],
+                source_users=[m["user"] for m in source_metadata_list],
                 recipe=recipe_slug,
                 effects=[s["effect"] for s in result.steps],
                 processed_date=today,

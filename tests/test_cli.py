@@ -4,6 +4,7 @@ import sys
 from unittest.mock import patch, MagicMock
 
 import pytest
+from PIL import Image
 
 from sparagmos.cli import build_parser
 
@@ -29,7 +30,7 @@ def test_parser_recipe():
 def test_parser_local_mode():
     parser = build_parser()
     args = parser.parse_args(["--input", "photo.jpg", "--output", "out.png"])
-    assert args.input == "photo.jpg"
+    assert args.input == ["photo.jpg"]
     assert args.output == "out.png"
 
 
@@ -50,3 +51,23 @@ def test_parser_list_flags():
 
     args = parser.parse_args(["--validate"])
     assert args.validate is True
+
+
+def test_input_accepts_multiple_files(tmp_path):
+    """--input flag accepts multiple files via nargs='+'."""
+    for name in ["a.png", "b.png", "c.png"]:
+        Image.new("RGB", (64, 64)).save(tmp_path / name)
+    parser = build_parser()
+    args = parser.parse_args([
+        "--input", str(tmp_path / "a.png"), str(tmp_path / "b.png"), str(tmp_path / "c.png"),
+        "--output", str(tmp_path / "out.png"),
+    ])
+    assert len(args.input) == 3
+
+
+def test_input_single_file_still_works(tmp_path):
+    """--input with one file returns a list of one."""
+    Image.new("RGB", (64, 64)).save(tmp_path / "a.png")
+    parser = build_parser()
+    args = parser.parse_args(["--input", str(tmp_path / "a.png"), "--output", str(tmp_path / "out.png")])
+    assert len(args.input) == 1
