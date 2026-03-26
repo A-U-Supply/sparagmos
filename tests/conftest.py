@@ -69,3 +69,28 @@ def test_image_file(test_image_rgb, tmp_dir):
     path = tmp_dir / "test_input.png"
     test_image_rgb.save(path)
     return path
+
+
+@pytest.fixture
+def test_images_multi():
+    """Create 5 distinct test images for multi-input testing."""
+    colors = [
+        (200, 50, 50),   # reddish
+        (50, 200, 50),   # greenish
+        (50, 50, 200),   # bluish
+        (200, 200, 50),  # yellowish
+        (200, 50, 200),  # magentaish
+    ]
+    imgs = []
+    for i, color in enumerate(colors):
+        img = Image.new("RGB", (64, 64))
+        pixels = img.load()
+        for x in range(64):
+            for y in range(64):
+                pixels[x, y] = (
+                    (color[0] + x * 2) % 256,
+                    (color[1] + y * 2) % 256,
+                    (color[2] + (x + y)) % 256,
+                )
+        imgs.append(img)
+    return imgs
