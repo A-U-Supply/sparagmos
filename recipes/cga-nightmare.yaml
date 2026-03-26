@@ -1,0 +1,24 @@
+name: CGA Nightmare
+description: >
+  Trapped in a 1981 graphics card. CGA's brutal 4-color palette
+  crushes all subtlety, pixel sorting melts the remains into streaks,
+  and CRT scan lines complete the period-accurate horror.
+
+effects:
+  - type: dither
+    params:
+      palette: cga
+
+  - type: pixel_sort
+    params:
+      mode: brightness
+      direction: horizontal
+      threshold_low: [0.1, 0.3]
+      threshold_high: [0.7, 0.9]
+
+  - type: crt_vhs
+    params:
+      scan_line_density: [2, 3]
+      jitter_amount: [1, 3]
+      color_bleed: 0.5
+      phosphor_glow: 0.08

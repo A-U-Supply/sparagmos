@@ -1,0 +1,23 @@
+name: Eigenface Requiem
+description: >
+  The image is reduced to its dominant eigenvectors — a ghostly
+  PCA reconstruction of only the most significant components.
+  Style transfer recursively enhances the abstraction, and JPEG
+  compression adds the final layer of entropic decay.
+
+effects:
+  - type: pca_decompose
+    params:
+      n_components: [2, 5]
+      mode: top
+
+  - type: style_transfer
+    params:
+      style_weight: 1000000
+      content_weight: 1
+      iterations: [20, 40]
+
+  - type: jpeg_destroy
+    params:
+      quality: [2, 6]
+      iterations: [5, 15]

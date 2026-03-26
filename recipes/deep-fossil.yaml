@@ -1,0 +1,21 @@
+name: Deep Fossil
+description: >
+  Neural hallucination preserved in digital amber. DeepDream injects
+  phantom forms, thermal dithering reduces the palette to heat-map
+  colors, and JPEG compression fossilizes the remains.
+
+effects:
+  - type: deepdream
+    params:
+      iterations: [5, 12]
+      octave_scale: 1.3
+      learning_rate: 0.01
+
+  - type: dither
+    params:
+      palette: thermal
+
+  - type: jpeg_destroy
+    params:
+      quality: [3, 8]
+      iterations: [5, 15]

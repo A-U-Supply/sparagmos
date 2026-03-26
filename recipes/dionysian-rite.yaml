@@ -1,0 +1,30 @@
+name: Dionysian Rite
+description: >
+  Ritual dismemberment through neural hallucination and analog decay.
+  The image is torn apart and rebuilt by forces that don't understand it.
+  DeepDream injects phantom forms, channel shifting fractures color,
+  seam carving melts structure, and JPEG compression buries the remains.
+
+vision: true
+
+effects:
+  - type: deepdream
+    params:
+      iterations: [5, 15]
+      octave_scale: 1.4
+      jitter: 32
+
+  - type: channel_shift
+    params:
+      offset_r: [20, 80]
+      offset_b: [-60, -20]
+
+  - type: seam_carve
+    params:
+      scale_x: [0.5, 0.7]
+      protect_regions: "vision"
+
+  - type: jpeg_destroy
+    params:
+      quality: [1, 5]
+      iterations: [5, 20]

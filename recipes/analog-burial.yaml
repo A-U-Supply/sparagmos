@@ -1,0 +1,23 @@
+name: Analog Burial
+description: >
+  The image is vectorized, losing all photographic detail, then
+  subjected to analog CRT decay and raw byte corruption. A digital
+  artifact buried under layers of format conversion and noise.
+
+effects:
+  - type: format_roundtrip
+    params:
+      chain: ["jpeg", "bmp", "jpeg"]
+      jpeg_quality: [3, 10]
+
+  - type: crt_vhs
+    params:
+      scan_line_density: [3, 5]
+      jitter_amount: [2, 6]
+      color_bleed: [1.0, 2.5]
+      phosphor_glow: 0.1
+
+  - type: byte_corrupt
+    params:
+      num_flips: [50, 200]
+      mode: flip

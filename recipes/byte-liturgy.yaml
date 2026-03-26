@@ -1,0 +1,22 @@
+name: Byte Liturgy
+description: >
+  Sacred corruption of the binary word. Raw bytes are flipped like
+  prayer beads, channels shift apart in chromatic genuflection,
+  and JPEG compression delivers the final sacrament of loss.
+
+effects:
+  - type: byte_corrupt
+    params:
+      num_flips: [100, 500]
+      mode: flip
+
+  - type: channel_shift
+    params:
+      offset_r: [15, 50]
+      offset_g: [5, 20]
+      offset_b: [-40, -15]
+
+  - type: jpeg_destroy
+    params:
+      quality: [1, 4]
+      iterations: [8, 25]

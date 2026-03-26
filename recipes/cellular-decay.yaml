@@ -1,0 +1,24 @@
+name: Cellular Decay
+description: >
+  Life finds a way — through the image. Pixels are thresholded into
+  a cellular automaton that evolves for dozens of generations,
+  fractal mathematics blend in at image-derived coordinates,
+  and dithering quantizes the organic result.
+
+effects:
+  - type: cellular
+    params:
+      rule: game_of_life
+      generations: [30, 80]
+      threshold: [100, 160]
+      colorize: true
+
+  - type: fractal_blend
+    params:
+      opacity: [0.3, 0.6]
+      iterations: [80, 200]
+      colormap: hot
+
+  - type: dither
+    params:
+      palette: gameboy

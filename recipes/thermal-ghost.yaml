@@ -1,0 +1,20 @@
+name: Thermal Ghost
+description: >
+  The image's least significant components are extracted and rendered
+  through a thermal imaging palette. What remains is the ghost of
+  the image — structure without substance, noise without signal.
+
+effects:
+  - type: pca_decompose
+    params:
+      n_components: [3, 8]
+      mode: bottom
+
+  - type: dither
+    params:
+      palette: thermal
+
+  - type: channel_shift
+    params:
+      offset_r: [5, 25]
+      offset_b: [-20, -5]
