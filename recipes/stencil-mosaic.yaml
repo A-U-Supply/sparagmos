@@ -1,0 +1,92 @@
+name: Stencil Mosaic
+description: >
+  Image A is dithered to thermal — reduced to pure heat-map extremes — then used
+  as a hard threshold stencil to cut its own bright zones into B, burning A's
+  silhouette through B's surface. The stenciled result is Voronoi-fragmented with
+  C into organic cells, each cell holding a different piece of the cut-through.
+  Image D's edge structure slices new boundaries across the Voronoi, a second
+  stenciling pass that cuts with geometry rather than luminance. Finally the
+  surviving fragments are scattered into a loose constellation with E. Spectral
+  bandpass suppresses the mid-range, leaving only the hard edges and distant
+  frequencies visible. Jpeg destroy seals it shut.
+
+inputs: 5
+
+steps:
+  - type: dither
+    image: a
+    params:
+      method: atkinson
+      palette: thermal
+
+  - type: spectral
+    image: b
+    params:
+      operation: bandpass
+      amount: [0.3, 0.6]
+
+  - type: channel_shift
+    image: c
+    params:
+      offset_r: [20, 55]
+      offset_b: [-45, -12]
+
+  - type: pca_decompose
+    image: d
+    params:
+      n_components: [3, 8]
+      mode: top
+
+  - type: pixel_sort
+    image: e
+    params:
+      mode: saturation
+      threshold: [35, 85]
+      direction: horizontal
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: threshold
+      threshold: [160, 210]
+      feather: [0, 2]
+      invert: false
+
+  - type: fragment
+    images: [canvas, c]
+    into: canvas
+    params:
+      cut_mode: voronoi
+      pieces: [18, 40]
+      mix_ratio: [0.55, 0.85]
+      gap: [2, 7]
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [50, 100]
+      feather: [1, 4]
+      invert: false
+
+  - type: collage
+    images: [canvas, e]
+    into: canvas
+    params:
+      layout: scatter
+      rotation: [15, 60]
+      scale_variance: [0.1, 0.35]
+
+  - type: spectral
+    image: canvas
+    params:
+      operation: bandpass
+      amount: [0.4, 0.75]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [10, 28]

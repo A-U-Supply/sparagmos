@@ -1,0 +1,104 @@
+name: Cut Paste Repeat
+description: >
+  The name is the recipe: mask, paste, cut, paste, mask again. Five images,
+  three rounds of mask_composite interleaved with fragment and collage. First,
+  A cuts into B — A's luminance punches B's texture into A's form. The masked
+  composite is grid-fragmented with C, pasting the stencil into rectangular
+  tiles. The tiled stencil is edge-masked with D, cutting new geometry across
+  the tiles. Those cut tiles are scatter-collaged with E, pasting the
+  geometry-cut fragments into a loose arrangement. A final luminance mask
+  using A again closes the cycle — the original stencil reasserted over
+  everything that has been cut and pasted through it. Channel shift fractures
+  the color registers. Byte corrupt scatters bitflips across the closed wound.
+
+inputs: 5
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [1, 3]
+      mode: top
+
+  - type: crt_vhs
+    image: b
+    params:
+      jitter_amount: [7, 17]
+      color_bleed: [3.0, 6.5]
+      scan_line_density: [2, 3]
+
+  - type: dither
+    image: c
+    params:
+      method: floyd_steinberg
+      palette: thermal
+
+  - type: pixel_sort
+    image: d
+    params:
+      mode: brightness
+      threshold: [45, 100]
+      direction: vertical
+
+  - type: channel_shift
+    image: e
+    params:
+      offset_r: [15, 50]
+      offset_b: [-40, -12]
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [55, 75]
+      feather: [0, 2]
+      invert: false
+
+  - type: fragment
+    images: [canvas, c]
+    into: canvas
+    params:
+      cut_mode: grid
+      pieces: [14, 30]
+      mix_ratio: [0.5, 0.8]
+      gap: [2, 7]
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [40, 85]
+      feather: [1, 3]
+      invert: false
+
+  - type: collage
+    images: [canvas, e]
+    into: canvas
+    params:
+      layout: scatter
+      rotation: [10, 45]
+      scale_variance: [0.1, 0.3]
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [160, 205]
+      feather: [0, 2]
+      invert: true
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [25, 70]
+      offset_g: [-15, 15]
+      offset_b: [-55, -18]
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [60, 140]
+      mode: flip

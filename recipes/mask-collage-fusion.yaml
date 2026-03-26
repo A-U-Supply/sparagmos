@@ -1,0 +1,90 @@
+name: Mask Collage Fusion
+description: >
+  Image A is luminance-masked onto B — A's bright zones punch through to reveal
+  B beneath, a hard stencil of one world over another. That composite is
+  mosaiced with C and D into a tiled grid, tiling the cut surface into repeating
+  cells. Image E's edge structure then cuts new seams through the mosaic, carving
+  depth lines across the whole. Pixel sort pours the seams into vertical rivers.
+  A second edge mask tears open the rivers again, and byte corrupt finishes the
+  wound — the mask, the mosaic, and the damage all layered into one surface.
+
+inputs: 5
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [1, 3]
+      mode: top
+
+  - type: pixel_sort
+    image: b
+    params:
+      mode: brightness
+      threshold: [50, 100]
+      direction: vertical
+
+  - type: crt_vhs
+    image: c
+    params:
+      jitter_amount: [6, 14]
+      color_bleed: [2.5, 5.5]
+      scan_line_density: [2, 3]
+
+  - type: dither
+    image: d
+    params:
+      method: bayer
+      palette: ega
+
+  - type: channel_shift
+    image: e
+    params:
+      offset_r: [15, 45]
+      offset_b: [-40, -10]
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [55, 75]
+      feather: [0, 2]
+      invert: false
+
+  - type: collage
+    images: [canvas, c, d]
+    into: canvas
+    params:
+      layout: mosaic
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [45, 90]
+      feather: [2, 6]
+      invert: false
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [40, 90]
+      direction: vertical
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [60, 120]
+      feather: [1, 4]
+      invert: true
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [60, 140]
+      mode: flip

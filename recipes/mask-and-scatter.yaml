@@ -1,0 +1,93 @@
+name: Mask and Scatter
+description: >
+  Image A is luminance-masked onto B, cutting A's bright silhouette into B's
+  flesh. The masked composite is then shattered — broken into irregular shards
+  that preserve the cut-through pattern in each fragment. Those shards are
+  scattered with C and D into a loose arrangement, the stencil's geometry
+  redistributed across the frame. Image E's luminance then cuts through the
+  scatter, a third masking pass that punches holes in the redistributed
+  fragments. CRT distortion warps the surviving shapes, and spectral bandpass
+  attenuates the mid-range to let the edges ring clean. Jpeg destroy
+  compresses the scatter into a single artifact-laden surface.
+
+inputs: 5
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [1, 2]
+      mode: top
+
+  - type: channel_shift
+    image: b
+    params:
+      offset_r: [15, 50]
+      offset_b: [-40, -10]
+
+  - type: dither
+    image: c
+    params:
+      method: bayer
+      palette: gameboy
+
+  - type: pixel_sort
+    image: d
+    params:
+      mode: saturation
+      threshold: [35, 80]
+      direction: horizontal
+
+  - type: crt_vhs
+    image: e
+    params:
+      jitter_amount: [5, 14]
+      color_bleed: [2.5, 6.0]
+      scan_line_density: [2, 3]
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [55, 75]
+      feather: [0, 2]
+      invert: false
+
+  - type: fragment
+    images: [canvas, a]
+    into: canvas
+    params:
+      cut_mode: shatter
+      pieces: [20, 45]
+      mix_ratio: [0.4, 0.7]
+      gap: [4, 12]
+
+  - type: collage
+    images: [canvas, c, d]
+    into: canvas
+    params:
+      layout: scatter
+      rotation: [10, 50]
+      scale_variance: [0.1, 0.35]
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [160, 210]
+      feather: [0, 3]
+      invert: false
+
+  - type: spectral
+    image: canvas
+    params:
+      operation: bandpass
+      amount: [0.35, 0.65]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [12, 30]

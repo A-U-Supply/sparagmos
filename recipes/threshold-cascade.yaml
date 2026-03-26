@@ -1,0 +1,94 @@
+name: Threshold Cascade
+description: >
+  Four mask_composite operations at four ascending threshold bands — 40, 80,
+  150, and 200 — each cutting a different pair of images at a different tonal
+  level. The first cut is in the deep shadows. The second in the lower
+  midtones. The third in the upper midtones. The fourth cuts only the near-
+  highlights. Each successive threshold reveals a narrower and brighter band
+  of one image through another. The four masks accumulate on a single canvas,
+  each new cut layering over the previous. Pixel sort streams the four tonal
+  bands vertically. Sonify adds echo resonance to the layered structure.
+  CRT distortion bends all four bands together into a single damaged surface.
+
+inputs: 4
+
+steps:
+  - type: channel_shift
+    image: a
+    params:
+      offset_r: [15, 45]
+      offset_b: [-35, -10]
+
+  - type: dither
+    image: b
+    params:
+      method: bayer
+      palette: cga
+
+  - type: pixel_sort
+    image: c
+    params:
+      mode: saturation
+      threshold: [40, 90]
+      direction: vertical
+
+  - type: spectral
+    image: d
+    params:
+      operation: bandpass
+      amount: [0.35, 0.65]
+
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: threshold
+      threshold: [35, 55]
+      feather: [0, 2]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [70, 100]
+      feather: [0, 2]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [140, 165]
+      feather: [0, 3]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: threshold
+      threshold: [185, 215]
+      feather: [0, 2]
+      invert: true
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [50, 110]
+      direction: vertical
+
+  - type: sonify
+    image: canvas
+    params:
+      effect: echo
+
+  - type: crt_vhs
+    image: canvas
+    params:
+      jitter_amount: [8, 20]
+      color_bleed: [3.5, 7.5]
+      scan_line_density: [2, 4]

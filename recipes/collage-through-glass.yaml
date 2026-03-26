@@ -1,0 +1,80 @@
+name: Collage Through Glass
+description: >
+  Three images are mosaiced into a composite grid — an even tiling of three
+  borrowed worlds. Image D, PCA-reduced to a single structural component,
+  provides a hard luminance mask: wherever D is bright, the mosaic is
+  revealed; wherever D is dark, it is cut to black. The effect is as if the
+  mosaic is being viewed through D's silhouette, a window of one image's
+  form. Seam carve warps the windowed mosaic's geometry. Channel shift
+  fractures the color planes apart, creating a prismatic displacement across
+  the window's edges. Spectral bandpass suppresses the mid-range frequencies.
+  Jpeg destroy compresses the glass-effect composite into a single slab of
+  artifact, the window sealed inside the damage.
+
+inputs: 4
+
+steps:
+  - type: pixel_sort
+    image: a
+    params:
+      mode: brightness
+      threshold: [40, 90]
+      direction: horizontal
+
+  - type: crt_vhs
+    image: b
+    params:
+      jitter_amount: [6, 16]
+      color_bleed: [2.5, 6.0]
+      scan_line_density: [2, 3]
+
+  - type: dither
+    image: c
+    params:
+      method: floyd_steinberg
+      palette: gameboy
+
+  - type: pca_decompose
+    image: d
+    params:
+      n_components: [1, 2]
+      mode: top
+
+  - type: collage
+    images: [a, b, c]
+    into: canvas
+    params:
+      layout: mosaic
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [55, 75]
+      feather: [0, 2]
+      invert: false
+
+  - type: seam_carve
+    image: canvas
+    params:
+      scale_x: [0.55, 0.75]
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [30, 80]
+      offset_g: [-18, 18]
+      offset_b: [-65, -20]
+
+  - type: spectral
+    image: canvas
+    params:
+      operation: bandpass
+      amount: [0.4, 0.7]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [14, 32]

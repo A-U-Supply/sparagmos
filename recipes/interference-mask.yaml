@@ -1,0 +1,89 @@
+name: Interference Mask
+description: >
+  Images A and B are blended at difference mode — each pixel becomes the
+  absolute distance between the two images, a map of where they diverge.
+  That divergence map is then used as a luminance mask to cut C: where A and B
+  agree (dark difference), C is revealed; where they clash (bright difference),
+  C is cut away. The interference-masked composite is strip-collaged with D,
+  alternating the cut surface with new material. Edge masking carves the
+  strip boundaries a second time. Pixel sort pours the edges into vertical
+  streams. CRT distortion bends the streams. Byte corrupt finishes the
+  surface with bitflip noise — the interference pattern made physical.
+
+inputs: 4
+
+steps:
+  - type: channel_shift
+    image: a
+    params:
+      offset_r: [10, 35]
+      offset_b: [-30, -8]
+
+  - type: spectral
+    image: b
+    params:
+      operation: bandpass
+      amount: [0.3, 0.65]
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [4, 10]
+      mode: top
+
+  - type: dither
+    image: d
+    params:
+      method: floyd_steinberg
+      palette: ega
+
+  - type: blend
+    images: [a, b]
+    into: diff
+    params:
+      mode: difference
+      strength: [0.7, 1.0]
+
+  - type: mask_composite
+    images: [c, diff]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [60, 110]
+      feather: [2, 6]
+      invert: false
+
+  - type: collage
+    images: [canvas, d]
+    into: canvas
+    params:
+      layout: strips
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [45, 95]
+      feather: [1, 4]
+      invert: false
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [50, 110]
+      direction: vertical
+
+  - type: crt_vhs
+    image: canvas
+    params:
+      jitter_amount: [8, 20]
+      color_bleed: [3.5, 7.0]
+      scan_line_density: [2, 4]
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [70, 160]
+      mode: flip

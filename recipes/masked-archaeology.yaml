@@ -1,0 +1,87 @@
+name: Masked Archaeology
+description: >
+  Each input is PCA-decomposed to a different depth — A stripped to 1 principal
+  component (near-pure structure), B to 3, C to 6, D to 10, E left raw. The
+  decomposed A becomes a hard luminance mask that cuts B's ghost-structure into
+  view: the most skeletal image used as a stencil over the slightly richer one.
+  That masked pair is mosaiced with C and D, tiling the structural stencil
+  across three different decomposition depths. Image E's edge skeleton then cuts
+  new seams through the mosaic. Dither reduces the excavated surface to thermal
+  heat-map grain. Byte corrupt scatters bitflips across the strata, and channel
+  shift fractures the registers — the dig made visible in color aberration.
+
+inputs: 5
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [1, 1]
+      mode: top
+
+  - type: pca_decompose
+    image: b
+    params:
+      n_components: [3, 3]
+      mode: top
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [5, 8]
+      mode: top
+
+  - type: pca_decompose
+    image: d
+    params:
+      n_components: [8, 14]
+      mode: top
+
+  - type: channel_shift
+    image: e
+    params:
+      offset_r: [15, 50]
+      offset_b: [-40, -12]
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [55, 75]
+      feather: [0, 2]
+      invert: false
+
+  - type: collage
+    images: [canvas, c, d]
+    into: canvas
+    params:
+      layout: mosaic
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [45, 95]
+      feather: [2, 5]
+      invert: false
+
+  - type: dither
+    image: canvas
+    params:
+      method: atkinson
+      palette: thermal
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [55, 130]
+      mode: flip
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [20, 60]
+      offset_g: [-12, 12]
+      offset_b: [-50, -15]

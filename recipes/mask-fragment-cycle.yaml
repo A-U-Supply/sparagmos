@@ -1,0 +1,101 @@
+name: Mask Fragment Cycle
+description: >
+  A full cycle: mask, then cut, then mask again, then paste. Image A's
+  luminance cuts into B, creating a stenciled composite where A's bright zones
+  reveal B's surface. That masked result is Voronoi-fragmented with C — the
+  stencil's geometry broken into organic cells, each cell preserving a slice
+  of the cut-through. Image D's threshold then cuts through the fragmented
+  cells, a second masking pass on top of the first. The doubly-masked fragments
+  are scatter-collaged with E, distributing the cut-cut cells across the frame.
+  Pixel sort pours the scattered fragments into vertical streams. Sonify adds
+  distortion resonance. A final jpeg destroy seals the cycle — mask, cut,
+  mask, paste, destroy.
+
+inputs: 5
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [2, 4]
+      mode: top
+
+  - type: channel_shift
+    image: b
+    params:
+      offset_r: [15, 50]
+      offset_b: [-40, -12]
+
+  - type: crt_vhs
+    image: c
+    params:
+      jitter_amount: [7, 18]
+      color_bleed: [3.0, 7.0]
+      scan_line_density: [2, 3]
+
+  - type: dither
+    image: d
+    params:
+      method: bayer
+      palette: ega
+
+  - type: pixel_sort
+    image: e
+    params:
+      mode: hue
+      threshold: [35, 85]
+      direction: vertical
+
+  - type: mask_composite
+    images: [b, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [55, 75]
+      feather: [0, 2]
+      invert: false
+
+  - type: fragment
+    images: [canvas, c]
+    into: canvas
+    params:
+      cut_mode: voronoi
+      pieces: [20, 42]
+      mix_ratio: [0.5, 0.8]
+      gap: [3, 8]
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: threshold
+      threshold: [160, 200]
+      feather: [0, 2]
+      invert: false
+
+  - type: collage
+    images: [canvas, e]
+    into: canvas
+    params:
+      layout: scatter
+      rotation: [15, 55]
+      scale_variance: [0.1, 0.35]
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [45, 95]
+      direction: vertical
+
+  - type: sonify
+    image: canvas
+    params:
+      effect: distortion
+      intensity: [0.4, 0.7]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [12, 28]
