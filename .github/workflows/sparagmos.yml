@@ -1,0 +1,61 @@
+name: Sparagmos
+
+on:
+  schedule:
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+    inputs:
+      recipe:
+        description: 'Recipe name (leave empty for random)'
+        default: ''
+
+jobs:
+  sparagmos:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick netpbm ffmpeg potrace
+
+      - name: Install primitive
+        run: go install github.com/fogleman/primitive@latest
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run sparagmos
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          if [ -n "${{ inputs.recipe }}" ]; then
+            python -m sparagmos --recipe "${{ inputs.recipe }}"
+          else
+            python -m sparagmos
+          fi
+
+      - name: Commit state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add state.json
+          if git diff --cached --quiet; then
+            echo "No state changes."
+          else
+            git commit -m "chore: update state ($(date -u +%Y-%m-%d)) [skip ci]"
+            git push
+          fi
