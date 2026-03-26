@@ -1,3 +1,17 @@
 {
-  "processed": []
+  "processed": [
+    {
+      "source_file_id": "F09DZ5HJKMZ",
+      "source_date": "2025-09-08",
+      "source_user": "U03TD4SUDKL",
+      "recipe": "cellular-decay",
+      "effects": [
+        "cellular",
+        "fractal_blend",
+        "dither"
+      ],
+      "processed_date": "2026-03-26",
+      "posted_ts": ""
+    }
+  ]
 }
