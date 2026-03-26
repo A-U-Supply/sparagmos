@@ -1,117 +1,120 @@
 # Recipes
 
-Each YAML file here defines a destruction pipeline — an ordered chain of effects with parameters. The bot picks one at random each run. See [../docs/recipes.md](../docs/recipes.md) for the full schema and per-effect parameter reference.
+Each YAML file here defines a destruction pipeline — an ordered chain of effects with parameters.
+The bot picks one at random each run. See [../docs/recipes.md](../docs/recipes.md) for the full
+schema and per-effect parameter reference.
 
-## Included Recipes
+## Quick Reference
 
-### Analog / Retro
+| Recipe | Chain | Vision |
+|--------|-------|:------:|
+| analog-burial | format_roundtrip &rarr; crt_vhs &rarr; byte_corrupt | |
+| byte-liturgy | byte_corrupt &rarr; channel_shift &rarr; jpeg_destroy | |
+| cellular-decay | cellular &rarr; fractal_blend &rarr; dither | |
+| cga-nightmare | dither &rarr; pixel_sort &rarr; crt_vhs | |
+| deep-fossil | deepdream &rarr; dither &rarr; jpeg_destroy | |
+| dionysian-rite | deepdream &rarr; channel_shift &rarr; seam_carve &rarr; jpeg_destroy | yes |
+| eigenface-requiem | pca_decompose &rarr; style_transfer &rarr; jpeg_destroy | |
+| ocr-feedback-loop | imagemagick &rarr; pixel_sort &rarr; byte_corrupt &rarr; jpeg_destroy | |
+| spectral-autopsy | spectral &rarr; sonify &rarr; channel_shift | |
+| thermal-ghost | pca_decompose &rarr; dither &rarr; channel_shift | |
+| turtle-oracle | primitive &rarr; pixel_sort &rarr; dither | |
+| vhs-meltdown | crt_vhs &rarr; channel_shift &rarr; jpeg_destroy | |
 
-**analog-burial** — Format-converts the image through lossy codecs (JPEG &rarr; BMP &rarr; JPEG), applies CRT scan lines and jitter, then flips raw bytes. A digital artifact buried under format conversion and noise.
+## Recipe Details
 
-**cga-nightmare** — Crushes the palette to CGA's 4 colors, pixel-sorts the remains into brightness streaks, and adds CRT scan lines. Period-accurate 1981 horror.
+### analog-burial
+Lossy format round-trip (JPEG &rarr; BMP &rarr; JPEG at quality 3-10), CRT scan lines and jitter,
+then raw byte flips. A digital artifact buried under format conversion and noise.
 
-**vhs-meltdown** — Simulates a VHS tape left in a hot car. CRT color bleeding and scan lines, chromatic aberration via channel shifting, then JPEG compression for digital rot on top of analog decay.
+### byte-liturgy
+Flips 100-500 raw bytes, shifts all three color channels apart, then 8-25 rounds of JPEG
+compression at quality 1-4. Pure binary destruction.
 
-### Binary / Compression
+### cellular-decay
+Thresholds pixels into a Game of Life automaton (30-80 generations), blends in Mandelbrot fractals,
+dithers to the Game Boy palette.
 
-**byte-liturgy** — Flips 100-500 raw bytes, shifts all three color channels apart, then runs 8-25 rounds of aggressive JPEG compression (quality 1-4). Pure binary destruction.
+### cga-nightmare
+CGA's 4-color palette crushes all subtlety, pixel sorting melts the remains into brightness streaks,
+CRT scan lines complete the period-accurate 1981 horror.
 
-**ocr-feedback-loop** — ImageMagick swirl distortion, vertical hue-based pixel sorting, byte-level corruption, and 10-30 rounds of near-zero-quality JPEG compression. Each step amplifies the previous damage.
+### deep-fossil
+DeepDream hallucination preserved in thermal-palette dithering and JPEG compression.
+Neural phantoms fossilized in digital amber.
 
-### Neural / Generative
+### dionysian-rite
+The flagship recipe. DeepDream injects phantom forms, channel shifting fractures color,
+vision-aware seam carving melts structure while protecting key regions, JPEG compression buries
+the remains. Only recipe requiring Llama Vision (`vision: true`).
 
-**deep-fossil** — DeepDream hallucination preserved in thermal-palette dithering and JPEG compression. Neural phantoms fossilized in digital amber.
+### eigenface-requiem
+PCA decomposition keeps only the top 2-5 eigenvectors, style transfer enhances the ghostly
+abstraction, JPEG compression adds entropic decay.
 
-**dionysian-rite** — The flagship recipe. DeepDream injects phantom forms, channel shifting fractures color, vision-aware seam carving melts structure while protecting key regions, and JPEG compression buries the remains. Requires Llama Vision (`vision: true`).
+### ocr-feedback-loop
+ImageMagick swirl (60-180 degrees), vertical hue-based pixel sorting, byte-level corruption,
+then 10-30 rounds of JPEG compression at quality 1-3. Each step amplifies the previous damage.
 
-**eigenface-requiem** — PCA decomposition keeps only the 2-5 most significant eigenvectors, style transfer recursively enhances the ghostly abstraction, and JPEG compression adds entropic decay.
+### spectral-autopsy
+Spectral shifting displaces spatial frequencies, sonification converts the image to audio and back
+through reverb, channel shifting fractures the color planes.
 
-### Frequency / Audio
+### thermal-ghost
+Extracts the *least* significant PCA components (the noise, not the signal), renders through a
+thermal palette, adds subtle channel separation. The ghost of an image.
 
-**spectral-autopsy** — Spectral shifting displaces spatial frequencies, sonification converts the image to audio, applies reverb, and converts back, then channel shifting fractures the color planes.
+### turtle-oracle
+Reconstructs the image from 30-80 triangles, pixel-sorts the shapes into streaks, dithers to the
+16-color EGA palette.
 
-### Mathematical / Algorithmic
+### vhs-meltdown
+VHS tape left in a hot car. CRT color bleeding and scan lines, chromatic aberration via channel
+shifting, JPEG compression for digital rot on top of analog decay.
 
-**cellular-decay** — Thresholds pixels into a Game of Life automaton that evolves for 30-80 generations, blends in Mandelbrot fractals, and dithers to the Game Boy palette.
+## Modifying Recipes
 
-**thermal-ghost** — Extracts the *least* significant PCA components (the noise, not the signal), renders them through a thermal imaging palette, and adds subtle channel separation. The ghost of an image.
+### Tuning parameters
 
-**turtle-oracle** — Reconstructs the image from 30-80 triangles via the `primitive` algorithm, pixel-sorts the shapes into streaks, and dithers to the 16-color EGA palette.
-
-## How to Modify a Recipe
-
-### Tuning Parameters
-
-Most params use `[min, max]` ranges — the bot picks a random value within the range each run. To make an effect more aggressive, widen the range or shift it:
+Most params use `[min, max]` ranges — the bot picks a random value each run.
 
 ```yaml
-# Subtle channel shift
-offset_r: [5, 15]
-
-# Extreme channel shift
-offset_r: [40, 120]
-
-# Fixed (no randomness)
-offset_r: 60
+offset_r: [5, 15]     # subtle
+offset_r: [40, 120]   # extreme
+offset_r: 60           # fixed, no randomness
 ```
 
 Integer ranges produce integers, float ranges produce floats.
 
-### Reordering Effects
+### Reordering effects
 
-Order matters. Effects are applied sequentially — each one receives the output of the previous step. General principles:
+Order matters — each effect receives the previous step's output.
 
 - **Neural effects first** — they need clean input to hallucinate on
 - **Pixel-level effects in the middle** — sorting, shifting, dithering
-- **Lossy compression last** — it compounds everything before it, creating artifacts that interact with all previous distortions
+- **Lossy compression last** — compounds everything before it
 
-Swapping order produces fundamentally different results. Experiment.
+### Adding / removing effects
 
-### Adding or Removing Effects
+Add a `- type:` block anywhere in the `effects` list. Remove one by deleting its block.
+Keep 2-4 effects per recipe — more than 5 tends to produce mud.
 
-Add a new step anywhere in the `effects` list:
+### Using vision
 
-```yaml
-effects:
-  - type: existing_effect
-    params: { ... }
-
-  # New step — insert between existing effects
-  - type: channel_shift
-    params:
-      offset_r: [10, 50]
-      offset_b: [-30, -10]
-
-  - type: jpeg_destroy
-    params:
-      quality: [2, 8]
-      iterations: [5, 15]
-```
-
-Remove a step by deleting its `- type: ...` block. Keep 2-4 effects per recipe — more than 5 tends to produce mud.
-
-### Using Vision
-
-Set `vision: true` at the top level to enable Llama Vision analysis. Effects can then reference vision results:
+Set `vision: true` at the recipe level. Effects can then use `"vision"` as a param value:
 
 ```yaml
 vision: true
-
 effects:
   - type: seam_carve
     params:
       scale_x: [0.5, 0.7]
-      protect_regions: "vision"   # AI-detected regions are protected from carving
+      protect_regions: "vision"
 ```
 
-Only `seam_carve` currently uses vision-aware parameters.
+Only `seam_carve` currently supports vision-aware parameters.
 
-### Creating a New Recipe
-
-1. Create a new `.yaml` file in this directory
-2. Follow the schema (name, description, effects list)
-3. Validate: `python -m sparagmos --validate`
-4. Test: `python -m sparagmos --input test.jpg --output out.png --recipe your-recipe`
+### Creating a new recipe
 
 ```yaml
 name: Your Recipe Name
@@ -125,4 +128,8 @@ effects:
       param: [min, max]
 ```
 
-Run `python -m sparagmos --list-recipes` to confirm it loads, and see [../docs/recipes.md](../docs/recipes.md) for the full parameter reference for each effect.
+```bash
+python -m sparagmos --validate                                          # check syntax
+python -m sparagmos --input test.jpg --output out.png --recipe my-recipe # test run
+python -m sparagmos --list-recipes                                      # confirm it loads
+```
