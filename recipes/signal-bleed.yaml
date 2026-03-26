@@ -1,0 +1,54 @@
+name: Signal Bleed
+description: >
+  Three VHS signals bleeding into each other on a bad splitter. Each source
+  gets its own flavor of analog decay. Vertical strip collage interleaves
+  the signals. Channel shift and byte corruption simulate crosstalk.
+
+inputs: 3
+
+steps:
+  - type: crt_vhs
+    image: a
+    params:
+      scan_line_density: 2
+      jitter_amount: [8, 20]
+      color_bleed: [3.0, 6.0]
+
+  - type: crt_vhs
+    image: b
+    params:
+      scan_line_density: 3
+      phosphor_glow: [0.15, 0.3]
+      jitter_amount: [5, 12]
+
+  - type: crt_vhs
+    image: c
+    params:
+      scan_line_density: [2, 4]
+      color_bleed: [4.0, 8.0]
+      jitter_amount: [10, 25]
+
+  - type: collage
+    images: [a, b, c]
+    into: canvas
+    params:
+      layout: strips
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [20, 70]
+      offset_g: [5, 25]
+      offset_b: [-60, -15]
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [50, 150]
+      mode: flip
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 25]

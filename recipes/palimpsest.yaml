@@ -1,0 +1,69 @@
+name: Palimpsest
+description: >
+  A manuscript overwritten and overwritten again. Each layer bleeds through
+  based on luminance. Four images layered through progressively lower thresholds
+  create a geological record of superimposed texts. Byte corruption ages the
+  result, dithering reduces it to medieval dot patterns.
+
+inputs: 4
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [3, 8]
+      mode: top
+
+  - type: channel_shift
+    image: b
+    params:
+      offset_r: [10, 40]
+      offset_b: [-30, -10]
+
+  - type: crt_vhs
+    image: c
+    params:
+      scan_line_density: [2, 3]
+      jitter_amount: [3, 8]
+
+  - type: pixel_sort
+    image: d
+    params:
+      mode: brightness
+      threshold: [60, 120]
+
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [80, 140]
+      feather: [3, 10]
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [100, 170]
+      feather: [5, 15]
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [140, 200]
+      feather: [5, 20]
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [40, 100]
+      mode: flip
+
+  - type: dither
+    image: canvas
+    params:
+      method: atkinson
+      palette: thermal

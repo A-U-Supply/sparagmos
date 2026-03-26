@@ -1,0 +1,59 @@
+name: Fossil Record
+description: >
+  Geological strata. Each image PCA-decomposed to different component counts.
+  Opacity-blended as layers like sedimentary rock. Dithering creates stone
+  texture, channel shift adds mineral coloration.
+
+inputs: 3
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [2, 5]
+      mode: top
+
+  - type: pca_decompose
+    image: b
+    params:
+      n_components: [8, 15]
+      mode: top
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [15, 30]
+      mode: top
+
+  - type: blend
+    images: [a, b]
+    into: canvas
+    params:
+      mode: opacity
+      strength: [0.4, 0.6]
+
+  - type: blend
+    images: [canvas, c]
+    into: canvas
+    params:
+      mode: opacity
+      strength: [0.3, 0.5]
+
+  - type: dither
+    image: canvas
+    params:
+      method: floyd_steinberg
+      palette: thermal
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [15, 50]
+      offset_g: [-10, 10]
+      offset_b: [-40, -10]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 20]

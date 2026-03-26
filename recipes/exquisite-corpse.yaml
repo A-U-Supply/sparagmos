@@ -1,0 +1,53 @@
+name: Exquisite Corpse
+description: >
+  The surrealist parlor game. Three images divided into horizontal strips.
+  Each source gets different pre-processing to heighten the disjunction.
+  Seam carving warps the joins, CRT effects add static to the seams,
+  JPEG destroys the evidence.
+
+inputs: 3
+
+steps:
+  - type: pixel_sort
+    image: a
+    params:
+      mode: brightness
+      threshold: [50, 100]
+
+  - type: crt_vhs
+    image: b
+    params:
+      jitter_amount: [5, 15]
+      color_bleed: [2.0, 5.0]
+
+  - type: channel_shift
+    image: c
+    params:
+      offset_r: [15, 50]
+      offset_g: [-20, 20]
+      offset_b: [-40, -10]
+
+  - type: fragment
+    images: [a, b, c]
+    into: canvas
+    params:
+      cut_mode: strips
+      pieces: [3, 6]
+      mix_ratio: [0.7, 1.0]
+
+  - type: seam_carve
+    image: canvas
+    params:
+      scale_x: [0.5, 0.7]
+
+  - type: crt_vhs
+    image: canvas
+    params:
+      scan_line_density: 2
+      jitter_amount: [3, 8]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [10, 30]

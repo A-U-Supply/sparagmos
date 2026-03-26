@@ -1,0 +1,67 @@
+name: Mosaic Dissolution
+description: >
+  Five sources tiled into a mosaic, then the mosaic itself is fragmented
+  and pixel-sorted into dust. Maximum input count, maximum chaos.
+
+inputs: 5
+
+steps:
+  - type: channel_shift
+    image: a
+    params:
+      offset_r: [10, 40]
+
+  - type: crt_vhs
+    image: b
+    params:
+      jitter_amount: [5, 12]
+
+  - type: dither
+    image: c
+    params:
+      method: bayer
+      palette: gameboy
+
+  - type: pixel_sort
+    image: d
+    params:
+      mode: saturation
+      threshold: [40, 90]
+
+  - type: pca_decompose
+    image: e
+    params:
+      n_components: [3, 8]
+      mode: bottom
+
+  - type: collage
+    images: [a, b, c, d, e]
+    into: canvas
+    params:
+      layout: mosaic
+
+  - type: fragment
+    images: [canvas, a]
+    into: canvas
+    params:
+      cut_mode: grid
+      pieces: [16, 36]
+      mix_ratio: [0.3, 0.6]
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [30, 80]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 3]
+      iterations: [15, 40]
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [60, 180]
+      mode: flip
