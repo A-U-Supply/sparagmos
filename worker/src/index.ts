@@ -32,7 +32,8 @@ async function verifySlackSignature(
 
   // Reject requests older than 5 minutes
   const now = Math.floor(Date.now() / 1000);
-  if (Math.abs(now - parseInt(timestamp, 10)) > 300) {
+  const ts = Number(timestamp);
+  if (Number.isNaN(ts) || Math.abs(now - ts) > 300) {
     return false;
   }
 
@@ -110,6 +111,10 @@ async function dispatchWorkflow(env: Env, recipe: string): Promise<boolean> {
   );
 
   // GitHub returns 204 No Content on success
+  if (response.status !== 204) {
+    const text = await response.text();
+    console.error(`GitHub dispatch failed: ${response.status} ${text}`);
+  }
   return response.status === 204;
 }
 
@@ -121,12 +126,12 @@ const HELP_TEXT = [
   "*Sparagmos* — image collage bot :art:",
   "",
   "Usage:",
+  "  `/sparagmos` — run a random recipe",
   "  `/sparagmos <recipe>` — run a specific recipe",
-  "  `/sparagmos random` — run a random recipe",
   "  `/sparagmos list` — show all available recipes",
   "  `/sparagmos help` — show this message",
   "",
-  `${RECIPES.length} recipes available. Use \`/sparagmos list\` to see them all.`,
+  `${RECIPES.length} recipes available. Results appear in #img-junkyard (~2-5 min).`,
 ].join("\n");
 
 /** Handle the parsed slash command body. */
@@ -134,8 +139,8 @@ async function handleSlashCommand(body: string, env: Env): Promise<Response> {
   const params = new URLSearchParams(body);
   const rawText = (params.get("text") ?? "").trim().toLowerCase();
 
-  // No argument or "help"
-  if (!rawText || rawText === "help") {
+  // Help
+  if (rawText === "help") {
     return slackResponse(HELP_TEXT);
   }
 
@@ -144,13 +149,13 @@ async function handleSlashCommand(body: string, env: Env): Promise<Response> {
     return slackResponse(formatRecipeList());
   }
 
-  // Random recipe
-  if (rawText === "random") {
+  // Random recipe (no args or explicit "random")
+  // Empty recipe input tells the GitHub workflow to pick randomly
+  if (!rawText || rawText === "random") {
     const dispatched = await dispatchWorkflow(env, "");
     if (dispatched) {
       return slackResponse(
-        ":game_die: Dispatched a *random* recipe. Results will appear shortly.",
-        false,
+        ":game_die: Firing up a random recipe... results in #img-junkyard in ~2-5 min.",
       );
     }
     return slackResponse(
@@ -163,8 +168,7 @@ async function handleSlashCommand(body: string, env: Env): Promise<Response> {
     const dispatched = await dispatchWorkflow(env, rawText);
     if (dispatched) {
       return slackResponse(
-        `:art: Dispatched recipe *${rawText}*. Results will appear shortly.`,
-        false,
+        `:art: Firing up *${rawText}*... results in #img-junkyard in ~2-5 min.`,
       );
     }
     return slackResponse(
