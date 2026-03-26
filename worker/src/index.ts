@@ -94,7 +94,7 @@ function slackResponse(text: string, ephemeral = true): Response {
  */
 async function dispatchWorkflow(env: Env, recipe: string): Promise<boolean> {
   const response = await fetch(
-    "https://api.github.com/repos/au-supply/sparagmos/actions/workflows/sparagmos.yml/dispatches",
+    "https://api.github.com/repos/A-U-Supply/sparagmos/actions/workflows/sparagmos.yml/dispatches",
     {
       method: "POST",
       headers: {
