@@ -151,3 +151,134 @@ def test_validate_recipe_vision_without_flag(tmp_path):
     recipe = load_recipe(path)
     errors = validate_recipe(recipe)
     assert any("vision" in e.lower() for e in errors)
+
+
+# ── New schema field tests ────────────────────────────────────────────────────
+
+
+def test_load_recipe_with_inputs(tmp_path):
+    """Recipe with inputs: 3 and steps: key with image: fields loads correctly."""
+    content = textwrap.dedent("""\
+        name: Multi Input
+        description: Recipe with multiple inputs.
+        inputs: 3
+        steps:
+          - type: dummy
+            image: a
+            params: {}
+          - type: dummy
+            image: b
+            params: {}
+    """)
+    path = tmp_path / "multi.yaml"
+    path.write_text(content)
+    recipe = load_recipe(path)
+    assert recipe.inputs == 3
+    assert len(recipe.effects) == 2
+    assert recipe.effects[0].image == "a"
+    assert recipe.effects[1].image == "b"
+
+
+def test_load_recipe_inputs_defaults_to_one(tmp_path):
+    """Recipe without inputs: defaults to 1."""
+    content = textwrap.dedent("""\
+        name: Default Inputs
+        description: No inputs key.
+        effects:
+          - type: dummy
+            params: {}
+    """)
+    path = tmp_path / "default.yaml"
+    path.write_text(content)
+    recipe = load_recipe(path)
+    assert recipe.inputs == 1
+
+
+def test_load_recipe_steps_alias(tmp_path):
+    """steps: key accepted as alias for effects:."""
+    content = textwrap.dedent("""\
+        name: Steps Alias
+        description: Uses steps instead of effects.
+        steps:
+          - type: dummy
+            params: {}
+    """)
+    path = tmp_path / "steps.yaml"
+    path.write_text(content)
+    recipe = load_recipe(path)
+    assert len(recipe.effects) == 1
+    assert recipe.effects[0].type == "dummy"
+
+
+def test_load_recipe_compose_step(tmp_path):
+    """Step with images: [a, b] and into: canvas loads correctly."""
+    content = textwrap.dedent("""\
+        name: Compose Step
+        description: A compositing step.
+        inputs: 2
+        steps:
+          - type: dummy
+            images: [a, b]
+            into: canvas
+            params: {}
+    """)
+    path = tmp_path / "compose.yaml"
+    path.write_text(content)
+    recipe = load_recipe(path)
+    step = recipe.effects[0]
+    assert step.images == ["a", "b"]
+    assert step.into == "canvas"
+
+
+def test_load_recipe_image_defaults_none(tmp_path):
+    """Steps without image/images/into have None for those fields."""
+    content = textwrap.dedent("""\
+        name: No Image Fields
+        description: Plain step.
+        effects:
+          - type: dummy
+            params: {}
+    """)
+    path = tmp_path / "plain.yaml"
+    path.write_text(content)
+    recipe = load_recipe(path)
+    step = recipe.effects[0]
+    assert step.image is None
+    assert step.images is None
+    assert step.into is None
+
+
+def test_validate_recipe_compose_step_missing_into(tmp_path):
+    """Compose step (has images:) without into: is an error."""
+    content = textwrap.dedent("""\
+        name: Missing Into
+        description: Compose step without into.
+        inputs: 2
+        steps:
+          - type: dummy
+            images: [a, b]
+            params: {}
+    """)
+    path = tmp_path / "missing-into.yaml"
+    path.write_text(content)
+    recipe = load_recipe(path)
+    errors = validate_recipe(recipe)
+    assert any("into" in e.lower() for e in errors)
+
+
+def test_validate_recipe_image_name_not_in_inputs(tmp_path):
+    """Referencing image name beyond inputs count is an error."""
+    content = textwrap.dedent("""\
+        name: Bad Image Name
+        description: References c but only 2 inputs.
+        inputs: 2
+        steps:
+          - type: dummy
+            image: c
+            params: {}
+    """)
+    path = tmp_path / "bad-name.yaml"
+    path.write_text(content)
+    recipe = load_recipe(path)
+    errors = validate_recipe(recipe)
+    assert any("c" in e for e in errors)

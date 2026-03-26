@@ -18,6 +18,9 @@ class RecipeStep:
 
     type: str
     params: dict[str, Any] = field(default_factory=dict)
+    image: str | None = None
+    images: list[str] | None = None
+    into: str | None = None
 
 
 @dataclass
@@ -28,6 +31,7 @@ class Recipe:
     description: str
     effects: list[RecipeStep]
     vision: bool = False
+    inputs: int = 1
     source_path: Path | None = None
 
 
@@ -43,12 +47,18 @@ def load_recipe(path: Path) -> Recipe:
     with open(path) as f:
         data = yaml.safe_load(f)
 
+    # Accept "steps" as an alias for "effects"
+    raw_steps = data.get("steps", data.get("effects", []))
+
     effects = []
-    for step_data in data.get("effects", []):
+    for step_data in raw_steps:
         effects.append(
             RecipeStep(
                 type=step_data["type"],
                 params=step_data.get("params", {}),
+                image=step_data.get("image"),
+                images=step_data.get("images"),
+                into=step_data.get("into"),
             )
         )
 
@@ -57,6 +67,7 @@ def load_recipe(path: Path) -> Recipe:
         description=data.get("description", ""),
         effects=effects,
         vision=data.get("vision", False),
+        inputs=data.get("inputs", 1),
         source_path=path,
     )
 
@@ -108,6 +119,22 @@ def resolve_params(params: dict[str, Any], seed: int) -> dict[str, Any]:
     return resolved
 
 
+def _valid_image_names(inputs: int) -> set[str]:
+    """Compute the set of valid image names for a given inputs count.
+
+    inputs=1 → {"canvas"}
+    inputs=2 → {"a", "b", "canvas"}
+    inputs=3 → {"a", "b", "c", "canvas"}
+    etc.
+    """
+    names: set[str] = {"canvas"}
+    letters = "abcdefghijklmnopqrstuvwxyz"
+    for idx in range(inputs):
+        if idx < len(letters):
+            names.add(letters[idx])
+    return names
+
+
 def validate_recipe(recipe: Recipe) -> list[str]:
     """Validate a recipe against registered effects.
 
@@ -115,6 +142,8 @@ def validate_recipe(recipe: Recipe) -> list[str]:
     - All effect types reference registered effects
     - Parameters are valid for each effect (via validate_params)
     - Vision params only used when recipe has vision: true
+    - Image names (image/images) are valid for the recipe's inputs count
+    - Compositing steps (images:) must also have into:
 
     Args:
         recipe: Recipe to validate.
@@ -124,6 +153,7 @@ def validate_recipe(recipe: Recipe) -> list[str]:
     """
     errors = []
     known_effects = list_effects()
+    valid_names = _valid_image_names(recipe.inputs)
 
     for i, step in enumerate(recipe.effects):
         step_label = f"effects[{i}] ({step.type})"
@@ -152,5 +182,27 @@ def validate_recipe(recipe: Recipe) -> list[str]:
                         f"{step_label}: param {key!r} uses 'vision' "
                         f"but recipe has vision: false"
                     )
+
+        # Check image name is valid
+        if step.image is not None and step.image not in valid_names:
+            errors.append(
+                f"{step_label}: image {step.image!r} is not a valid name "
+                f"for inputs={recipe.inputs}. Valid: {sorted(valid_names)}"
+            )
+
+        # Check all names in images are valid
+        if step.images is not None:
+            for name in step.images:
+                if name not in valid_names:
+                    errors.append(
+                        f"{step_label}: image {name!r} in images list is not a valid name "
+                        f"for inputs={recipe.inputs}. Valid: {sorted(valid_names)}"
+                    )
+
+        # Compositing steps must have into
+        if step.images is not None and step.into is None:
+            errors.append(
+                f"{step_label}: compositing step (images:) must specify into:"
+            )
 
     return errors
