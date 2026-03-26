@@ -428,6 +428,40 @@
       ],
       "processed_date": "2026-03-26",
       "posted_ts": ""
+    },
+    {
+      "source_file_ids": [
+        "F09G2AWMS31",
+        "F093T1914QG",
+        "F078W975D6F",
+        "F08NTDWPN8L"
+      ],
+      "source_dates": [
+        "2025-09-22",
+        "2025-06-26",
+        "2024-06-19",
+        "2025-04-17"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "dream-erosion",
+      "effects": [
+        "deepdream",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "deepdream",
+        "mask_composite",
+        "deepdream",
+        "byte_corrupt",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-03-26",
+      "posted_ts": ""
     }
   ]
 }
