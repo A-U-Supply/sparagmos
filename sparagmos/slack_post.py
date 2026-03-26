@@ -33,7 +33,7 @@ def format_provenance(
     date = source.get("date", "unknown")
 
     return (
-        f"⛧ {result.recipe_name}\n"
+        f"~ {result.recipe_name}\n"
         f"{chain}\n"
         f"source: image by <@{user}> in #{channel_name} ({date})"
     )
