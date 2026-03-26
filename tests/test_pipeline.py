@@ -7,7 +7,10 @@ from unittest.mock import MagicMock
 import pytest
 from PIL import Image
 
+import numpy as np
+
 from sparagmos.effects import (
+    ComposeEffect,
     Effect,
     EffectContext,
     EffectResult,
@@ -50,10 +53,27 @@ class ScaleEffect(Effect):
         return params
 
 
+class MergeEffect(ComposeEffect):
+    """Test compose effect that averages multiple images using numpy."""
+
+    name = "merge_test"
+    description = "Averages multiple images"
+    requires: list[str] = []
+
+    def compose(self, images, params, context):
+        arrays = [np.array(img.convert("RGB"), dtype=np.float32) for img in images]
+        averaged = np.mean(arrays, axis=0).astype(np.uint8)
+        return EffectResult(image=Image.fromarray(averaged), metadata={"merged": len(images)})
+
+    def validate_params(self, params):
+        return params
+
+
 @pytest.fixture(autouse=True)
 def register_test_effects():
     register_effect(InvertEffect())
     register_effect(ScaleEffect())
+    register_effect(MergeEffect())
 
 
 def test_run_pipeline_single_effect(test_image_rgb, tmp_path):
@@ -120,3 +140,25 @@ def test_run_pipeline_deterministic(test_image_rgb, tmp_path):
     r1 = run_pipeline(test_image_rgb, recipe, seed=42, temp_dir=tmp_path)
     r2 = run_pipeline(test_image_rgb, recipe, seed=42, temp_dir=tmp_path)
     assert r1.steps[0]["resolved_params"] == r2.steps[0]["resolved_params"]
+
+
+def test_compose_effect_has_compose_method():
+    """ComposeEffect subclasses must implement compose()."""
+    effect = MergeEffect()
+    assert hasattr(effect, "compose")
+    assert callable(effect.compose)
+
+
+def test_compose_effect_apply_fallback(test_image_rgb, tmp_path):
+    """apply() on a ComposeEffect delegates to compose([image])."""
+    effect = MergeEffect()
+    context = EffectContext(
+        vision=None,
+        temp_dir=tmp_path,
+        seed=0,
+        source_metadata={},
+    )
+    result = effect.apply(test_image_rgb, {}, context)
+    assert isinstance(result, EffectResult)
+    assert result.metadata["merged"] == 1
+    assert result.image.size == test_image_rgb.size
