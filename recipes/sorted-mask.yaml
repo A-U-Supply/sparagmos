@@ -1,0 +1,50 @@
+name: Sorted Mask
+description: >
+  Image A is pixel-sorted by brightness, generating long streaks that streak
+  upward through the frame. A luminance mask then uses the sorted A's own
+  brightness map to reveal B in the bright zones — the streaks become windows
+  into B, while the dark gaps stay A. The result is collaged in strips with C,
+  interleaving the sorted-masked composite with C in horizontal bands. Jpeg
+  destroy welds the strips back into a single surface.
+
+inputs: 3
+
+steps:
+  - type: pixel_sort
+    image: a
+    params:
+      mode: brightness
+      threshold: [50, 100]
+      direction: vertical
+
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [110, 160]
+      feather: [7, 14]
+      invert: false
+
+  - type: collage
+    images: [canvas, c]
+    into: canvas
+    params:
+      layout: strips
+      rotation: [0, 3]
+      scale_variance: [0.0, 0.08]
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 145]
+      feather: [5, 12]
+      invert: true
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 20]

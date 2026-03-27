@@ -1,0 +1,54 @@
+name: Spectral Stencil
+description: >
+  Image A is bandpass-filtered in frequency space, stripping its low and high
+  frequencies to leave only the mid-range structure — a ghost of the original.
+  That spectral ghost's luminance becomes a mask onto B, so B shows through
+  wherever the frequency mid-band is present. The merged result is sonified
+  with distortion, adding audio-derived texture across the surface. The
+  sonified composite's edges then cut into C as a final stencil layer.
+  Dithering reduces the whole to a restricted palette.
+
+inputs: 3
+
+steps:
+  - type: spectral
+    image: a
+    params:
+      operation: bandpass
+      amount: [0.3, 0.65]
+
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [100, 155]
+      feather: [7, 14]
+      invert: false
+
+  - type: sonify
+    image: canvas
+    params:
+      effect: distortion
+      intensity: [0.3, 0.6]
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 145]
+      feather: [6, 13]
+      invert: false
+
+  - type: dither
+    image: canvas
+    params:
+      method: atkinson
+      palette: thermal
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 18]

@@ -1,0 +1,32 @@
+name: Simple Cutout
+description: >
+  The most direct use of masking: A's edge skeleton is cut clean into B.
+  Wherever A has strong edges, B shows through; everywhere else, A holds.
+  A channel shift splits the color registers of the composite apart, then
+  jpeg destroy welds it back into a single burned slab. No preamble,
+  no ceremony — just two images and a stencil.
+
+inputs: 2
+
+steps:
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [100, 160]
+      feather: [5, 12]
+      invert: false
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [20, 55]
+      offset_g: [-10, 10]
+      offset_b: [-45, -15]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 20]

@@ -1,0 +1,33 @@
+name: Ghost Overlay
+description: >
+  A haunting: A's edges become a soft veil cast over B with high feathering,
+  so the transition is a smear rather than a cut. Screen blending then adds
+  A back over the masked composite, accumulating light in the overlap zones
+  until both images become partially transparent, partially solid — neither
+  fully present. The result reads like a double exposure caught mid-fade,
+  two images occupying the same frame without resolving.
+
+inputs: 2
+
+steps:
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 140]
+      feather: [15, 25]
+      invert: false
+
+  - type: blend
+    images: [canvas, a]
+    into: canvas
+    params:
+      mode: screen
+      strength: [0.4, 0.7]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [3, 7]
+      iterations: [5, 14]

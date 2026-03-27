@@ -1,0 +1,79 @@
+name: Collage Mask Collage
+description: >
+  Two images collaged into a mosaic grid, then a third used as an edge stencil
+  to cut through the grid — the mosaic surfaces are revealed only where C's
+  structural skeleton permits. The edge-cut mosaic is then scatter-collaged
+  with D, flinging pieces of both into a loose field. That scattered field's
+  luminance masks back onto the original mosaic to recover the grid geometry
+  beneath the scatter. Dithering locks the compounded surface into palette,
+  and jpeg destroy closes the loop.
+
+inputs: 4
+
+steps:
+  - type: dither
+    image: a
+    params:
+      method: atkinson
+      palette: ega
+
+  - type: channel_shift
+    image: b
+    params:
+      offset_r: [15, 45]
+      offset_b: [-40, -12]
+
+  - type: collage
+    images: [a, b]
+    into: mosaic
+    params:
+      layout: mosaic
+      rotation: [0, 5]
+      scale_variance: [0.0, 0.1]
+
+  - type: mask_composite
+    images: [mosaic, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 150]
+      feather: [6, 13]
+      invert: false
+
+  - type: collage
+    images: [canvas, d]
+    into: canvas
+    params:
+      layout: scatter
+      rotation: [15, 60]
+      scale_variance: [0.1, 0.35]
+
+  - type: mask_composite
+    images: [canvas, mosaic]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [100, 155]
+      feather: [7, 15]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 145]
+      feather: [6, 13]
+      invert: true
+
+  - type: dither
+    image: canvas
+    params:
+      method: floyd_steinberg
+      palette: gameboy
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [10, 24]

@@ -1,0 +1,51 @@
+name: Dream Cutout
+description: >
+  Image A is deepdreamed heavily — the network projects its hallucinations
+  across every surface. The dreamed A's edge skeleton then cuts into B:
+  the neural forms become a stencil, revealing B wherever the dream drew
+  lines. A channel shift misregisters the colors of this dreamed-stenciled
+  composite. The luminance of that result then cuts into C, so C appears
+  only in the bright zones of the dream-collage. Jpeg destroy collapses
+  all three images into permanent neural wreckage.
+
+inputs: 3
+
+steps:
+  - type: deepdream
+    image: a
+    params:
+      iterations: [12, 18]
+      octave_scale: [1.4, 1.5]
+      jitter: [28, 44]
+      learning_rate: [0.012, 0.022]
+
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 140]
+      feather: [6, 12]
+      invert: false
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [20, 55]
+      offset_g: [-12, 12]
+      offset_b: [-45, -15]
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [100, 155]
+      feather: [7, 15]
+      invert: false
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [10, 24]

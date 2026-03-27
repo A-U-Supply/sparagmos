@@ -1,0 +1,33 @@
+name: Two Face
+description: >
+  A luminance mask splits image A at its median brightness — the bright half
+  stays A, the dark half becomes B. With auto-normalization, threshold=128
+  always cuts at the true median, so neither image dominates by default.
+  The bright regions are pixel-sorted vertically, streaking the A-side upward
+  while the B-side remains still. The seam between them is the only border
+  that matters.
+
+inputs: 2
+
+steps:
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [118, 138]
+      feather: [6, 14]
+      invert: false
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [90, 140]
+      direction: vertical
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [3, 6]
+      iterations: [6, 16]

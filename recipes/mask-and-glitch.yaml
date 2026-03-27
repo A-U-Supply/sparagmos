@@ -1,0 +1,48 @@
+name: Mask and Glitch
+description: >
+  Image A is edge-masked onto B, producing a clean structural composite.
+  That composite is then run through CRT/VHS processing — scan lines, color
+  bleed, jitter — corrupting the clean seams into broadcast noise. The
+  damaged composite is edge-masked again onto C, so C leaks through
+  wherever the glitch drew new edges. Byte corruption shatters the final
+  surface into bit-level wreckage, and jpeg destroy seals the damage.
+
+inputs: 3
+
+steps:
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [95, 150]
+      feather: [6, 13]
+      invert: false
+
+  - type: crt_vhs
+    image: canvas
+    params:
+      jitter_amount: [8, 20]
+      color_bleed: [3.5, 7.0]
+      scan_line_density: [2, 3]
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 145]
+      feather: [7, 14]
+      invert: false
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [60, 130]
+      mode: flip
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 20]

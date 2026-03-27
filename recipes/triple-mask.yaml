@@ -1,0 +1,42 @@
+name: Triple Mask
+description: >
+  Three images, two mask operations. First A's edges cut into B, producing a
+  composite where B lives in A's structural skeleton. Then that composite's own
+  luminance — a new tonal map born from the merger — becomes the stencil that
+  cuts into C. The third image is revealed only where the first two agreed to
+  be bright. Simple in structure, compounded in result: each mask uses the
+  previous merge as its raw material.
+
+inputs: 3
+
+steps:
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [95, 155]
+      feather: [6, 13]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [105, 155]
+      feather: [7, 15]
+      invert: false
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [18, 50]
+      offset_g: [-10, 10]
+      offset_b: [-40, -12]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 18]

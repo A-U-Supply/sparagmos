@@ -1,0 +1,79 @@
+name: Mask Everything
+description: >
+  Maximum masking: every image pair gets composited through a mask before
+  anything else happens. A's edges cut into B, producing pair-AB. C's
+  luminance cuts into D, producing pair-CD. Those two pairs are blended
+  at overlay — frequency structures from both pairs compound. The blended
+  result is edge-masked against E, so E's structural skeleton cuts a final
+  stencil through the layered composite. Fragment shatters the masked
+  surface into pieces, and jpeg destroy collapses the shards into burned
+  rubble. Five inputs, five mask operations, one ruin.
+
+inputs: 5
+
+steps:
+  - type: mask_composite
+    images: [a, b]
+    into: pair_ab
+    params:
+      mask_source: edges
+      threshold: [95, 150]
+      feather: [6, 13]
+      invert: false
+
+  - type: mask_composite
+    images: [c, d]
+    into: pair_cd
+    params:
+      mask_source: luminance
+      threshold: [100, 155]
+      feather: [7, 14]
+      invert: false
+
+  - type: blend
+    images: [pair_ab, pair_cd]
+    into: canvas
+    params:
+      mode: overlay
+      strength: [0.55, 0.85]
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 145]
+      feather: [6, 14]
+      invert: false
+
+  - type: mask_composite
+    images: [canvas, pair_ab]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [105, 160]
+      feather: [8, 16]
+      invert: true
+
+  - type: fragment
+    images: [canvas, e]
+    into: canvas
+    params:
+      cut_mode: shatter
+      pieces: [12, 30]
+      mix_ratio: [0.4, 0.7]
+      gap: [3, 10]
+
+  - type: mask_composite
+    images: [canvas, c]
+    into: canvas
+    params:
+      mask_source: noise
+      threshold: [90, 155]
+      feather: [6, 14]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [12, 28]

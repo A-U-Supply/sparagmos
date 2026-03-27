@@ -1,0 +1,95 @@
+name: Total Chaos
+description: >
+  Every technique thrown into one sequence. A is deepdreamed; its hallucinations
+  are edge-masked onto B. That composite is collaged in strips with C. The strip-
+  collage is fragment-shattered with D — pieces of both thrown into disorder.
+  The shattered composite is luminance-masked against E, which clamps the chaos
+  to tonal regions. That masked chaos is blended with the original dreamed-A at
+  difference mode — subtracting the dream from the disorder, producing an image
+  that exists only in the gap between them. A noise mask pulls yet more of E
+  through the difference. Pixel sorting streaks the whole thing horizontally.
+  A final edge mask reimposes B's structure on the sorted result. Jpeg destroy
+  closes the loop. Five inputs. Everything in.
+
+inputs: 5
+
+steps:
+  - type: deepdream
+    image: a
+    params:
+      iterations: [12, 18]
+      octave_scale: [1.4, 1.5]
+      jitter: [28, 44]
+      learning_rate: [0.012, 0.022]
+
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 145]
+      feather: [6, 13]
+      invert: false
+
+  - type: collage
+    images: [canvas, c]
+    into: canvas
+    params:
+      layout: strips
+      rotation: [0, 4]
+      scale_variance: [0.0, 0.1]
+
+  - type: fragment
+    images: [canvas, d]
+    into: canvas
+    params:
+      cut_mode: shatter
+      pieces: [10, 25]
+      mix_ratio: [0.4, 0.7]
+      gap: [3, 10]
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [100, 155]
+      feather: [7, 14]
+      invert: false
+
+  - type: blend
+    images: [canvas, a]
+    into: canvas
+    params:
+      mode: difference
+      strength: [0.5, 0.8]
+
+  - type: mask_composite
+    images: [canvas, e]
+    into: canvas
+    params:
+      mask_source: noise
+      threshold: [90, 155]
+      feather: [6, 14]
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [60, 120]
+      direction: horizontal
+
+  - type: mask_composite
+    images: [canvas, b]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [95, 150]
+      feather: [7, 15]
+      invert: true
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 3]
+      iterations: [14, 30]
