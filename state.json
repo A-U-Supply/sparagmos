@@ -487,6 +487,40 @@
       ],
       "processed_date": "2026-03-26",
       "posted_ts": ""
+    },
+    {
+      "source_file_ids": [
+        "F04GWUCRL5Q",
+        "F082VEUE48N",
+        "F071N9T5B4Y",
+        "F07VDGXDZ5H"
+      ],
+      "source_dates": [
+        "2022-12-29",
+        "2024-11-29",
+        "2024-04-27",
+        "2024-11-08"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "palimpsest",
+      "effects": [
+        "pca_decompose",
+        "channel_shift",
+        "crt_vhs",
+        "pixel_sort",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "byte_corrupt",
+        "dither"
+      ],
+      "processed_date": "2026-03-27",
+      "posted_ts": ""
     }
   ]
 }
