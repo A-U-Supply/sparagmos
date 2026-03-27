@@ -37,12 +37,32 @@ def _build_mask(
     h, w = base_gray.shape
 
     if mask_source in ("luminance", "threshold"):
-        mask = np.where(base_gray >= threshold, np.uint8(255), np.uint8(0)).astype(np.uint8)
+        # Normalize grayscale to full 0-255 range before thresholding.
+        # This ensures the threshold always produces a meaningful split
+        # regardless of the image's actual brightness distribution.
+        lo, hi = float(base_gray.min()), float(base_gray.max())
+        if hi - lo < 1:
+            # Nearly solid image — use percentile-based normalization
+            lo = float(np.percentile(base_gray, 2))
+            hi = float(np.percentile(base_gray, 98))
+        if hi - lo < 1:
+            # Truly flat image — just return half-and-half
+            mask = np.zeros_like(base_gray)
+            mask[:, w // 2:] = 255
+        else:
+            normalized = ((base_gray.astype(np.float32) - lo) / (hi - lo) * 255.0)
+            normalized = np.clip(normalized, 0, 255).astype(np.uint8)
+            mask = np.where(normalized >= threshold, np.uint8(255), np.uint8(0)).astype(np.uint8)
 
     elif mask_source == "edges":
-        edges = cv2.Canny(base_gray, threshold // 2, threshold)
+        # Use adaptive Canny thresholds based on image statistics
+        median_val = int(np.median(base_gray))
+        canny_lo = max(10, int(median_val * 0.4))
+        canny_hi = max(30, int(median_val * 1.2))
+        edges = cv2.Canny(base_gray, canny_lo, canny_hi)
         kernel = np.ones((3, 3), dtype=np.uint8)
-        mask = cv2.dilate(edges, kernel, iterations=1)
+        # Dilate more to make edges thicker and more visible as masks
+        mask = cv2.dilate(edges, kernel, iterations=3)
 
     elif mask_source == "noise":
         rng = np.random.RandomState(seed)
