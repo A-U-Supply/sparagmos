@@ -158,7 +158,13 @@ def test_pick_random_images_deterministic():
 def test_post_result_uploads_with_main_comment_only(tmp_path):
     """Main message contains recipe + effects, no source info."""
     client = MagicMock()
-    client.files_upload_v2.return_value = {"ok": True}
+    client.files_upload_v2.return_value = {
+        "ok": True,
+        "files": [{"id": "F999"}],
+    }
+    client.files_info.return_value = {
+        "file": {"shares": {"public": {"C456": [{"ts": "111.222"}]}}}
+    }
     client.users_info.return_value = {
         "user": {"profile": {"display_name": "brendan", "real_name": "Brendan"}}
     }
@@ -184,17 +190,20 @@ def test_post_result_uploads_with_main_comment_only(tmp_path):
 
 
 def test_post_result_posts_thread_reply(tmp_path):
-    """After upload, a thread reply is posted with source attribution."""
+    """After upload, files.info is called to get ts, then thread reply is posted."""
     client = MagicMock()
     client.files_upload_v2.return_value = {
         "ok": True,
+        "files": [{"id": "F999"}],
+    }
+    client.files_info.return_value = {
         "file": {
             "shares": {
                 "public": {
                     "C456": [{"ts": "1234567890.123456"}]
                 }
             }
-        },
+        }
     }
     client.users_info.return_value = {
         "user": {"profile": {"display_name": "brendan", "real_name": "Brendan"}}
@@ -210,6 +219,9 @@ def test_post_result_posts_thread_reply(tmp_path):
 
     post_result(client, "C456", result, sources, "image-gen", tmp_path)
 
+    # files.info called to get message timestamp
+    client.files_info.assert_called_once_with(file="F999")
+
     # Thread reply posted
     client.chat_postMessage.assert_called_once()
     reply_kwargs = client.chat_postMessage.call_args[1]
@@ -218,12 +230,9 @@ def test_post_result_posts_thread_reply(tmp_path):
     assert "brendan" in reply_kwargs["text"]
     assert "https://link1" in reply_kwargs["text"]
 
-    # chat_update (unfurl suppression) is NOT called
-    client.chat_update.assert_not_called()
 
-
-def test_post_result_no_thread_without_ts(tmp_path):
-    """If we can't extract the message ts, skip the thread reply gracefully."""
+def test_post_result_no_thread_without_file_id(tmp_path):
+    """If upload returns no file ID, skip the thread reply gracefully."""
     client = MagicMock()
     client.files_upload_v2.return_value = {"ok": True}
     client.users_info.return_value = {
@@ -240,6 +249,7 @@ def test_post_result_no_thread_without_ts(tmp_path):
 
     post_result(client, "C456", result, sources, "image-gen", tmp_path)
 
+    client.files_info.assert_not_called()
     client.chat_postMessage.assert_not_called()
 
 

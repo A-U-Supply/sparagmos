@@ -132,14 +132,24 @@ def post_result(
         initial_comment=comment,
     )
 
-    # Extract posted message timestamp from file share data
+    # Extract posted message timestamp via files.info API
+    # (files_upload_v2 returns completeUploadExternal response which lacks share data)
     posted_ts = ""
-    file_obj = response.get("file", {})
-    shares = file_obj.get("shares", {})
-    public_shares = shares.get("public", {})
-    channel_shares = public_shares.get(channel_id, [])
-    if channel_shares:
-        posted_ts = channel_shares[0].get("ts", "")
+    file_obj = response.get("file") or {}
+    if not file_obj:
+        files_list = response.get("files") or []
+        if files_list:
+            file_obj = files_list[0]
+    file_id = file_obj.get("id", "")
+    if file_id:
+        try:
+            info_resp = client.files_info(file=file_id)
+            shares = info_resp.get("file", {}).get("shares", {}).get("public", {})
+            channel_shares = shares.get(channel_id, [])
+            if channel_shares:
+                posted_ts = channel_shares[0].get("ts", "")
+        except Exception:
+            logger.warning("Failed to get file info for timestamp, skipping thread reply")
 
     # Post source attribution as a thread reply
     if posted_ts:
