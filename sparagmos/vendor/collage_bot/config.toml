@@ -1,0 +1,16 @@
+[slack]
+source_channel = "image-gen"
+post_channel = "img-junkyard"
+
+[collage]
+num_images = 4
+output_dir = "./collage-bot-output"
+
+[transform]
+split = 0.25       # where to cut (0.0–0.5); 0.25 = quarter/three-quarter
+blend_width = 70   # seam inpaint strip width in pixels
+
+[stencil]
+source_channel = "image-gen"
+post_channel = "img-junkyard"
+output_dir = "./collage-stencil-bot-output"
