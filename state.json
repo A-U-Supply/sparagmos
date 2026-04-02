@@ -1068,6 +1068,44 @@
       ],
       "processed_date": "2026-04-02",
       "posted_ts": "1775152664.595409"
+    },
+    {
+      "source_file_ids": [
+        "F080Z8X3RD1",
+        "F0833P6L4EL",
+        "F0AP36P8WLV",
+        "F04M91Z0WCS",
+        "F0A7NEEGX71"
+      ],
+      "source_dates": [
+        "2024-11-15",
+        "2024-11-25",
+        "2026-03-27",
+        "2023-01-31",
+        "2026-01-12"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "neural-tapestry",
+      "effects": [
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "fragment",
+        "mask_composite",
+        "collage",
+        "deepdream",
+        "spectral",
+        "mask_composite",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-02",
+      "posted_ts": "1775152910.446859"
     }
   ]
 }
