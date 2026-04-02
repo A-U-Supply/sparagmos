@@ -1003,6 +1003,41 @@
       ],
       "processed_date": "2026-04-02",
       "posted_ts": ""
+    },
+    {
+      "source_file_ids": [
+        "F08KFP11QLV",
+        "F08C9HRF145",
+        "F08AGL35L11",
+        "F05QYR8L3EK"
+      ],
+      "source_dates": [
+        "2025-03-27",
+        "2025-02-07",
+        "2025-01-27",
+        "2023-09-07"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "letterpress",
+      "effects": [
+        "dither",
+        "pixel_sort",
+        "pca_decompose",
+        "crt_vhs",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "fragment",
+        "channel_shift",
+        "byte_corrupt"
+      ],
+      "processed_date": "2026-04-02",
+      "posted_ts": ""
     }
   ]
 }
