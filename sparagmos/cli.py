@@ -214,9 +214,23 @@ def main(argv: list[str] | None = None) -> None:
         selected_list = [{"id": Path(p).name} for p in args.input]
     elif args.image_urls is not None:
         # URL mode — download provided URLs, fill remaining from Slack
-        from sparagmos.slack_source import download_url
+        from slack_sdk import WebClient
+        from sparagmos.slack_source import (
+            find_channel_id,
+            fetch_image_files,
+            pick_random_images,
+            download_image,
+            download_url,
+        )
+        from sparagmos.state import State
 
         token = os.environ.get("SLACK_BOT_TOKEN")
+        if not token:
+            logger.error("SLACK_BOT_TOKEN not set")
+            sys.exit(1)
+
+        client = WebClient(token=token)
+        state = State(repo_root / "state.json")
         urls = [u.strip() for u in args.image_urls.split(",") if u.strip()]
 
         if len(urls) > recipe.inputs:
@@ -244,21 +258,6 @@ def main(argv: list[str] | None = None) -> None:
         # Fill remaining slots from Slack if needed
         remaining = recipe.inputs - len(urls)
         if remaining > 0:
-            from slack_sdk import WebClient
-            from sparagmos.slack_source import (
-                find_channel_id,
-                fetch_image_files,
-                pick_random_images,
-                download_image,
-            )
-            from sparagmos.state import State
-
-            if not token:
-                logger.error("SLACK_BOT_TOKEN not set (needed to fill remaining %d image(s))", remaining)
-                sys.exit(1)
-
-            client = WebClient(token=token)
-            state = State(repo_root / "state.json")
 
             channel_id = find_channel_id(client, "image-gen")
             if not channel_id:
