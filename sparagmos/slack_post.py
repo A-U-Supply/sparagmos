@@ -13,37 +13,6 @@ from sparagmos.pipeline import PipelineResult
 logger = logging.getLogger(__name__)
 
 
-def format_provenance(
-    result: PipelineResult,
-    source: dict,
-    channel_name: str = "image-gen",
-) -> str:
-    """Format the provenance text for the Slack message.
-
-    Args:
-        result: Pipeline result with recipe name and step metadata.
-        source: Source image metadata (user, date).
-        channel_name: Source channel name for attribution.
-
-    Returns:
-        Formatted provenance string for initial_comment.
-    """
-    chain = " → ".join(step["effect"] for step in result.steps)
-    user = source.get("user", "unknown")
-    date = source.get("date", "unknown")
-    permalink = source.get("permalink", "")
-
-    lines = [
-        f"~ {result.recipe_name}",
-        chain,
-        f"source: image by <@{user}> in #{channel_name} ({date})",
-    ]
-    if permalink:
-        lines.append(f"original: <{permalink}|view>")
-
-    return "\n".join(lines)
-
-
 def _annotate_step(step: dict) -> str:
     """Return an annotated effect label for a single pipeline step.
 
@@ -116,44 +85,6 @@ def resolve_display_name(client: WebClient, user_id: str) -> str:
     except Exception:
         logger.warning("Failed to resolve display name for %s", user_id)
         return user_id
-
-
-def format_provenance_multi(
-    result: PipelineResult,
-    sources: list[dict],
-    channel_name: str = "image-gen",
-) -> str:
-    """Format provenance text for multi-source pipeline results.
-
-    Args:
-        result: Pipeline result with recipe name and step metadata.
-        sources: List of source image metadata dicts (user, date, permalink).
-        channel_name: Source channel name for attribution.
-
-    Returns:
-        Formatted provenance string for Slack initial_comment.
-    """
-    chain = " → ".join(_annotate_step(step) for step in result.steps)
-
-    source_label = "source" if len(sources) == 1 else "sources"
-    attributions = ", ".join(
-        f"<@{s['user']}> ({s.get('date', 'unknown')})" for s in sources
-    )
-    source_line = f"{source_label}: {attributions} in #{channel_name}"
-
-    lines = [
-        f"~ {result.recipe_name}",
-        chain,
-        source_line,
-    ]
-
-    permalinks = [s.get("permalink", "") for s in sources if s.get("permalink")]
-    if permalinks:
-        link_label = "original" if len(permalinks) == 1 else "originals"
-        links = " · ".join(f"<{url}|view>" for url in permalinks)
-        lines.append(f"{link_label}: {links}")
-
-    return "\n".join(lines)
 
 
 def post_result(

@@ -393,45 +393,16 @@ def main(argv: list[str] | None = None) -> None:
                 logger.info("  %s: %s", step["effect"], step["resolved_params"])
         else:
             # Post to Slack
-            from sparagmos.slack_post import format_provenance_multi
+            from sparagmos.slack_post import post_result
 
             junkyard_id = find_channel_id(client, "img-junkyard")
             if not junkyard_id:
                 logger.error("Channel #img-junkyard not found")
                 sys.exit(1)
 
-            comment = format_provenance_multi(result, source_metadata_list, "image-gen")
-            image_path = Path(tmp) / "sparagmos_output.png"
-            result.image.save(image_path, "PNG")
-            logger.info("Posting to channel %s with comment:\n%s", junkyard_id, comment)
-            response = client.files_upload_v2(
-                channel=junkyard_id,
-                file=str(image_path),
-                filename="sparagmos.png",
-                initial_comment=comment,
+            posted_ts = post_result(
+                client, junkyard_id, result, source_metadata_list, "image-gen", Path(tmp)
             )
-
-            # Extract ts from file share data
-            posted_ts = ""
-            file_obj = response.get("file", {})
-            shares = file_obj.get("shares", {})
-            public_shares = shares.get("public", {})
-            channel_shares = public_shares.get(junkyard_id, [])
-            if channel_shares:
-                posted_ts = channel_shares[0].get("ts", "")
-
-            # Suppress URL unfurling so only the output image renders
-            if posted_ts:
-                try:
-                    client.chat_update(
-                        channel=junkyard_id,
-                        ts=posted_ts,
-                        text=comment,
-                        unfurl_links=False,
-                        unfurl_media=False,
-                    )
-                except Exception:
-                    logger.warning("Failed to suppress unfurls, continuing")
 
             # Update state
             today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
