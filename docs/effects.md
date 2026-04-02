@@ -188,3 +188,17 @@ These effects take **multiple named images** as input. In multi-input recipes, e
 | `pieces` | Number of fragments (int or `[min, max]` range) |
 | `mix_ratio` | Fraction of pieces drawn from the primary vs. secondary sources (0.0–1.0) |
 | `gap` | Gap in pixels between fragments (0 = flush) |
+
+**ancient_collage** — Quadrant-mixed composites with geometric transformation and neural seam inpainting. Takes 4 images, cuts each into quadrants, shuffles them across 4 output composites, applies a grid transform, and uses LaMa inpainting to blend seams. Multi-output: produces 4 images. Vendored from [A-U-Supply/collage-bot](https://github.com/A-U-Supply/collage-bot).
+
+| Param | Description |
+|-------|-------------|
+| `split` | Grid split ratio (0.05–0.45, default 0.25) |
+| `blend_width` | Seam inpainting strip width in pixels (1–200, default 70) |
+| `output` | `all` (default, 4 composites) or `random` (pick 1) |
+
+**ancient_stencil** — Binary mask compositing via Otsu's thresholding. Takes 3 images; each takes a turn as the stencil mask, producing 6 variations by swapping foreground/background assignments. Multi-output: produces 6 images. Vendored from [A-U-Supply/collage-bot](https://github.com/A-U-Supply/collage-bot).
+
+| Param | Description |
+|-------|-------------|
+| `output` | `all` (default, 6 variations) or `random` (pick 1) |
