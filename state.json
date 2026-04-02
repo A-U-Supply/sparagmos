@@ -1038,6 +1038,36 @@
       ],
       "processed_date": "2026-04-02",
       "posted_ts": ""
+    },
+    {
+      "source_file_ids": [
+        "F090E7GF659",
+        "F07U657KMU7",
+        "F05M7QJ66BA"
+      ],
+      "source_dates": [
+        "2025-06-09",
+        "2024-11-02",
+        "2023-08-06"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TA650DEZ"
+      ],
+      "recipe": "holographic-interference",
+      "effects": [
+        "spectral",
+        "spectral",
+        "channel_shift",
+        "blend",
+        "blend",
+        "channel_shift",
+        "spectral",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-02",
+      "posted_ts": "1775152664.595409"
     }
   ]
 }
