@@ -10,6 +10,7 @@ from sparagmos.slack_source import (
     pick_random_image,
     pick_random_images,
     download_image,
+    download_url,
 )
 from sparagmos.slack_post import format_provenance, format_provenance_multi, post_result
 from sparagmos.pipeline import PipelineResult
@@ -261,3 +262,63 @@ def test_post_suppresses_unfurls(tmp_path):
     update_kwargs = client.chat_update.call_args[1]
     assert update_kwargs["unfurl_links"] is False
     assert update_kwargs["unfurl_media"] is False
+
+
+# --- download_url tests ---
+
+
+def _make_image_response(status_code=200, content_type="image/png"):
+    """Create a mock response that looks like an image download."""
+    resp = MagicMock()
+    resp.status_code = status_code
+    resp.headers = {"Content-Type": content_type}
+    resp.content = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
+    resp.raise_for_status = MagicMock()
+    return resp
+
+
+@patch("sparagmos.slack_source.requests.get")
+def test_download_url_public(mock_get):
+    """Public URLs use plain GET without auth."""
+    mock_get.return_value = _make_image_response()
+    result = download_url("https://example.com/photo.png")
+    assert len(result) > 0
+    mock_get.assert_called_once()
+    call_kwargs = mock_get.call_args
+    assert "Authorization" not in call_kwargs.kwargs.get("headers", {})
+
+
+@patch("sparagmos.slack_source.download_image")
+def test_download_url_slack_delegates(mock_download_image):
+    """Slack file URLs delegate to download_image with token."""
+    mock_download_image.return_value = b"\x89PNG" + b"\x00" * 50
+    result = download_url(
+        "https://files.slack.com/T123/F456/img.png",
+        slack_token="xoxb-test-token",
+    )
+    assert len(result) > 0
+    mock_download_image.assert_called_once_with(
+        "https://files.slack.com/T123/F456/img.png",
+        "xoxb-test-token",
+        timeout=30,
+    )
+
+
+def test_download_url_slack_without_token():
+    """Slack file URLs without a token raise ValueError."""
+    with pytest.raises(ValueError, match="requires a bot token"):
+        download_url("https://files.slack.com/T123/img.png")
+
+
+def test_download_url_bad_scheme():
+    """Non-http(s) URLs raise ValueError."""
+    with pytest.raises(ValueError, match="http or https"):
+        download_url("ftp://example.com/img.png")
+
+
+@patch("sparagmos.slack_source.requests.get")
+def test_download_url_non_image_rejected(mock_get):
+    """Non-image responses raise ValueError."""
+    mock_get.return_value = _make_image_response(content_type="text/html")
+    with pytest.raises(ValueError, match="Expected image"):
+        download_url("https://example.com/page.html")

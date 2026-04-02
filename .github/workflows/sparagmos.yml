@@ -8,6 +8,9 @@ on:
       recipe:
         description: 'Recipe name (leave empty for random)'
         default: ''
+      images:
+        description: 'Comma-separated image URLs (optional)'
+        default: ''
 
 jobs:
   sparagmos:
@@ -42,11 +45,14 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
+          CMD="python -m sparagmos"
           if [ -n "${{ inputs.recipe }}" ]; then
-            python -m sparagmos --recipe "${{ inputs.recipe }}"
-          else
-            python -m sparagmos
+            CMD="$CMD --recipe ${{ inputs.recipe }}"
           fi
+          if [ -n "${{ inputs.images }}" ]; then
+            CMD="$CMD --image-urls ${{ inputs.images }}"
+          fi
+          $CMD
 
       - name: Commit state
         run: |

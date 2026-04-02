@@ -36,3 +36,8 @@ jobs:
 
       - name: Validate recipes
         run: python -m sparagmos --validate
+
+      - name: Verify generated worker recipes are up to date
+        run: |
+          python scripts/generate_worker_recipes.py
+          git diff --exit-code worker/src/recipes.ts

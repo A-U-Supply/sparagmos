@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import io
 import logging
 import os
 import random
@@ -65,6 +67,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--recipes-dir",
         default=None,
         help="Path to recipes directory (default: recipes/ in repo root)",
+    )
+    parser.add_argument(
+        "--image-urls",
+        default=None,
+        help="Comma-separated image URLs to use as inputs (remaining filled from Slack)",
     )
     return parser
 
@@ -205,8 +212,87 @@ def main(argv: list[str] | None = None) -> None:
         source_images = [Image.open(p).convert("RGB") for p in args.input]
         source_metadata_list = [{"user": "local", "date": "local"} for _ in args.input]
         selected_list = [{"id": Path(p).name} for p in args.input]
+    elif args.image_urls is not None:
+        # URL mode — download provided URLs, fill remaining from Slack
+        from sparagmos.slack_source import download_url
+
+        token = os.environ.get("SLACK_BOT_TOKEN")
+        urls = [u.strip() for u in args.image_urls.split(",") if u.strip()]
+
+        if len(urls) > recipe.inputs:
+            logger.error(
+                "Recipe '%s' expects %d input(s) but %d URL(s) provided",
+                recipe_slug, recipe.inputs, len(urls),
+            )
+            sys.exit(1)
+
+        source_images = []
+        source_metadata_list = []
+        selected_list = []
+        for url in urls:
+            logger.info("Downloading URL: %s", url)
+            image_bytes = download_url(url, slack_token=token)
+            source_images.append(Image.open(io.BytesIO(image_bytes)).convert("RGB"))
+            url_id = "url:" + hashlib.sha256(url.encode()).hexdigest()[:12]
+            source_metadata_list.append({
+                "user": "url",
+                "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                "permalink": url,
+            })
+            selected_list.append({"id": url_id, "url": url})
+
+        # Fill remaining slots from Slack if needed
+        remaining = recipe.inputs - len(urls)
+        if remaining > 0:
+            from slack_sdk import WebClient
+            from sparagmos.slack_source import (
+                find_channel_id,
+                fetch_image_files,
+                pick_random_images,
+                download_image,
+            )
+            from sparagmos.state import State
+
+            if not token:
+                logger.error("SLACK_BOT_TOKEN not set (needed to fill remaining %d image(s))", remaining)
+                sys.exit(1)
+
+            client = WebClient(token=token)
+            state = State(repo_root / "state.json")
+
+            channel_id = find_channel_id(client, "image-gen")
+            if not channel_id:
+                logger.error("Channel #image-gen not found")
+                sys.exit(1)
+
+            files = fetch_image_files(client, channel_id)
+            if not files:
+                logger.error("No images found in #image-gen")
+                sys.exit(1)
+
+            slack_selected = pick_random_images(
+                files, recipe_slug, remaining, state.processed_combos(), seed
+            )
+            if not slack_selected:
+                logger.warning(
+                    "No unused %d-image combinations for recipe %s", remaining, recipe_slug
+                )
+                sys.exit(0)
+
+            for sel in slack_selected:
+                logger.info("Selected image from Slack: %s", sel["id"])
+                image_bytes = download_image(sel["url"], token)
+                source_images.append(Image.open(io.BytesIO(image_bytes)).convert("RGB"))
+                ts = sel.get("timestamp", 0)
+                source_date = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d") if ts else "unknown"
+                source_metadata_list.append({
+                    "user": sel["user"],
+                    "date": source_date,
+                    "permalink": sel.get("permalink", ""),
+                })
+                selected_list.append(sel)
     else:
-        # Slack mode
+        # Slack mode — all images from #image-gen
         from slack_sdk import WebClient
         from sparagmos.slack_source import (
             find_channel_id,
@@ -216,7 +302,6 @@ def main(argv: list[str] | None = None) -> None:
             download_image,
         )
         from sparagmos.state import State
-        import io
 
         token = os.environ.get("SLACK_BOT_TOKEN")
         if not token:

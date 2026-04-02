@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import random
+from urllib.parse import urlparse
 from typing import Any
 
 import requests
@@ -12,6 +13,8 @@ from slack_sdk import WebClient
 logger = logging.getLogger(__name__)
 
 IMAGE_MIMETYPES = {"image/png", "image/jpeg", "image/gif", "image/webp"}
+
+SLACK_HOSTS = {"files.slack.com", "files-origin.slack.com"}
 
 
 def find_channel_id(client: WebClient, channel_name: str) -> str | None:
@@ -172,3 +175,53 @@ def download_image(url: str, token: str, timeout: int = 30) -> bytes:
         return resp.content
 
     raise requests.TooManyRedirects(f"Too many redirects downloading {url}")
+
+
+def download_url(url: str, slack_token: str | None = None, timeout: int = 30) -> bytes:
+    """Download an image from a URL.
+
+    For Slack file URLs (files.slack.com), uses Bearer token auth via
+    the existing download_image function. For all other URLs, makes a
+    plain GET request.
+
+    Args:
+        url: Image URL to download.
+        slack_token: Slack bot token (required for Slack file URLs).
+        timeout: Request timeout in seconds.
+
+    Returns:
+        Image bytes.
+
+    Raises:
+        ValueError: If URL scheme is not http/https, response is not an
+            image, or a Slack URL is given without a token.
+        requests.HTTPError: On non-200 response.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError(f"URL must be http or https, got {parsed.scheme!r}")
+
+    # Slack file URLs need Bearer token auth
+    if parsed.hostname in SLACK_HOSTS or (
+        parsed.hostname and parsed.hostname.endswith(".slack.com")
+    ):
+        if not slack_token:
+            raise ValueError(
+                f"Slack file URL requires a bot token: {url}"
+            )
+        return download_image(url, slack_token, timeout=timeout)
+
+    # Public URL — plain GET
+    resp = requests.get(
+        url,
+        timeout=timeout,
+        headers={"User-Agent": "sparagmos/1.0"},
+    )
+    resp.raise_for_status()
+
+    content_type = resp.headers.get("Content-Type", "")
+    if not content_type.startswith("image/"):
+        raise ValueError(
+            f"Expected image content from {url}, got {content_type!r}"
+        )
+    return resp.content
