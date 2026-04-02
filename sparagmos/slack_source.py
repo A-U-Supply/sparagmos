@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import random
+import re
 from urllib.parse import urlparse
 from typing import Any
 
@@ -15,6 +16,12 @@ logger = logging.getLogger(__name__)
 IMAGE_MIMETYPES = {"image/png", "image/jpeg", "image/gif", "image/webp"}
 
 SLACK_HOSTS = {"files.slack.com", "files-origin.slack.com"}
+
+# Matches Slack permalink URLs like:
+# https://WORKSPACE.slack.com/files/USER_ID/FILE_ID/filename.ext
+_SLACK_PERMALINK_RE = re.compile(
+    r"https?://[^/]+\.slack\.com/files/[^/]+/([A-Z0-9]+)"
+)
 
 
 def find_channel_id(client: WebClient, channel_name: str) -> str | None:
@@ -201,10 +208,27 @@ def download_url(url: str, slack_token: str | None = None, timeout: int = 30) ->
     if parsed.scheme not in ("http", "https"):
         raise ValueError(f"URL must be http or https, got {parsed.scheme!r}")
 
-    # Slack file URLs need Bearer token auth
-    if parsed.hostname in SLACK_HOSTS or (
-        parsed.hostname and parsed.hostname.endswith(".slack.com")
-    ):
+    # Slack permalink URLs (workspace.slack.com/files/USER/FILE_ID/name)
+    # need to be resolved via the API to get the actual download URL
+    permalink_match = _SLACK_PERMALINK_RE.match(url)
+    if permalink_match:
+        if not slack_token:
+            raise ValueError(
+                f"Slack permalink URL requires a bot token: {url}"
+            )
+        file_id = permalink_match.group(1)
+        client = WebClient(token=slack_token)
+        resp = client.files_info(file=file_id)
+        download_url_str = resp["file"].get("url_private_download", "")
+        if not download_url_str:
+            raise ValueError(
+                f"Could not get download URL for Slack file {file_id}"
+            )
+        logger.info("Resolved Slack permalink %s -> %s", file_id, download_url_str)
+        return download_image(download_url_str, slack_token, timeout=timeout)
+
+    # Direct Slack file URLs (files.slack.com) need Bearer token auth
+    if parsed.hostname in SLACK_HOSTS:
         if not slack_token:
             raise ValueError(
                 f"Slack file URL requires a bot token: {url}"

@@ -304,8 +304,38 @@ def test_download_url_slack_delegates(mock_download_image):
     )
 
 
+@patch("sparagmos.slack_source.download_image")
+@patch("sparagmos.slack_source.WebClient")
+def test_download_url_slack_permalink(mock_client_cls, mock_download_image):
+    """Slack permalink URLs resolve file ID via API then download."""
+    mock_client = MagicMock()
+    mock_client_cls.return_value = mock_client
+    mock_client.files_info.return_value = {
+        "file": {"url_private_download": "https://files.slack.com/real-download-url"}
+    }
+    mock_download_image.return_value = b"\x89PNG" + b"\x00" * 50
+
+    result = download_url(
+        "https://au-supply.slack.com/files/U03TD7FSUAE/F0AQB5F4HHT/image.jpg",
+        slack_token="xoxb-test-token",
+    )
+    assert len(result) > 0
+    mock_client.files_info.assert_called_once_with(file="F0AQB5F4HHT")
+    mock_download_image.assert_called_once_with(
+        "https://files.slack.com/real-download-url",
+        "xoxb-test-token",
+        timeout=30,
+    )
+
+
+def test_download_url_slack_permalink_without_token():
+    """Slack permalink URLs without a token raise ValueError."""
+    with pytest.raises(ValueError, match="requires a bot token"):
+        download_url("https://au-supply.slack.com/files/U123/F456/img.png")
+
+
 def test_download_url_slack_without_token():
-    """Slack file URLs without a token raise ValueError."""
+    """Slack direct file URLs without a token raise ValueError."""
     with pytest.raises(ValueError, match="requires a bot token"):
         download_url("https://files.slack.com/T123/img.png")
 
