@@ -300,8 +300,18 @@ def main(argv: list[str] | None = None) -> None:
 
         # Output
         if args.output:
-            result.image.save(args.output, "PNG")
-            logger.info("Saved output to %s", args.output)
+            output_path = Path(args.output)
+            if result.images and len(result.images) > 1:
+                stem = output_path.stem
+                suffix = output_path.suffix
+                parent = output_path.parent
+                for i, img in enumerate(result.images):
+                    numbered = parent / f"{stem}_{i+1}{suffix}"
+                    img.save(numbered, "PNG")
+                    logger.info("Saved output %d/%d to %s", i + 1, len(result.images), numbered)
+            else:
+                result.image.save(args.output, "PNG")
+                logger.info("Saved output to %s", args.output)
         elif args.dry_run:
             logger.info("Dry run — not posting to Slack")
             logger.info("Recipe: %s", result.recipe_name)
@@ -317,15 +327,36 @@ def main(argv: list[str] | None = None) -> None:
                 sys.exit(1)
 
             comment = format_provenance_multi(result, source_metadata_list, "image-gen")
-            image_path = Path(tmp) / "sparagmos_output.png"
-            result.image.save(image_path, "PNG")
-            logger.info("Posting to channel %s with comment:\n%s", junkyard_id, comment)
-            response = client.files_upload_v2(
-                channel=junkyard_id,
-                file=str(image_path),
-                filename="sparagmos.png",
-                initial_comment=comment,
-            )
+
+            if result.images and len(result.images) > 1:
+                file_uploads = []
+                for i, img in enumerate(result.images):
+                    img_path = Path(tmp) / f"sparagmos_output_{i+1}.png"
+                    img.save(img_path, "PNG")
+                    file_uploads.append({
+                        "file": str(img_path),
+                        "filename": f"sparagmos_{i+1}.png",
+                    })
+                logger.info(
+                    "Posting %d images to channel %s with comment:\n%s",
+                    len(file_uploads), junkyard_id, comment,
+                )
+                response = client.files_upload_v2(
+                    channel=junkyard_id,
+                    file_uploads=file_uploads,
+                    initial_comment=comment,
+                )
+            else:
+                image_path = Path(tmp) / "sparagmos_output.png"
+                result.image.save(image_path, "PNG")
+                logger.info("Posting to channel %s with comment:\n%s", junkyard_id, comment)
+                response = client.files_upload_v2(
+                    channel=junkyard_id,
+                    file=str(image_path),
+                    filename="sparagmos.png",
+                    initial_comment=comment,
+                )
+
             posted_ts = response.get("ts", "")
 
             # Update state
