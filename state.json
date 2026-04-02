@@ -800,6 +800,31 @@
       ],
       "processed_date": "2026-04-01",
       "posted_ts": ""
+    },
+    {
+      "source_file_ids": [
+        "F0437BXRR1P",
+        "F0703DH7W5N"
+      ],
+      "source_dates": [
+        "2022-09-17",
+        "2024-04-17"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "x-ray-composite",
+      "effects": [
+        "pca_decompose",
+        "mask_composite",
+        "blend",
+        "spectral",
+        "dither",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-02",
+      "posted_ts": ""
     }
   ]
 }
