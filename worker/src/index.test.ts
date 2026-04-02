@@ -6,7 +6,7 @@ import {
   getRecipe,
   RECIPES,
 } from "./recipes";
-import { parseSlashCommand } from "./index";
+import { parseSlashCommand, fetchWorkflowStatus } from "./index";
 
 // ---------------------------------------------------------------------------
 // isValidRecipe
@@ -173,6 +173,11 @@ describe("parseSlashCommand", () => {
   it("parses list command", () => {
     const result = parseSlashCommand("list");
     expect(result.command).toBe("list");
+  });
+
+  it("parses status command", () => {
+    const result = parseSlashCommand("status");
+    expect(result.command).toBe("status");
   });
 
   it("parses recipe with image URLs", () => {

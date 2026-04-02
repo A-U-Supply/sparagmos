@@ -190,6 +190,7 @@ function buildHelpText(): string {
     "  `/sparagmos` -- run a random recipe on random images from #image-gen",
     "  `/sparagmos <recipe>` -- run a specific recipe with random images",
     "  `/sparagmos list` -- show all available recipes grouped by input count",
+    "  `/sparagmos status` -- check recent run status",
     "  `/sparagmos help` -- show this message",
     "",
     "*Image URL support:*",
@@ -223,6 +224,96 @@ function buildHelpText(): string {
 }
 
 // ---------------------------------------------------------------------------
+// Status
+// ---------------------------------------------------------------------------
+
+interface WorkflowRun {
+  status: string;
+  conclusion: string | null;
+  created_at: string;
+  updated_at: string;
+  html_url: string;
+  run_started_at: string;
+  event: string;
+}
+
+/** Format a duration in seconds to a human-readable string. */
+function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
+}
+
+/** Format a single workflow run for Slack display. */
+function formatRun(run: WorkflowRun): string {
+  const statusEmoji =
+    run.status === "completed"
+      ? run.conclusion === "success"
+        ? ":white_check_mark:"
+        : ":x:"
+      : run.status === "in_progress"
+        ? ":hourglass_flowing_sand:"
+        : ":clock1:";
+
+  const label =
+    run.status === "completed"
+      ? run.conclusion === "success"
+        ? "success"
+        : (run.conclusion ?? "failed")
+      : run.status;
+
+  const started = new Date(run.run_started_at || run.created_at);
+  const updated = new Date(run.updated_at);
+  const durationSec = Math.round((updated.getTime() - started.getTime()) / 1000);
+  const duration =
+    run.status === "completed" ? ` in ${formatDuration(durationSec)}` : "";
+
+  const timeAgo = Math.round((Date.now() - started.getTime()) / 60000);
+  const when = timeAgo < 1 ? "just now" : `${timeAgo}m ago`;
+
+  const trigger = run.event === "schedule" ? "scheduled" : "manual";
+
+  return `${statusEmoji} *${label}* (${trigger}, ${when}${duration}) -- <${run.html_url}|logs>`;
+}
+
+/**
+ * Fetch recent sparagmos workflow runs from the GitHub Actions API.
+ * Returns a formatted Slack message.
+ */
+export async function fetchWorkflowStatus(env: Env): Promise<string> {
+  const response = await fetch(
+    "https://api.github.com/repos/A-U-Supply/sparagmos/actions/workflows/sparagmos.yml/runs?per_page=3",
+    {
+      headers: {
+        Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+        Accept: "application/vnd.github+json",
+        "User-Agent": "sparagmos-slash-command/1.0",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+    },
+  );
+
+  if (!response.ok) {
+    return ":warning: Failed to fetch workflow status from GitHub.";
+  }
+
+  const data = (await response.json()) as { workflow_runs: WorkflowRun[] };
+  const runs = data.workflow_runs;
+
+  if (runs.length === 0) {
+    return "No recent runs found.";
+  }
+
+  const lines = ["*Recent sparagmos runs:*", ""];
+  for (const run of runs) {
+    lines.push(formatRun(run));
+  }
+
+  return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
 // Command routing
 // ---------------------------------------------------------------------------
 
@@ -240,6 +331,12 @@ async function handleSlashCommand(body: string, env: Env): Promise<Response> {
   // List all recipes
   if (command === "list") {
     return slackResponse(formatRecipeList());
+  }
+
+  // Status
+  if (command === "status") {
+    const status = await fetchWorkflowStatus(env);
+    return slackResponse(status);
   }
 
   // Random recipe (no args or explicit "random")

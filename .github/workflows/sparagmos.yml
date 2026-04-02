@@ -70,3 +70,18 @@ jobs:
               sleep $((RANDOM % 10 + 5))
             done
           fi
+
+      - name: Notify Slack on failure
+        if: failure()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        run: |
+          RECIPE="${{ inputs.recipe }}"
+          if [ -z "$RECIPE" ]; then
+            RECIPE="random"
+          fi
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -s -X POST https://slack.com/api/chat.postMessage \
+            -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"channel\": \"img-junkyard\", \"text\": \":x: Sparagmos run failed (recipe: ${RECIPE}). <${RUN_URL}|View logs>\"}"
