@@ -113,9 +113,11 @@ def post_result(
     """
     comment = format_main_comment(result)
 
-    # Resolve display names for source attribution
-    for s in sources:
-        s["display_name"] = resolve_display_name(client, s["user"])
+    # Resolve display names for source attribution (without mutating input)
+    resolved_sources = [
+        {**s, "display_name": resolve_display_name(client, s["user"])}
+        for s in sources
+    ]
 
     # Save image to temp file for upload
     image_path = temp_dir / "sparagmos_output.png"
@@ -141,7 +143,7 @@ def post_result(
 
     # Post source attribution as a thread reply
     if posted_ts:
-        thread_text = format_thread_reply(sources, source_channel_name)
+        thread_text = format_thread_reply(resolved_sources, source_channel_name)
         try:
             client.chat_postMessage(
                 channel=channel_id,
