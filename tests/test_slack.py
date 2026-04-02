@@ -12,7 +12,7 @@ from sparagmos.slack_source import (
     download_image,
     download_url,
 )
-from sparagmos.slack_post import format_provenance, format_provenance_multi, post_result
+from sparagmos.slack_post import format_provenance, format_provenance_multi, post_result, format_main_comment, format_thread_reply
 from sparagmos.pipeline import PipelineResult
 
 
@@ -352,3 +352,66 @@ def test_download_url_non_image_rejected(mock_get):
     mock_get.return_value = _make_image_response(content_type="text/html")
     with pytest.raises(ValueError, match="Expected image"):
         download_url("https://example.com/page.html")
+
+
+# --- format_main_comment tests ---
+
+
+def test_format_main_comment():
+    steps = [
+        {"effect": "deepdream", "image": "a"},
+        {"effect": "blend", "images": ["a", "b"], "into": "canvas"},
+        {"effect": "jpeg_destroy"},
+    ]
+    result = PipelineResult(
+        image=Image.new("RGB", (64, 64)),
+        recipe_name="Mosaic Dissolution",
+        steps=steps,
+    )
+    text = format_main_comment(result)
+    assert text == "~ Mosaic Dissolution\ndeepdream(a) → blend(a,b→canvas) → jpeg_destroy"
+
+
+def test_format_main_comment_no_source_info():
+    """Main comment must not contain user mentions, dates, or links."""
+    steps = [{"effect": "invert", "image": "a"}]
+    result = PipelineResult(
+        image=Image.new("RGB", (64, 64)),
+        recipe_name="Simple",
+        steps=steps,
+    )
+    text = format_main_comment(result)
+    assert "<@" not in text
+    assert "source" not in text.lower()
+    assert "original" not in text.lower()
+    assert "http" not in text
+
+
+# --- format_thread_reply tests ---
+
+
+def test_format_thread_reply_multi():
+    sources = [
+        {"display_name": "brendan", "date": "2026-04-01", "permalink": "https://link1"},
+        {"display_name": "jake", "date": "2026-03-30", "permalink": "https://link2"},
+    ]
+    text = format_thread_reply(sources, "image-gen")
+    assert "sources: brendan (2026-04-01), jake (2026-03-30) in #image-gen" in text
+    assert "originals: <https://link1|view> · <https://link2|view>" in text
+    assert "<@" not in text  # no mentions
+
+
+def test_format_thread_reply_single():
+    sources = [
+        {"display_name": "brendan", "date": "2026-04-01", "permalink": "https://link1"},
+    ]
+    text = format_thread_reply(sources, "image-gen")
+    assert "source: brendan (2026-04-01) in #image-gen" in text
+    assert "original: <https://link1|view>" in text
+
+
+def test_format_thread_reply_no_permalink():
+    sources = [{"display_name": "brendan", "date": "2026-04-01"}]
+    text = format_thread_reply(sources, "image-gen")
+    assert "source: brendan (2026-04-01) in #image-gen" in text
+    assert "original" not in text

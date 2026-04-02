@@ -66,6 +66,44 @@ def _annotate_step(step: dict) -> str:
     return effect
 
 
+def format_main_comment(result: PipelineResult) -> str:
+    """Format the main Slack message: recipe name + annotated effect chain.
+
+    Source attribution is posted separately in a thread reply.
+    """
+    chain = " → ".join(_annotate_step(step) for step in result.steps)
+    return f"~ {result.recipe_name}\n{chain}"
+
+
+def format_thread_reply(
+    sources: list[dict],
+    channel_name: str = "image-gen",
+) -> str:
+    """Format the thread reply with source attribution and permalink links.
+
+    Args:
+        sources: List of source dicts with 'display_name', 'date', and
+            optional 'permalink' keys.
+        channel_name: Source channel name for attribution.
+
+    Returns:
+        Formatted string for the thread reply text.
+    """
+    source_label = "source" if len(sources) == 1 else "sources"
+    attributions = ", ".join(
+        f"{s['display_name']} ({s.get('date', 'unknown')})" for s in sources
+    )
+    lines = [f"{source_label}: {attributions} in #{channel_name}"]
+
+    permalinks = [s.get("permalink", "") for s in sources if s.get("permalink")]
+    if permalinks:
+        link_label = "original" if len(permalinks) == 1 else "originals"
+        links = " · ".join(f"<{url}|view>" for url in permalinks)
+        lines.append(f"{link_label}: {links}")
+
+    return "\n".join(lines)
+
+
 def format_provenance_multi(
     result: PipelineResult,
     sources: list[dict],
