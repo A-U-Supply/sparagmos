@@ -134,6 +134,39 @@ function slackResponse(text: string, ephemeral = true): Response {
 }
 
 /**
+ * Dispatch the collage-bot gif-speed workflow via the REST API.
+ * Returns true on success, false on failure.
+ */
+async function dispatchGifSpeedWorkflow(
+  env: Env,
+  frameDuration: string,
+  messageLink: string,
+): Promise<boolean> {
+  const response = await fetch(
+    "https://api.github.com/repos/A-U-Supply/collage-bot/actions/workflows/run-gif-speed.yml/dispatches",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+        Accept: "application/vnd.github+json",
+        "User-Agent": "sparagmos-slash-command/1.0",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+      body: JSON.stringify({
+        ref: "master",
+        inputs: { frame_duration: frameDuration, message_link: messageLink },
+      }),
+    },
+  );
+
+  if (response.status !== 204) {
+    const text = await response.text();
+    console.error(`GitHub dispatch failed: ${response.status} ${text}`);
+  }
+  return response.status === 204;
+}
+
+/**
  * Dispatch the sparagmos GitHub Actions workflow via the REST API.
  * Returns true on success, false on failure.
  */
@@ -317,9 +350,57 @@ export async function fetchWorkflowStatus(env: Env): Promise<string> {
 // Command routing
 // ---------------------------------------------------------------------------
 
+/** Handle a /gif-speed slash command. */
+async function handleGifSpeedCommand(
+  body: string,
+  env: Env,
+): Promise<Response> {
+  const params = new URLSearchParams(body);
+  const parts = (params.get("text") ?? "").trim().split(/\s+/).filter(Boolean);
+
+  // Expect: /gif-speed <frame_duration_ms> <message_link>
+  const frameDuration = parts[0];
+  const messageLink = parts[1];
+
+  if (!frameDuration || !/^\d+$/.test(frameDuration)) {
+    return slackResponse(
+      ":x: Usage: `/gif-speed <frame_duration_ms> <message_link>`\n" +
+        "Example: `/gif-speed 200 https://a-u-supply.slack.com/archives/C.../p...`",
+    );
+  }
+
+  if (!messageLink || !/^https?:\/\//i.test(messageLink)) {
+    return slackResponse(
+      ":x: A Slack message link is required.\n" +
+        "Usage: `/gif-speed <frame_duration_ms> <message_link>`",
+    );
+  }
+
+  const dispatched = await dispatchGifSpeedWorkflow(
+    env,
+    frameDuration,
+    messageLink,
+  );
+  if (dispatched) {
+    return slackResponse(
+      `:scissors: Re-rendering GIF at *${frameDuration}ms/frame*... result in #img-junkyard shortly.`,
+    );
+  }
+  return slackResponse(
+    ":warning: Failed to dispatch workflow. Check the GitHub token configuration.",
+  );
+}
+
 /** Handle the parsed slash command body. */
 async function handleSlashCommand(body: string, env: Env): Promise<Response> {
   const params = new URLSearchParams(body);
+  const slashCommand = (params.get("command") ?? "").toLowerCase();
+
+  // Route /gif-speed to its own handler
+  if (slashCommand === "/gif-speed") {
+    return handleGifSpeedCommand(body, env);
+  }
+
   const rawText = (params.get("text") ?? "").trim();
   const { command, urls } = parseSlashCommand(rawText);
 
