@@ -134,6 +134,23 @@ Recipes are YAML files in `recipes/` that define named pipelines of chained effe
 
 ─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
 
+## Slack Slash Command
+
+Trigger generation directly from Slack with `/sparagmos`:
+
+| Command | What it does |
+|---------|-------------|
+| `/sparagmos` | Generate with a random recipe |
+| `/sparagmos mosaic-dissolution` | Generate with a specific recipe |
+| `/sparagmos list` | Show available recipes grouped by input count |
+| `/sparagmos help` | Show usage info |
+
+Results appear in #img-junkyard ~2-5 minutes after triggering.
+
+The slash command is powered by a Cloudflare Worker (`worker/`) that receives the Slack request and dispatches the existing GitHub Actions workflow. See `worker/` for deployment details.
+
+─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
+
 ## Architecture
 
 ```

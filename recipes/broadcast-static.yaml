@@ -23,7 +23,7 @@ steps:
   - type: sonify
     image: c
     params:
-      effect: chorus
+      effect: phaser
       intensity: [0.3, 0.6]
 
   - type: collage

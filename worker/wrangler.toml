@@ -1,0 +1,7 @@
+name = "sparagmos-slash-command"
+main = "src/index.ts"
+compatibility_date = "2026-03-26"
+
+# Secrets are set via `wrangler secret put`:
+# wrangler secret put SLACK_SIGNING_SECRET
+# wrangler secret put GITHUB_TOKEN

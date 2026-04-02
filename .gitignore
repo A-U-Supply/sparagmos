@@ -38,3 +38,7 @@ models/
 
 # Temp files from effects
 tmp/
+
+# Node / Cloudflare Worker
+node_modules/
+.wrangler/

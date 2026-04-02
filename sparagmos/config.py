@@ -215,4 +215,8 @@ def validate_recipe(recipe: Recipe) -> list[str]:
                 f"{step_label}: compositing step (images:) must specify into:"
             )
 
+        # Track dynamically-created slot names so later steps can reference them
+        if step.into is not None:
+            valid_names.add(step.into)
+
     return errors

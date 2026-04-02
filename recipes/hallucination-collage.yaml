@@ -48,7 +48,7 @@ steps:
   - type: deepdream
     image: e
     params:
-      iterations: [23, 20]
+      iterations: [20, 23]
       octave_scale: [1.4, 1.5]
       jitter: [40, 48]
       learning_rate: [0.018, 0.025]
