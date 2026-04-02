@@ -160,27 +160,31 @@ def post_result(
     client: WebClient,
     channel_id: str,
     result: PipelineResult,
-    source: dict,
+    sources: list[dict],
     source_channel_name: str,
     temp_dir: Path,
 ) -> str:
-    """Post a processed image to Slack as a single message.
+    """Post a processed image to Slack with source info in a thread reply.
 
-    Uses files_upload_v2 with initial_comment to combine image and
-    text in one message (no threads).
+    Uploads the output image with a main comment (recipe + effects only),
+    then posts source attribution and permalink links as a thread reply.
 
     Args:
         client: Slack WebClient.
         channel_id: Target channel ID (#img-junkyard).
         result: Pipeline result with image and metadata.
-        source: Source image metadata.
+        sources: List of source metadata dicts (user, date, permalink).
         source_channel_name: Name of source channel for attribution.
         temp_dir: Temp directory for saving the image file.
 
     Returns:
         Message timestamp of the posted message.
     """
-    comment = format_provenance(result, source, source_channel_name)
+    comment = format_main_comment(result)
+
+    # Resolve display names for source attribution
+    for s in sources:
+        s["display_name"] = resolve_display_name(client, s["user"])
 
     # Save image to temp file for upload
     image_path = temp_dir / "sparagmos_output.png"
@@ -204,17 +208,16 @@ def post_result(
     if channel_shares:
         posted_ts = channel_shares[0].get("ts", "")
 
-    # Suppress unfurling so source image permalink URLs don't render as previews
+    # Post source attribution as a thread reply
     if posted_ts:
+        thread_text = format_thread_reply(sources, source_channel_name)
         try:
-            client.chat_update(
+            client.chat_postMessage(
                 channel=channel_id,
-                ts=posted_ts,
-                text=comment,
-                unfurl_links=False,
-                unfurl_media=False,
+                thread_ts=posted_ts,
+                text=thread_text,
             )
         except Exception:
-            logger.warning("Failed to suppress unfurls, continuing")
+            logger.warning("Failed to post thread reply, continuing")
 
     return posted_ts
