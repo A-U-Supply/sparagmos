@@ -139,21 +139,27 @@ def post_result(
     try:
         history = client.conversations_history(channel=channel_id, limit=1)
         messages = history.get("messages", [])
+        logger.info("conversations_history returned %d messages", len(messages))
         if messages:
             posted_ts = messages[0].get("ts", "")
-    except Exception:
-        logger.warning("Failed to read channel history for message timestamp")
+            logger.info("Extracted posted_ts=%s from message type=%s", posted_ts, messages[0].get("subtype", "normal"))
+    except Exception as e:
+        logger.warning("Failed to read channel history for message timestamp: %s", e)
 
     # Post source attribution as a thread reply
     if posted_ts:
         thread_text = format_thread_reply(resolved_sources, source_channel_name)
+        logger.info("Posting thread reply to ts=%s: %s", posted_ts, thread_text)
         try:
-            client.chat_postMessage(
+            reply_resp = client.chat_postMessage(
                 channel=channel_id,
                 thread_ts=posted_ts,
                 text=thread_text,
             )
-        except Exception:
-            logger.warning("Failed to post thread reply, continuing")
+            logger.info("Thread reply posted, ok=%s", reply_resp.get("ok"))
+        except Exception as e:
+            logger.warning("Failed to post thread reply: %s", e)
+    else:
+        logger.warning("No posted_ts, skipping thread reply")
 
     return posted_ts
