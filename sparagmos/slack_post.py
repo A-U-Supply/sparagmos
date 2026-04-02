@@ -119,18 +119,32 @@ def post_result(
         for s in sources
     ]
 
-    # Save image to temp file for upload
-    image_path = temp_dir / "sparagmos_output.png"
-    result.image.save(image_path, "PNG")
-
     logger.info("Posting to channel %s with comment:\n%s", channel_id, comment)
 
-    response = client.files_upload_v2(
-        channel=channel_id,
-        file=str(image_path),
-        filename="sparagmos.png",
-        initial_comment=comment,
-    )
+    if result.images and len(result.images) > 1:
+        file_uploads = []
+        for i, img in enumerate(result.images):
+            img_path = temp_dir / f"sparagmos_output_{i+1}.png"
+            img.save(img_path, "PNG")
+            file_uploads.append({
+                "file": str(img_path),
+                "filename": f"sparagmos_{i+1}.png",
+            })
+        logger.info("Uploading %d images", len(file_uploads))
+        response = client.files_upload_v2(
+            channel=channel_id,
+            file_uploads=file_uploads,
+            initial_comment=comment,
+        )
+    else:
+        image_path = temp_dir / "sparagmos_output.png"
+        result.image.save(image_path, "PNG")
+        response = client.files_upload_v2(
+            channel=channel_id,
+            file=str(image_path),
+            filename="sparagmos.png",
+            initial_comment=comment,
+        )
 
     # Get the timestamp of the message we just posted by reading channel history.
     # files_upload_v2 doesn't return the message ts, and files.info requires

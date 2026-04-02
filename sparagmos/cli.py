@@ -384,8 +384,18 @@ def main(argv: list[str] | None = None) -> None:
 
         # Output
         if args.output:
-            result.image.save(args.output, "PNG")
-            logger.info("Saved output to %s", args.output)
+            output_path = Path(args.output)
+            if result.images and len(result.images) > 1:
+                stem = output_path.stem
+                suffix = output_path.suffix
+                parent = output_path.parent
+                for i, img in enumerate(result.images):
+                    numbered = parent / f"{stem}_{i+1}{suffix}"
+                    img.save(numbered, "PNG")
+                    logger.info("Saved output %d/%d to %s", i + 1, len(result.images), numbered)
+            else:
+                result.image.save(args.output, "PNG")
+                logger.info("Saved output to %s", args.output)
         elif args.dry_run:
             logger.info("Dry run — not posting to Slack")
             logger.info("Recipe: %s", result.recipe_name)

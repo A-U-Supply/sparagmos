@@ -26,6 +26,7 @@ class PipelineResult:
     image: Image.Image
     recipe_name: str
     steps: list[dict[str, Any]] = field(default_factory=list)
+    images: list[Image.Image] | None = None
 
 
 def run_pipeline(
@@ -126,14 +127,17 @@ def run_pipeline(
                 target = step.into or "canvas"
                 registers[target] = result.image.convert("RGB")
 
-                steps.append({
+                step_record = {
                     "effect": effect.name,
                     "description": effect.description,
                     "resolved_params": resolved,
                     "metadata": result.metadata,
                     "images": list(step.images),
                     "into": target,
-                })
+                }
+                if result.images is not None:
+                    step_record["_multi_images"] = result.images
+                steps.append(step_record)
             else:
                 # Single-image step: default to "canvas"
                 source_name = step.image or "canvas"
@@ -160,8 +164,14 @@ def run_pipeline(
             "Ensure at least one step writes to 'canvas' (via into='canvas' or default routing)."
         )
 
+    # Check if the final step produced multiple images
+    final_images = None
+    if steps and steps[-1].get("_multi_images") is not None:
+        final_images = steps[-1].pop("_multi_images")
+
     return PipelineResult(
         image=registers["canvas"],
         recipe_name=recipe.name,
         steps=steps,
+        images=final_images,
     )

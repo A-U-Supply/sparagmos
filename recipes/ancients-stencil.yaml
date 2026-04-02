@@ -1,0 +1,14 @@
+name: Ancients Stencil
+description: >
+  Binary mask compositing via Otsu's thresholding. Three source images
+  take turns as the stencil mask, producing six variations of
+  foreground/background swaps.
+
+inputs: 3
+
+steps:
+  - type: ancient_stencil
+    images: [a, b, c]
+    into: canvas
+    params:
+      output: all

@@ -38,6 +38,7 @@ class EffectResult:
 
     image: Image.Image
     metadata: dict[str, Any] = field(default_factory=dict)
+    images: list[Image.Image] | None = None
 
 
 class Effect(ABC):

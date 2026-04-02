@@ -1,0 +1,16 @@
+name: Ancients Collage
+description: >
+  Quadrant-mixed composites with geometric transformation and neural
+  seam inpainting. Four source images are cut into quadrants, shuffled
+  across four outputs, grid-transformed, and seamlessly blended.
+
+inputs: 4
+
+steps:
+  - type: ancient_collage
+    images: [a, b, c, d]
+    into: canvas
+    params:
+      split: 0.25
+      blend_width: 70
+      output: all
