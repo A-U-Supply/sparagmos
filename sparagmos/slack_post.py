@@ -141,15 +141,23 @@ def post_result(
         if files_list:
             file_obj = files_list[0]
     file_id = file_obj.get("id", "")
+    logger.info("Upload response: file_id=%s, keys=%s", file_id, list(response.data.keys()) if hasattr(response, 'data') else list(response.keys()))
     if file_id:
         try:
             info_resp = client.files_info(file=file_id)
-            shares = info_resp.get("file", {}).get("shares", {}).get("public", {})
-            channel_shares = shares.get(channel_id, [])
+            shares = info_resp.get("file", {}).get("shares", {})
+            public_shares = shares.get("public", {})
+            logger.info("files.info shares: public channels=%s", list(public_shares.keys()))
+            channel_shares = public_shares.get(channel_id, [])
             if channel_shares:
                 posted_ts = channel_shares[0].get("ts", "")
-        except Exception:
-            logger.warning("Failed to get file info for timestamp, skipping thread reply")
+                logger.info("Extracted posted_ts=%s", posted_ts)
+            else:
+                logger.warning("No shares found for channel %s in files.info response", channel_id)
+        except Exception as e:
+            logger.warning("Failed to get file info for timestamp: %s", e)
+    else:
+        logger.warning("No file_id found in upload response")
 
     # Post source attribution as a thread reply
     if posted_ts:
