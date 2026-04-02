@@ -863,6 +863,45 @@
       ],
       "processed_date": "2026-04-02",
       "posted_ts": ""
+    },
+    {
+      "source_file_ids": [
+        "F0A4GKEFRT4",
+        "F08E4K30Y6S",
+        "F09F3LA2QAW",
+        "F07U4QYD02Y",
+        "F08HY5MJMCG"
+      ],
+      "source_dates": [
+        "2025-12-18",
+        "2025-02-20",
+        "2025-09-13",
+        "2024-10-30",
+        "2025-03-11"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TA650DEZ",
+        "U03TD4SUDKL",
+        "U03TFJBRK2Q"
+      ],
+      "recipe": "mosaic-rebirth",
+      "effects": [
+        "channel_shift",
+        "deepdream",
+        "pca_decompose",
+        "crt_vhs",
+        "dither",
+        "collage",
+        "pixel_sort",
+        "fragment",
+        "mask_composite",
+        "collage",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-02",
+      "posted_ts": ""
     }
   ]
 }
