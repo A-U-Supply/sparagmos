@@ -12,7 +12,7 @@ from sparagmos.slack_source import (
     download_image,
     download_url,
 )
-from sparagmos.slack_post import format_provenance, format_provenance_multi, post_result, format_main_comment, format_thread_reply
+from sparagmos.slack_post import format_provenance, format_provenance_multi, post_result, format_main_comment, format_thread_reply, resolve_display_name
 from sparagmos.pipeline import PipelineResult
 
 
@@ -415,3 +415,26 @@ def test_format_thread_reply_no_permalink():
     text = format_thread_reply(sources, "image-gen")
     assert "source: brendan (2026-04-01) in #image-gen" in text
     assert "original" not in text
+
+
+def test_resolve_display_name_uses_display_name():
+    client = MagicMock()
+    client.users_info.return_value = {
+        "user": {"profile": {"display_name": "brendan", "real_name": "Brendan Smith"}}
+    }
+    assert resolve_display_name(client, "U123") == "brendan"
+    client.users_info.assert_called_once_with(user="U123")
+
+
+def test_resolve_display_name_falls_back_to_real_name():
+    client = MagicMock()
+    client.users_info.return_value = {
+        "user": {"profile": {"display_name": "", "real_name": "Brendan Smith"}}
+    }
+    assert resolve_display_name(client, "U123") == "Brendan Smith"
+
+
+def test_resolve_display_name_falls_back_to_user_id():
+    client = MagicMock()
+    client.users_info.side_effect = Exception("API error")
+    assert resolve_display_name(client, "U123") == "U123"

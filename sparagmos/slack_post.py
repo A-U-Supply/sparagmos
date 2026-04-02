@@ -104,6 +104,20 @@ def format_thread_reply(
     return "\n".join(lines)
 
 
+def resolve_display_name(client: WebClient, user_id: str) -> str:
+    """Resolve a Slack user ID to a plain display name.
+
+    Falls back to real_name, then the raw user_id on failure.
+    """
+    try:
+        resp = client.users_info(user=user_id)
+        profile = resp["user"]["profile"]
+        return profile.get("display_name") or profile.get("real_name") or user_id
+    except Exception:
+        logger.warning("Failed to resolve display name for %s", user_id)
+        return user_id
+
+
 def format_provenance_multi(
     result: PipelineResult,
     sources: list[dict],
