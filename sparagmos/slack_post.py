@@ -132,8 +132,9 @@ def post_result(
         initial_comment=comment,
     )
 
-    # Extract posted message timestamp via files.info API
-    # (files_upload_v2 returns completeUploadExternal response which lacks share data)
+    # Extract posted message timestamp via files.info API.
+    # files_upload_v2 returns completeUploadExternal response which lacks share
+    # data, and shares may not propagate instantly, so retry with backoff.
     posted_ts = ""
     file_obj = response.get("file") or {}
     if not file_obj:
@@ -141,23 +142,23 @@ def post_result(
         if files_list:
             file_obj = files_list[0]
     file_id = file_obj.get("id", "")
-    logger.info("Upload response: file_id=%s, keys=%s", file_id, list(response.data.keys()) if hasattr(response, 'data') else list(response.keys()))
     if file_id:
-        try:
-            info_resp = client.files_info(file=file_id)
-            shares = info_resp.get("file", {}).get("shares", {})
-            public_shares = shares.get("public", {})
-            logger.info("files.info shares: public channels=%s", list(public_shares.keys()))
-            channel_shares = public_shares.get(channel_id, [])
-            if channel_shares:
-                posted_ts = channel_shares[0].get("ts", "")
-                logger.info("Extracted posted_ts=%s", posted_ts)
-            else:
-                logger.warning("No shares found for channel %s in files.info response", channel_id)
-        except Exception as e:
-            logger.warning("Failed to get file info for timestamp: %s", e)
-    else:
-        logger.warning("No file_id found in upload response")
+        import time
+        for attempt in range(3):
+            try:
+                if attempt > 0:
+                    time.sleep(attempt)  # 0s, 1s, 2s
+                info_resp = client.files_info(file=file_id)
+                shares = info_resp.get("file", {}).get("shares", {})
+                public_shares = shares.get("public", {})
+                channel_shares = public_shares.get(channel_id, [])
+                if channel_shares:
+                    posted_ts = channel_shares[0].get("ts", "")
+                    break
+            except Exception:
+                pass
+        if not posted_ts:
+            logger.warning("Could not extract message timestamp after upload")
 
     # Post source attribution as a thread reply
     if posted_ts:
