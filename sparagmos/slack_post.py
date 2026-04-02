@@ -13,37 +13,6 @@ from sparagmos.pipeline import PipelineResult
 logger = logging.getLogger(__name__)
 
 
-def format_provenance(
-    result: PipelineResult,
-    source: dict,
-    channel_name: str = "image-gen",
-) -> str:
-    """Format the provenance text for the Slack message.
-
-    Args:
-        result: Pipeline result with recipe name and step metadata.
-        source: Source image metadata (user, date).
-        channel_name: Source channel name for attribution.
-
-    Returns:
-        Formatted provenance string for initial_comment.
-    """
-    chain = " → ".join(step["effect"] for step in result.steps)
-    user = source.get("user", "unknown")
-    date = source.get("date", "unknown")
-    permalink = source.get("permalink", "")
-
-    lines = [
-        f"~ {result.recipe_name}",
-        chain,
-        f"source: image by <@{user}> in #{channel_name} ({date})",
-    ]
-    if permalink:
-        lines.append(f"original: <{permalink}|view>")
-
-    return "\n".join(lines)
-
-
 def _annotate_step(step: dict) -> str:
     """Return an annotated effect label for a single pipeline step.
 
@@ -66,34 +35,34 @@ def _annotate_step(step: dict) -> str:
     return effect
 
 
-def format_provenance_multi(
-    result: PipelineResult,
+def format_main_comment(result: PipelineResult) -> str:
+    """Format the main Slack message: recipe name + annotated effect chain.
+
+    Source attribution is posted separately in a thread reply.
+    """
+    chain = " → ".join(_annotate_step(step) for step in result.steps)
+    return f"~ {result.recipe_name}\n{chain}"
+
+
+def format_thread_reply(
     sources: list[dict],
     channel_name: str = "image-gen",
 ) -> str:
-    """Format provenance text for multi-source pipeline results.
+    """Format the thread reply with source attribution and permalink links.
 
     Args:
-        result: Pipeline result with recipe name and step metadata.
-        sources: List of source image metadata dicts (user, date, permalink).
+        sources: List of source dicts with 'display_name', 'date', and
+            optional 'permalink' keys.
         channel_name: Source channel name for attribution.
 
     Returns:
-        Formatted provenance string for Slack initial_comment.
+        Formatted string for the thread reply text.
     """
-    chain = " → ".join(_annotate_step(step) for step in result.steps)
-
     source_label = "source" if len(sources) == 1 else "sources"
     attributions = ", ".join(
-        f"<@{s['user']}> ({s.get('date', 'unknown')})" for s in sources
+        f"{s['display_name']} ({s.get('date', 'unknown')})" for s in sources
     )
-    source_line = f"{source_label}: {attributions} in #{channel_name}"
-
-    lines = [
-        f"~ {result.recipe_name}",
-        chain,
-        source_line,
-    ]
+    lines = [f"{source_label}: {attributions} in #{channel_name}"]
 
     permalinks = [s.get("permalink", "") for s in sources if s.get("permalink")]
     if permalinks:
@@ -104,31 +73,51 @@ def format_provenance_multi(
     return "\n".join(lines)
 
 
+def resolve_display_name(client: WebClient, user_id: str) -> str:
+    """Resolve a Slack user ID to a plain display name.
+
+    Falls back to real_name, then the raw user_id on failure.
+    """
+    try:
+        resp = client.users_info(user=user_id)
+        profile = resp["user"]["profile"]
+        return profile.get("display_name") or profile.get("real_name") or user_id
+    except Exception:
+        logger.warning("Failed to resolve display name for %s", user_id)
+        return user_id
+
+
 def post_result(
     client: WebClient,
     channel_id: str,
     result: PipelineResult,
-    source: dict,
+    sources: list[dict],
     source_channel_name: str,
     temp_dir: Path,
 ) -> str:
-    """Post a processed image to Slack as a single message.
+    """Post a processed image to Slack with source info in a thread reply.
 
-    Uses files_upload_v2 with initial_comment to combine image and
-    text in one message (no threads).
+    Uploads the output image with a main comment (recipe + effects only),
+    then posts source attribution and permalink links as a thread reply.
 
     Args:
         client: Slack WebClient.
         channel_id: Target channel ID (#img-junkyard).
         result: Pipeline result with image and metadata.
-        source: Source image metadata.
+        sources: List of source metadata dicts (user, date, permalink).
         source_channel_name: Name of source channel for attribution.
         temp_dir: Temp directory for saving the image file.
 
     Returns:
         Message timestamp of the posted message.
     """
-    comment = format_provenance(result, source, source_channel_name)
+    comment = format_main_comment(result)
+
+    # Resolve display names for source attribution (without mutating input)
+    resolved_sources = [
+        {**s, "display_name": resolve_display_name(client, s["user"])}
+        for s in sources
+    ]
 
     # Save image to temp file for upload
     image_path = temp_dir / "sparagmos_output.png"
@@ -152,17 +141,16 @@ def post_result(
     if channel_shares:
         posted_ts = channel_shares[0].get("ts", "")
 
-    # Suppress unfurling so source image permalink URLs don't render as previews
+    # Post source attribution as a thread reply
     if posted_ts:
+        thread_text = format_thread_reply(resolved_sources, source_channel_name)
         try:
-            client.chat_update(
+            client.chat_postMessage(
                 channel=channel_id,
-                ts=posted_ts,
-                text=comment,
-                unfurl_links=False,
-                unfurl_media=False,
+                thread_ts=posted_ts,
+                text=thread_text,
             )
         except Exception:
-            logger.warning("Failed to suppress unfurls, continuing")
+            logger.warning("Failed to post thread reply, continuing")
 
     return posted_ts

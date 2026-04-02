@@ -12,7 +12,7 @@ from sparagmos.slack_source import (
     download_image,
     download_url,
 )
-from sparagmos.slack_post import format_provenance, format_provenance_multi, post_result
+from sparagmos.slack_post import post_result, format_main_comment, format_thread_reply, resolve_display_name
 from sparagmos.pipeline import PipelineResult
 
 
@@ -155,87 +155,36 @@ def test_pick_random_images_deterministic():
 # --- Slack posting tests ---
 
 
-def test_format_provenance():
-    steps = [
-        {"effect": "deepdream", "description": "Neural hallucination"},
-        {"effect": "channel_shift", "description": "RGB offset"},
-        {"effect": "jpeg_destroy", "description": "Generational loss"},
-    ]
-    result = PipelineResult(
-        image=Image.new("RGB", (64, 64)),
-        recipe_name="Dionysian Rite",
-        steps=steps,
-    )
-    source = {"user": "U123", "date": "2026-01-15"}
-    text = format_provenance(result, source, channel_name="image-gen")
-    assert "Dionysian Rite" in text
-    assert "deepdream" in text
-    assert "channel_shift" in text
-    assert "jpeg_destroy" in text
-    assert "→" in text
-    assert "#image-gen" in text
-
-
-def test_format_provenance_multi():
-    steps = [
-        {"effect": "deepdream", "description": "d", "image": "a"},
-        {"effect": "blend", "description": "d", "images": ["a", "b"], "into": "canvas"},
-        {"effect": "jpeg_destroy", "description": "d", "image": "canvas"},
-    ]
-    result = PipelineResult(
-        image=Image.new("RGB", (64, 64)),
-        recipe_name="Voronoi Chimera",
-        steps=steps,
-    )
-    sources = [
-        {"user": "U1", "date": "2025-01-15", "permalink": "https://link1"},
-        {"user": "U2", "date": "2025-02-20", "permalink": "https://link2"},
-    ]
-    text = format_provenance_multi(result, sources, channel_name="image-gen")
-    assert "Voronoi Chimera" in text
-    assert "deepdream(a)" in text
-    assert "blend(a,b→canvas)" in text
-    assert "jpeg_destroy(canvas)" in text
-    assert "<@U1>" in text
-    assert "<@U2>" in text
-
-
-def test_format_provenance_multi_single_source():
-    steps = [{"effect": "invert", "description": "d", "image": "canvas"}]
-    result = PipelineResult(
-        image=Image.new("RGB", (64, 64)),
-        recipe_name="Simple",
-        steps=steps,
-    )
-    sources = [{"user": "U1", "date": "2025-01-01", "permalink": "https://link"}]
-    text = format_provenance_multi(result, sources)
-    assert "Simple" in text
-    assert "<@U1>" in text
-
-
-def test_post_result_calls_upload(tmp_path):
+def test_post_result_uploads_with_main_comment_only(tmp_path):
+    """Main message contains recipe + effects, no source info."""
     client = MagicMock()
     client.files_upload_v2.return_value = {"ok": True}
+    client.users_info.return_value = {
+        "user": {"profile": {"display_name": "brendan", "real_name": "Brendan"}}
+    }
 
     img = Image.new("RGB", (64, 64))
     result = PipelineResult(
         image=img,
         recipe_name="Test Recipe",
-        steps=[{"effect": "dummy", "description": "test"}],
+        steps=[{"effect": "invert", "image": "a"}],
     )
-    source = {"user": "U123", "date": "2026-01-15"}
+    sources = [{"user": "U123", "date": "2026-01-15", "permalink": "https://link1"}]
 
-    post_result(client, "C456", result, source, "image-gen", tmp_path)
+    post_result(client, "C456", result, sources, "image-gen", tmp_path)
 
-    client.files_upload_v2.assert_called_once()
     call_kwargs = client.files_upload_v2.call_args[1]
-    assert call_kwargs["channel"] == "C456"
-    assert "initial_comment" in call_kwargs
-    assert "Test Recipe" in call_kwargs["initial_comment"]
+    comment = call_kwargs["initial_comment"]
+    assert "Test Recipe" in comment
+    assert "invert" in comment
+    # No source info in main comment
+    assert "<@" not in comment
+    assert "source" not in comment.lower()
+    assert "http" not in comment
 
 
-def test_post_suppresses_unfurls(tmp_path):
-    """After files_upload_v2, chat_update is called with unfurl_* = False."""
+def test_post_result_posts_thread_reply(tmp_path):
+    """After upload, a thread reply is posted with source attribution."""
     client = MagicMock()
     client.files_upload_v2.return_value = {
         "ok": True,
@@ -247,21 +196,51 @@ def test_post_suppresses_unfurls(tmp_path):
             }
         },
     }
+    client.users_info.return_value = {
+        "user": {"profile": {"display_name": "brendan", "real_name": "Brendan"}}
+    }
 
     img = Image.new("RGB", (64, 64))
     result = PipelineResult(
         image=img,
         recipe_name="Test Recipe",
-        steps=[{"effect": "dummy", "description": "test"}],
+        steps=[{"effect": "invert", "image": "a"}],
     )
-    source = {"user": "U123", "date": "2026-01-15"}
+    sources = [{"user": "U123", "date": "2026-01-15", "permalink": "https://link1"}]
 
-    post_result(client, "C456", result, source, "image-gen", tmp_path)
+    post_result(client, "C456", result, sources, "image-gen", tmp_path)
 
-    client.chat_update.assert_called_once()
-    update_kwargs = client.chat_update.call_args[1]
-    assert update_kwargs["unfurl_links"] is False
-    assert update_kwargs["unfurl_media"] is False
+    # Thread reply posted
+    client.chat_postMessage.assert_called_once()
+    reply_kwargs = client.chat_postMessage.call_args[1]
+    assert reply_kwargs["channel"] == "C456"
+    assert reply_kwargs["thread_ts"] == "1234567890.123456"
+    assert "brendan" in reply_kwargs["text"]
+    assert "https://link1" in reply_kwargs["text"]
+
+    # chat_update (unfurl suppression) is NOT called
+    client.chat_update.assert_not_called()
+
+
+def test_post_result_no_thread_without_ts(tmp_path):
+    """If we can't extract the message ts, skip the thread reply gracefully."""
+    client = MagicMock()
+    client.files_upload_v2.return_value = {"ok": True}
+    client.users_info.return_value = {
+        "user": {"profile": {"display_name": "brendan", "real_name": "Brendan"}}
+    }
+
+    img = Image.new("RGB", (64, 64))
+    result = PipelineResult(
+        image=img,
+        recipe_name="Test Recipe",
+        steps=[{"effect": "invert", "image": "a"}],
+    )
+    sources = [{"user": "U123", "date": "2026-01-15"}]
+
+    post_result(client, "C456", result, sources, "image-gen", tmp_path)
+
+    client.chat_postMessage.assert_not_called()
 
 
 # --- download_url tests ---
@@ -352,3 +331,89 @@ def test_download_url_non_image_rejected(mock_get):
     mock_get.return_value = _make_image_response(content_type="text/html")
     with pytest.raises(ValueError, match="Expected image"):
         download_url("https://example.com/page.html")
+
+
+# --- format_main_comment tests ---
+
+
+def test_format_main_comment():
+    steps = [
+        {"effect": "deepdream", "image": "a"},
+        {"effect": "blend", "images": ["a", "b"], "into": "canvas"},
+        {"effect": "jpeg_destroy"},
+    ]
+    result = PipelineResult(
+        image=Image.new("RGB", (64, 64)),
+        recipe_name="Mosaic Dissolution",
+        steps=steps,
+    )
+    text = format_main_comment(result)
+    assert text == "~ Mosaic Dissolution\ndeepdream(a) → blend(a,b→canvas) → jpeg_destroy"
+
+
+def test_format_main_comment_no_source_info():
+    """Main comment must not contain user mentions, dates, or links."""
+    steps = [{"effect": "invert", "image": "a"}]
+    result = PipelineResult(
+        image=Image.new("RGB", (64, 64)),
+        recipe_name="Simple",
+        steps=steps,
+    )
+    text = format_main_comment(result)
+    assert "<@" not in text
+    assert "source" not in text.lower()
+    assert "original" not in text.lower()
+    assert "http" not in text
+
+
+# --- format_thread_reply tests ---
+
+
+def test_format_thread_reply_multi():
+    sources = [
+        {"display_name": "brendan", "date": "2026-04-01", "permalink": "https://link1"},
+        {"display_name": "jake", "date": "2026-03-30", "permalink": "https://link2"},
+    ]
+    text = format_thread_reply(sources, "image-gen")
+    assert "sources: brendan (2026-04-01), jake (2026-03-30) in #image-gen" in text
+    assert "originals: <https://link1|view> · <https://link2|view>" in text
+    assert "<@" not in text  # no mentions
+
+
+def test_format_thread_reply_single():
+    sources = [
+        {"display_name": "brendan", "date": "2026-04-01", "permalink": "https://link1"},
+    ]
+    text = format_thread_reply(sources, "image-gen")
+    assert "source: brendan (2026-04-01) in #image-gen" in text
+    assert "original: <https://link1|view>" in text
+
+
+def test_format_thread_reply_no_permalink():
+    sources = [{"display_name": "brendan", "date": "2026-04-01"}]
+    text = format_thread_reply(sources, "image-gen")
+    assert "source: brendan (2026-04-01) in #image-gen" in text
+    assert "original" not in text
+
+
+def test_resolve_display_name_uses_display_name():
+    client = MagicMock()
+    client.users_info.return_value = {
+        "user": {"profile": {"display_name": "brendan", "real_name": "Brendan Smith"}}
+    }
+    assert resolve_display_name(client, "U123") == "brendan"
+    client.users_info.assert_called_once_with(user="U123")
+
+
+def test_resolve_display_name_falls_back_to_real_name():
+    client = MagicMock()
+    client.users_info.return_value = {
+        "user": {"profile": {"display_name": "", "real_name": "Brendan Smith"}}
+    }
+    assert resolve_display_name(client, "U123") == "Brendan Smith"
+
+
+def test_resolve_display_name_falls_back_to_user_id():
+    client = MagicMock()
+    client.users_info.side_effect = Exception("API error")
+    assert resolve_display_name(client, "U123") == "U123"
