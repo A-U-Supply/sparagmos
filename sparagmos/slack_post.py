@@ -132,33 +132,17 @@ def post_result(
         initial_comment=comment,
     )
 
-    # Extract posted message timestamp via files.info API.
-    # files_upload_v2 returns completeUploadExternal response which lacks share
-    # data, and shares may not propagate instantly, so retry with backoff.
+    # Get the timestamp of the message we just posted by reading channel history.
+    # files_upload_v2 doesn't return the message ts, and files.info requires
+    # files:read scope which the bot may not have.
     posted_ts = ""
-    file_obj = response.get("file") or {}
-    if not file_obj:
-        files_list = response.get("files") or []
-        if files_list:
-            file_obj = files_list[0]
-    file_id = file_obj.get("id", "")
-    if file_id:
-        import time
-        for attempt in range(3):
-            try:
-                if attempt > 0:
-                    time.sleep(attempt)  # 0s, 1s, 2s
-                info_resp = client.files_info(file=file_id)
-                shares = info_resp.get("file", {}).get("shares", {})
-                public_shares = shares.get("public", {})
-                channel_shares = public_shares.get(channel_id, [])
-                if channel_shares:
-                    posted_ts = channel_shares[0].get("ts", "")
-                    break
-            except Exception:
-                pass
-        if not posted_ts:
-            logger.warning("Could not extract message timestamp after upload")
+    try:
+        history = client.conversations_history(channel=channel_id, limit=1)
+        messages = history.get("messages", [])
+        if messages:
+            posted_ts = messages[0].get("ts", "")
+    except Exception:
+        logger.warning("Failed to read channel history for message timestamp")
 
     # Post source attribution as a thread reply
     if posted_ts:
