@@ -1580,6 +1580,33 @@
       ],
       "processed_date": "2026-04-03",
       "posted_ts": "1775240197.691269"
+    },
+    {
+      "source_file_ids": [
+        "F0749V4P0PL",
+        "F0AF3NGV3V2",
+        "F0817DSL820"
+      ],
+      "source_dates": [
+        "2024-05-20",
+        "2026-02-14",
+        "2024-11-16"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "sorted-mask",
+      "effects": [
+        "pixel_sort",
+        "mask_composite",
+        "collage",
+        "mask_composite",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-03",
+      "posted_ts": "1775240721.874639"
     }
   ]
 }
