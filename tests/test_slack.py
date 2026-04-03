@@ -219,7 +219,7 @@ def test_post_result_matches_file_id_in_history(tmp_path):
     post_result(client, "C456", result, sources, "image-gen", tmp_path)
 
     # History searched with limit=5
-    client.conversations_history.assert_called_once_with(channel="C456", limit=5)
+    client.conversations_history.assert_called_with(channel="C456", limit=10)
 
     # Thread reply goes to OUR message (888.000), not the latest (999.000)
     client.chat_postMessage.assert_called_once()

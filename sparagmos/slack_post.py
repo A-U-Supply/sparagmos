@@ -156,15 +156,14 @@ def post_result(
     file_id = file_obj.get("id", "")
 
     # Find the message containing our uploaded file by matching file ID.
-    # The file may take a moment to appear in channel history after upload.
+    # The file takes 1-3s to appear in channel history after upload.
     posted_ts = ""
     if file_id:
         import time
         for attempt in range(4):
-            if attempt > 0:
-                time.sleep(2)
+            time.sleep(1 if attempt == 0 else 2)
             try:
-                history = client.conversations_history(channel=channel_id, limit=5)
+                history = client.conversations_history(channel=channel_id, limit=10)
                 for msg in history.get("messages", []):
                     if any(f.get("id") == file_id for f in msg.get("files", [])):
                         posted_ts = msg["ts"]
