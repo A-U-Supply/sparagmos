@@ -11,6 +11,7 @@ import { dispatchWorkflow, fetchWorkflowRuns } from "./github";
 import { handleInteraction } from "./interactions";
 import { getRatings, getStars } from "./kv";
 import { buildStatusBlocks } from "./blocks";
+import { buildModalView } from "./modal";
 
 // Re-export types and functions that tests (and consumers) depend on
 export type { Env, ParsedCommand } from "./types";
@@ -126,8 +127,17 @@ async function handleSlashCommand(body: string, env: Env): Promise<Response> {
     return slackResponse(lines.join("\n"));
   }
 
-  // Random recipe (no args or explicit "random")
-  // Empty recipe input tells the GitHub workflow to pick randomly
+  // No command → open the modal
+  if (!command && urls.length === 0) {
+    const triggerId = params.get("trigger_id");
+    if (triggerId) {
+      // Don't await — respond to Slack immediately, open modal in background
+      openModal(env, triggerId).catch(console.error);
+    }
+    return new Response("", { status: 200 });
+  }
+
+  // Explicit "random" or bare URLs still dispatch directly
   if (!command || command === "random") {
     const dispatched = await dispatchWorkflow(env, "", urls);
     if (dispatched) {
@@ -179,6 +189,26 @@ async function handleSlashCommand(body: string, env: Env): Promise<Response> {
   errorText += "\n\nUse `/sparagmos list` to see all available recipes.";
 
   return slackResponse(errorText);
+}
+
+// ---------------------------------------------------------------------------
+// Modal opener
+// ---------------------------------------------------------------------------
+
+/** Open the Sparagmos modal via the Slack views.open API. */
+async function openModal(env: Env, triggerId: string): Promise<void> {
+  const view = buildModalView();
+  const resp = await fetch("https://slack.com/api/views.open", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`,
+    },
+    body: JSON.stringify({ trigger_id: triggerId, view }),
+  });
+  if (!resp.ok) {
+    console.error(`views.open failed: ${resp.status}`);
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 import type { Env } from "./types";
 import { vote, toggleStar, toggleFavorite, getRatings, getUserVotes } from "./kv";
 import { dispatchWorkflow } from "./github";
+import { buildTypeaheadOptions } from "./modal";
 
 // ---------------------------------------------------------------------------
 // Slack interaction payload types
@@ -9,6 +10,8 @@ import { dispatchWorkflow } from "./github";
 interface SlackInteractionPayload {
   type: string;
   user: { id: string };
+  /** Typed query text sent by block_suggestion payloads. */
+  value?: string;
   actions?: Array<{
     action_id: string;
     value: string;
@@ -26,6 +29,8 @@ interface SlackInteractionPayload {
     ts: string;
     blocks: any[];
   };
+  /** Action ID for block_suggestion payloads. */
+  action_id?: string;
 }
 
 /** Shape returned by getRatings from kv.ts */
@@ -314,14 +319,49 @@ export async function handleInteraction(
     }
 
     case "view_submission": {
-      // Placeholder for modal submissions (Phase 3)
+      if (payload.view?.callback_id === "sparagmos_run") {
+        const vals = payload.view.state.values;
+        const recipe =
+          vals.recipe_block?.recipe_select?.selected_option?.value ?? null;
+        const rawUrls: string = vals.urls_block?.image_urls?.value ?? "";
+        const urls = rawUrls
+          .split("\n")
+          .map((u: string) => u.trim())
+          .filter(Boolean);
+        const poster =
+          vals.poster_block?.poster_filter?.selected_option?.value ?? "anyone";
+        const age =
+          vals.age_block?.age_filter?.selected_option?.value ?? "any";
+        const freshness =
+          vals.freshness_block?.freshness_filter?.selected_option?.value ??
+          "none";
+
+        // Dispatch in the background — modal must respond quickly
+        const resolvedRecipe =
+          recipe && recipe !== "random" ? recipe : "";
+        dispatchWorkflow(env, resolvedRecipe, urls, {
+          poster: poster !== "anyone" ? poster : undefined,
+          age: age !== "any" ? age : undefined,
+          freshness: freshness !== "none" ? freshness : undefined,
+        }).catch(console.error);
+      }
       return new Response(JSON.stringify({ response_action: "clear" }), {
         headers: { "Content-Type": "application/json" },
       });
     }
 
     case "block_suggestion": {
-      // Placeholder for typeahead suggestions
+      if (payload.action_id === "recipe_select") {
+        const query = payload.value ?? "";
+        const result = await buildTypeaheadOptions(
+          query,
+          payload.user.id,
+          env.RATINGS,
+        );
+        return new Response(JSON.stringify(result), {
+          headers: { "Content-Type": "application/json" },
+        });
+      }
       return new Response(JSON.stringify({ options: [] }), {
         headers: { "Content-Type": "application/json" },
       });
