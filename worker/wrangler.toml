@@ -5,3 +5,8 @@ compatibility_date = "2026-03-26"
 # Secrets are set via `wrangler secret put`:
 # wrangler secret put SLACK_SIGNING_SECRET
 # wrangler secret put GITHUB_TOKEN
+# wrangler secret put SLACK_BOT_TOKEN
+
+[[kv_namespaces]]
+binding = "RATINGS"
+id = "d7a6512f82ac45059d42b8d38b65b2cf"
