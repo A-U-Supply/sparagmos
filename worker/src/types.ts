@@ -1,0 +1,24 @@
+/** Worker environment bindings (secrets set via wrangler). */
+export interface Env {
+  SLACK_SIGNING_SECRET: string;
+  GITHUB_TOKEN: string;
+  SLACK_BOT_TOKEN: string;
+  RATINGS: KVNamespace;
+}
+
+/** Parsed result from a slash command text field. */
+export interface ParsedCommand {
+  command: string;
+  urls: string[];
+}
+
+/** A single GitHub Actions workflow run. */
+export interface WorkflowRun {
+  status: string;
+  conclusion: string | null;
+  created_at: string;
+  updated_at: string;
+  html_url: string;
+  run_started_at: string;
+  event: string;
+}
