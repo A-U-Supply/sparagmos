@@ -282,7 +282,7 @@ export function buildHelpView(): object {
         "*Poster* \u2014 Only use images from a specific person.",
         "*Age* \u2014 Filter source images by how old they are.",
         "*Freshness* \u2014 Prefer images that haven't been used before, or remix veterans.",
-        "*Rating checkboxes* \u2014 Check one or more to filter the recipe dropdown by rating. Also controls which pool random picks from.",
+        "*Filter by rating* \u2014 Optional. Filters the recipe dropdown and controls which pool random picks from.",
       ].join("\n"),
     },
   });
@@ -300,7 +300,7 @@ export function buildHelpView(): object {
       type: "mrkdwn",
       text: [
         "Every output posted to #img-junkyard has \ud83d\udc4d and \ud83d\udc4e buttons in its thread.",
-        "Votes are tracked per recipe \u2014 they affect the *Rating* checkboxes and weighted random selection.",
+        "Votes are tracked per recipe \u2014 they affect the *Filter by rating* options and weighted random selection.",
         "Click again to toggle your vote off. Change your vote any time.",
       ].join("\n"),
     },
@@ -428,23 +428,21 @@ export function buildModalView(
     ? `_${filteredCount} of ${RECIPES.length} recipes shown_`
     : `_${RECIPES.length} recipes available_`;
 
-  // Build checkboxes with current selection preserved
-  const ratingCheckboxOptions = [
+  // Build radio buttons for rating filter (mutually exclusive)
+  const ratingRadioOptions = [
+    { text: { type: "plain_text", text: "All recipes" }, value: "all" },
     { text: { type: "plain_text", text: "Top rated (+3 or higher)" }, value: "top" },
     { text: { type: "plain_text", text: "Positive only" }, value: "positive" },
     { text: { type: "plain_text", text: "Unrated" }, value: "unrated" },
     { text: { type: "plain_text", text: "Underdogs (below 0)" }, value: "underdogs" },
   ];
-  const ratingCheckboxElement: Record<string, unknown> = {
-    type: "checkboxes",
-    action_id: "rating_checkboxes",
-    options: ratingCheckboxOptions,
+  const activeFilter = ratingFilters.length > 0 ? ratingFilters[0] : "all";
+  const ratingRadioElement: Record<string, unknown> = {
+    type: "radio_buttons",
+    action_id: "rating_filter",
+    options: ratingRadioOptions,
+    initial_option: ratingRadioOptions.find((o) => o.value === activeFilter) ?? ratingRadioOptions[0],
   };
-  if (ratingFilters.length > 0) {
-    ratingCheckboxElement.initial_options = ratingCheckboxOptions.filter(
-      (o) => ratingFilters.includes(o.value),
-    );
-  }
 
   return {
     type: "modal",
@@ -463,16 +461,15 @@ export function buildModalView(
         },
       },
       { type: "divider" },
-      // ── Recipe section ──
+      // ── Rating filter (optional, filters the recipe dropdown) ──
       {
         type: "section",
-        text: { type: "mrkdwn", text: "*:bar_chart: Recipe*" },
+        text: { type: "mrkdwn", text: "*:bar_chart: Filter by rating* _(optional)_" },
       },
-      // Rating checkboxes (dispatch_action triggers views.update on toggle)
       {
         type: "actions",
         block_id: "rating_block",
-        elements: [ratingCheckboxElement],
+        elements: [ratingRadioElement],
       },
       // Recipe select (static with built-in Slack typeahead filtering)
       {
