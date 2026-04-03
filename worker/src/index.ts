@@ -159,12 +159,7 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
-    // --- Slack interaction payloads (modals, buttons, etc.) ---
-    if (request.method === "POST" && url.pathname === "/slack/interactions") {
-      return handleInteraction(request, env);
-    }
-
-    // --- API routes backed by KV ---
+    // --- API routes backed by KV (GET — no body needed) ---
     if (request.method === "GET" && url.pathname === "/api/ratings") {
       const ratings = await getRatings(env.RATINGS);
       return new Response(JSON.stringify(ratings), {
@@ -179,11 +174,11 @@ export default {
       });
     }
 
-    // --- Slash command endpoint ---
-    if (request.method === "POST" && url.pathname === "/slack/commands") {
+    // --- POST routes: read body once for shared signature verification ---
+    if (request.method === "POST") {
       const body = await request.text();
 
-      // Verify Slack signature
+      // Verify Slack signature for all POST endpoints
       const valid = await verifySlackSignature(
         request,
         body,
@@ -193,7 +188,15 @@ export default {
         return new Response("Invalid signature", { status: 401 });
       }
 
-      return handleSlashCommand(body, env);
+      // Slack interaction payloads (modals, buttons, etc.)
+      if (url.pathname === "/slack/interactions") {
+        return handleInteraction(body, env);
+      }
+
+      // Slash command endpoint
+      if (url.pathname === "/slack/commands") {
+        return handleSlashCommand(body, env);
+      }
     }
 
     return new Response("Not Found", { status: 404 });

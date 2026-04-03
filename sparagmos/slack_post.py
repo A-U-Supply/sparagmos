@@ -87,6 +87,67 @@ def resolve_display_name(client: WebClient, user_id: str) -> str:
         return user_id
 
 
+def _build_thread_blocks(
+    thread_text: str,
+    posted_ts: str,
+    recipe_slug: str,
+) -> list[dict]:
+    """Build Block Kit blocks for the thread reply with voting buttons.
+
+    Args:
+        thread_text: Source attribution text.
+        posted_ts: Timestamp of the parent message.
+        recipe_slug: Recipe slug for vote tracking.
+
+    Returns:
+        List of Block Kit block dicts.
+    """
+    blocks: list[dict] = [
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": thread_text},
+        },
+        {"type": "divider"},
+        {
+            "type": "actions",
+            "block_id": f"post_actions:{posted_ts}",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "\u2b50 Star", "emoji": True},
+                    "action_id": "star_post",
+                    "value": f"{recipe_slug}:{posted_ts}",
+                },
+            ],
+        },
+        {
+            "type": "actions",
+            "block_id": f"recipe_actions:{recipe_slug}",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "\ud83d\udc4d", "emoji": True},
+                    "action_id": "upvote",
+                    "value": recipe_slug,
+                },
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "\ud83d\udc4e", "emoji": True},
+                    "action_id": "downvote",
+                    "value": recipe_slug,
+                },
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "\u2606 Save Recipe", "emoji": True},
+                    "action_id": "favorite",
+                    "value": recipe_slug,
+                },
+            ],
+        },
+    ]
+    return blocks
+
+
 def post_result(
     client: WebClient,
     channel_id: str,
@@ -94,11 +155,13 @@ def post_result(
     sources: list[dict],
     source_channel_name: str,
     temp_dir: Path,
+    recipe_slug: str = "",
 ) -> str:
     """Post a processed image to Slack with source info in a thread reply.
 
     Uploads the output image with a main comment (recipe + effects only),
-    then posts source attribution and permalink links as a thread reply.
+    then posts source attribution and permalink links as a thread reply
+    with interactive Block Kit voting buttons.
 
     Args:
         client: Slack WebClient.
@@ -107,6 +170,7 @@ def post_result(
         sources: List of source metadata dicts (user, date, permalink).
         source_channel_name: Name of source channel for attribution.
         temp_dir: Temp directory for saving the image file.
+        recipe_slug: Recipe slug for vote tracking in button payloads.
 
     Returns:
         Message timestamp of the posted message.
@@ -173,14 +237,16 @@ def post_result(
             if posted_ts:
                 break
 
-    # Post source attribution as a thread reply
+    # Post source attribution + voting buttons as a thread reply
     if posted_ts:
         thread_text = format_thread_reply(resolved_sources, source_channel_name)
+        blocks = _build_thread_blocks(thread_text, posted_ts, recipe_slug)
         try:
             client.chat_postMessage(
                 channel=channel_id,
                 thread_ts=posted_ts,
-                text=thread_text,
+                text=thread_text,  # fallback for notifications
+                blocks=blocks,
             )
         except Exception:
             logger.warning("Failed to post thread reply")

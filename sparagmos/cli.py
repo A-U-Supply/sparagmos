@@ -481,7 +481,8 @@ def main(argv: list[str] | None = None) -> None:
                 sys.exit(1)
 
             posted_ts = post_result(
-                client, junkyard_id, result, source_metadata_list, "image-gen", Path(tmp)
+                client, junkyard_id, result, source_metadata_list, "image-gen", Path(tmp),
+                recipe_slug=recipe_slug,
             )
 
             # Update state
