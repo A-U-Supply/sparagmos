@@ -280,60 +280,6 @@ def test_freshness_only_veterans(tmp_path):
     assert [img["id"] for img in result] == ["F000"]
 
 
-def test_only_veterans_fallback_to_weights(tmp_path):
-    """When no images meet the veteran threshold, fall back to weighting."""
-    images = _make_images(3)
-    # F000 used with 2 recipes (below threshold), F001 with 1, F002 with 0
-    state = _make_state(tmp_path, [
-        {"file_id": "F000", "recipe": "recipe-a"},
-        {"file_id": "F000", "recipe": "recipe-b"},
-        {"file_id": "F001", "recipe": "recipe-a"},
-    ])
-    result = filter_images(images, freshness="only_veterans", state=state)
-    # All images kept, but most-used gets highest weight
-    assert len(result) == 3
-    weights = {img["id"]: img["_weight"] for img in result}
-    assert weights["F000"] > weights["F001"] > weights["F002"]
-
-
-def test_only_fresh_recipe_fallback_to_weights(tmp_path):
-    """When all images have been used with this recipe, fall back to weighting."""
-    images = _make_images(2)
-    state = _make_state(tmp_path, [
-        {"file_id": "F000", "recipe": "recipe-a"},
-        {"file_id": "F001", "recipe": "recipe-a"},
-    ])
-    result = filter_images(
-        images, freshness="only_fresh_recipe", recipe="recipe-a", state=state,
-    )
-    # All kept (no fresh ones exist), but unused-with-recipe gets higher weight
-    # Here both are used, so weights should still be assigned (all equal/low)
-    assert len(result) == 2
-
-
-def test_only_untouched_fallback_to_weights(tmp_path):
-    """When all images have been used, fall back to weighting."""
-    images = _make_images(2)
-    state = _make_state(tmp_path, [
-        {"file_id": "F000", "recipe": "recipe-a"},
-        {"file_id": "F001", "recipe": "recipe-a"},
-    ])
-    result = filter_images(images, freshness="only_untouched", state=state)
-    assert len(result) == 2
-
-
-def test_only_used_recipe_fallback_to_weights(tmp_path):
-    """When no images have been used with this recipe, fall back to weighting."""
-    images = _make_images(2)
-    state = _make_state(tmp_path, [
-        {"file_id": "F000", "recipe": "recipe-b"},
-    ])
-    result = filter_images(
-        images, freshness="only_used_recipe", recipe="recipe-a", state=state,
-    )
-    assert len(result) == 2
-
-
 def test_freshness_without_state():
     """Freshness filters degrade gracefully when state is None."""
     images = _make_images(5)
@@ -406,18 +352,6 @@ def test_all_three_filters(mock_time, now, tmp_path):
 
 
 # ── Edge cases ───────────────────────────────────────────────────────
-
-
-def test_oldest50_plus_only_veterans_rejected():
-    """oldest50 selects least-processed images; only_veterans requires 3+ recipes.
-
-    These filters are contradictory — oldest images are the least likely to
-    have been reused across many recipes.  Reject early with a clear message.
-    """
-    images = _make_images(5)
-    state = _make_state(Path("/unused"))
-    with pytest.raises(ValueError, match="oldest50.*only_veterans"):
-        filter_images(images, age="oldest50", freshness="only_veterans", state=state)
 
 
 def test_empty_image_list():

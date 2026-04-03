@@ -15,10 +15,10 @@ on:
         description: 'Filter by poster user ID'
         default: ''
       age:
-        description: 'How old: 24h, 7d, 30d, 1-3mo, 3-6mo, 6-12mo, 1y+, 2y+, oldest50'
+        description: 'Filter by image age'
         default: ''
       freshness:
-        description: 'prefer_fresh_recipe, only_fresh_recipe, only_used_recipe, prefer_untouched, only_untouched, only_veterans (3+ recipes)'
+        description: 'Filter by image freshness'
         default: ''
       rating:
         description: 'Filter recipes by rating (comma-separated: top,positive,unrated,underdogs)'
