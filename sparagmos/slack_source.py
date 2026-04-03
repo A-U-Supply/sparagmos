@@ -5,11 +5,16 @@ from __future__ import annotations
 import logging
 import random
 import re
+import time
+from collections import Counter
 from urllib.parse import urlparse
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import requests
 from slack_sdk import WebClient
+
+if TYPE_CHECKING:
+    from sparagmos.state import State
 
 logger = logging.getLogger(__name__)
 
@@ -115,6 +120,44 @@ def pick_random_image(
     return rng.choice(available)
 
 
+def weighted_sample(
+    images: list[dict[str, Any]],
+    n: int,
+    rng: random.Random,
+    max_attempts: int = 200,
+) -> list[dict[str, Any]]:
+    """Sample n distinct images respecting ``_weight`` keys.
+
+    Uses :func:`random.choices` (with replacement) then deduplicates,
+    retrying until *n* distinct images are collected or *max_attempts*
+    rounds are exhausted.
+
+    Args:
+        images: List of image dicts, each optionally carrying a ``_weight`` key.
+        n: Number of distinct images to return.
+        rng: Seeded random instance.
+        max_attempts: Safety cap on retry rounds.
+
+    Returns:
+        List of *n* distinct image dicts (may be fewer if the pool is
+        too small or attempts are exhausted).
+    """
+    weights = [img.get("_weight", 1.0) for img in images]
+    selected: dict[str, dict[str, Any]] = {}
+
+    for _ in range(max_attempts):
+        if len(selected) >= n:
+            break
+        picks = rng.choices(images, weights=weights, k=n)
+        for pick in picks:
+            if pick["id"] not in selected:
+                selected[pick["id"]] = pick
+            if len(selected) >= n:
+                break
+
+    return list(selected.values())[:n]
+
+
 def pick_random_images(
     files: list[dict[str, Any]],
     recipe_slug: str,
@@ -124,6 +167,9 @@ def pick_random_images(
     max_attempts: int = 100,
 ) -> list[dict[str, Any]] | None:
     """Pick n distinct random images whose combination hasn't been used.
+
+    If images carry ``_weight`` keys (set by :func:`filter_images`),
+    weighted sampling is used instead of uniform ``rng.sample``.
 
     Args:
         files: List of file metadata dicts.
@@ -140,13 +186,169 @@ def pick_random_images(
         return None
 
     rng = random.Random(seed)
+    has_weights = any("_weight" in f for f in files)
+
     for _ in range(max_attempts):
-        selected = rng.sample(files, n)
+        if has_weights:
+            selected = weighted_sample(files, n, rng)
+        else:
+            selected = rng.sample(files, n)
         combo = (frozenset(f["id"] for f in selected), recipe_slug)
         if combo not in processed_combos:
             return selected
 
     return None
+
+
+# ── Age boundary helpers ─────────────────────────────────────────────
+
+_AGE_SECONDS: dict[str, float] = {
+    "24h": 24 * 3600,
+    "7d": 7 * 24 * 3600,
+    "30d": 30 * 24 * 3600,
+    "1-3mo": -1,   # handled specially (range)
+    "3-6mo": -1,
+    "6-12mo": -1,
+    "1y+": 365 * 24 * 3600,
+    "2y+": 2 * 365 * 24 * 3600,
+}
+
+
+def _apply_age_filter(
+    images: list[dict[str, Any]], age: str
+) -> list[dict[str, Any]]:
+    """Filter *images* by age bucket relative to ``time.time()``."""
+    now = time.time()
+
+    if age == "oldest50":
+        return sorted(images, key=lambda img: img.get("timestamp", 0))[:50]
+
+    # Simple "within last X" buckets
+    if age in ("24h", "7d", "30d"):
+        cutoff = now - _AGE_SECONDS[age]
+        return [img for img in images if img.get("timestamp", 0) >= cutoff]
+
+    # Range buckets
+    day = 24 * 3600
+    if age == "1-3mo":
+        lo, hi = now - 3 * 30 * day, now - 1 * 30 * day
+        return [img for img in images if lo <= img.get("timestamp", 0) <= hi]
+    if age == "3-6mo":
+        lo, hi = now - 6 * 30 * day, now - 3 * 30 * day
+        return [img for img in images if lo <= img.get("timestamp", 0) <= hi]
+    if age == "6-12mo":
+        lo, hi = now - 12 * 30 * day, now - 6 * 30 * day
+        return [img for img in images if lo <= img.get("timestamp", 0) <= hi]
+
+    # "Older than" buckets
+    if age == "1y+":
+        cutoff = now - _AGE_SECONDS["1y+"]
+        return [img for img in images if img.get("timestamp", 0) <= cutoff]
+    if age == "2y+":
+        cutoff = now - _AGE_SECONDS["2y+"]
+        return [img for img in images if img.get("timestamp", 0) <= cutoff]
+
+    logger.warning("Unknown age filter: %s — returning all images", age)
+    return images
+
+
+def _apply_freshness_filter(
+    images: list[dict[str, Any]],
+    freshness: str,
+    recipe: str | None,
+    state: "State | None",
+) -> list[dict[str, Any]]:
+    """Apply freshness filtering/weighting to *images*."""
+    if state is None:
+        logger.warning("Freshness filter requires state — returning unfiltered")
+        return images
+
+    if freshness == "prefer_fresh_recipe":
+        if recipe is None:
+            return images
+        pairs = state.processed_pairs()
+        for img in images:
+            img["_weight"] = 1.0 if (img["id"], recipe) in pairs else 3.0
+        return images
+
+    if freshness == "only_fresh_recipe":
+        if recipe is None:
+            return images
+        pairs = state.processed_pairs()
+        return [img for img in images if (img["id"], recipe) not in pairs]
+
+    if freshness == "only_used_recipe":
+        if recipe is None:
+            return images
+        pairs = state.processed_pairs()
+        return [img for img in images if (img["id"], recipe) in pairs]
+
+    if freshness == "prefer_untouched":
+        all_ids = state.all_file_ids()
+        for img in images:
+            img["_weight"] = 1.0 if img["id"] in all_ids else 3.0
+        return images
+
+    if freshness == "only_untouched":
+        all_ids = state.all_file_ids()
+        return [img for img in images if img["id"] not in all_ids]
+
+    if freshness == "only_veterans":
+        # Count distinct recipes per file_id
+        recipe_counts: Counter[str] = Counter()
+        for fid, _recipe in state.processed_pairs():
+            recipe_counts[fid] += 1
+        return [img for img in images if recipe_counts.get(img["id"], 0) >= 3]
+
+    logger.warning("Unknown freshness filter: %s — returning all images", freshness)
+    return images
+
+
+def filter_images(
+    images: list[dict[str, Any]],
+    poster: str | None = None,
+    age: str | None = None,
+    freshness: str | None = None,
+    recipe: str | None = None,
+    state: "State | None" = None,
+) -> list[dict[str, Any]]:
+    """Filter source images by poster, age, and freshness.
+
+    Filters are applied in order: poster → age → freshness.
+    Some freshness modes (``prefer_*``) add a ``_weight`` key instead
+    of removing images, for use with :func:`weighted_sample`.
+
+    Args:
+        images: List of image metadata dicts from :func:`fetch_image_files`.
+        poster: If set, keep only images from this Slack user ID.
+        age: Age bucket string (``24h``, ``7d``, ``30d``, ``1-3mo``,
+            ``3-6mo``, ``6-12mo``, ``1y+``, ``2y+``, ``oldest50``).
+        freshness: Freshness mode string (``prefer_fresh_recipe``,
+            ``only_fresh_recipe``, ``only_used_recipe``,
+            ``prefer_untouched``, ``only_untouched``, ``only_veterans``).
+        recipe: Recipe slug (needed for recipe-aware freshness modes).
+        state: State object for freshness lookups.
+
+    Returns:
+        Filtered (and possibly weighted) list of image dicts.
+    """
+    result = list(images)  # shallow copy to avoid mutating caller's list
+
+    if poster is not None:
+        result = [img for img in result if img.get("user") == poster]
+        logger.info("Poster filter (%s): %d → %d images", poster, len(images), len(result))
+
+    if age is not None:
+        before = len(result)
+        result = _apply_age_filter(result, age)
+        logger.info("Age filter (%s): %d → %d images", age, before, len(result))
+
+    if freshness is not None:
+        before = len(result)
+        result = _apply_freshness_filter(result, freshness, recipe, state)
+        logger.info("Freshness filter (%s): %d → %d images", freshness, before, len(result))
+
+    return result
 
 
 def download_image(url: str, token: str, timeout: int = 30) -> bytes:

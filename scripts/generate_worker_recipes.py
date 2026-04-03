@@ -50,6 +50,36 @@ def escape_ts_string(s: str) -> str:
     return s.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
 
+def annotate_step(step: dict) -> str:
+    """Return an annotated effect label for a single pipeline step.
+
+    Mirrors the logic in sparagmos/slack_post.py::_annotate_step but reads
+    YAML keys (``type`` instead of ``effect``).
+
+    Examples:
+        ``{"type": "blend", "images": ["a", "b"], "into": "canvas"}``
+        → ``"blend(a,b→canvas)"``
+
+        ``{"type": "deepdream", "image": "a"}``
+        → ``"deepdream(a)"``
+
+        ``{"type": "jpeg_destroy"}``
+        → ``"jpeg_destroy"``
+    """
+    effect = step.get("type", "unknown")
+    if "images" in step and "into" in step:
+        inputs = ",".join(step["images"])
+        return f"{effect}({inputs}→{step['into']})"
+    if "image" in step:
+        return f"{effect}({step['image']})"
+    return effect
+
+
+def build_effects_chain(steps: list[dict]) -> str:
+    """Build a human-readable effect chain string from recipe steps."""
+    return " → ".join(annotate_step(s) for s in steps)
+
+
 def load_recipes(recipes_dir: Path) -> list[dict]:
     """Load all YAML recipes and return sorted list of recipe metadata."""
     recipes = []
@@ -59,11 +89,13 @@ def load_recipes(recipes_dir: Path) -> list[dict]:
         if not data:
             continue
         slug = path.stem
+        steps = data.get("steps", [])
         recipes.append({
             "slug": slug,
             "inputs": data.get("inputs", 1),
             "name": data.get("name", slug),
             "description": truncate_description(data.get("description", "")),
+            "effects": build_effects_chain(steps),
         })
     return recipes
 
@@ -82,6 +114,7 @@ def generate_typescript(recipes: list[dict]) -> str:
         "  inputs: number;",
         "  name: string;",
         "  description: string;",
+        "  effects: string;",
         "}",
         "",
         "/** All available recipes with their required input counts. */",
@@ -92,9 +125,11 @@ def generate_typescript(recipes: list[dict]) -> str:
         slug = escape_ts_string(r["slug"])
         name = escape_ts_string(r["name"])
         desc = escape_ts_string(r["description"])
+        effects = escape_ts_string(r["effects"])
         lines.append(
             f'  {{ slug: "{slug}", inputs: {r["inputs"]}, '
-            f'name: "{name}", description: "{desc}" }},'
+            f'name: "{name}", description: "{desc}", '
+            f'effects: "{effects}" }},'
         )
 
     lines.append("] as const;")
