@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import io
+import json
 import logging
 import os
 import random
@@ -73,6 +74,22 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Comma-separated image URLs to use as inputs (remaining filled from Slack)",
     )
+    parser.add_argument(
+        "--poster",
+        default=None,
+        help="Filter images by poster user ID",
+    )
+    parser.add_argument(
+        "--age",
+        default=None,
+        help="Filter images by age (24h, 7d, 30d, 1-3mo, 3-6mo, 6-12mo, 1y+, 2y+, oldest50)",
+    )
+    parser.add_argument(
+        "--freshness",
+        default=None,
+        help="Filter images by freshness (prefer_fresh_recipe, only_fresh_recipe, "
+        "only_used_recipe, prefer_untouched, only_untouched, only_veterans)",
+    )
     return parser
 
 
@@ -87,6 +104,41 @@ def _find_repo_root() -> Path:
     if (Path.cwd() / "recipes").is_dir():
         return Path.cwd()
     return repo_root
+
+
+def _load_ratings(repo_root: Path) -> dict[str, int]:
+    """Load recipe ratings from ``ratings.json`` at repo root.
+
+    Returns:
+        Mapping of recipe slug → integer score, or empty dict if the
+        file doesn't exist or is malformed.
+    """
+    path = repo_root / "ratings.json"
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text())
+        if isinstance(data, dict):
+            return {k: int(v) for k, v in data.items() if isinstance(v, (int, float))}
+    except (json.JSONDecodeError, ValueError) as exc:
+        logger.warning("Failed to parse ratings.json: %s", exc)
+    return {}
+
+
+def _pick_weighted_recipe(
+    rng: random.Random, slugs: list[str], repo_root: Path
+) -> str:
+    """Pick a recipe slug, using ratings for weighted random if available.
+
+    Weight formula: ``max(1, rating_score + 5)`` — so a rating of -4 maps
+    to weight 1, rating 0 maps to 5, and rating 5 maps to 10.
+    """
+    ratings = _load_ratings(repo_root)
+    if not ratings:
+        return rng.choice(slugs)
+
+    weights = [max(1, ratings.get(slug, 0) + 5) for slug in slugs]
+    return rng.choices(slugs, weights=weights, k=1)[0]
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -198,9 +250,9 @@ def main(argv: list[str] | None = None) -> None:
                     sorted({v.inputs for v in recipes.values()}),
                 )
                 sys.exit(1)
-            recipe_slug = rng.choice(list(matching.keys()))
+            recipe_slug = _pick_weighted_recipe(rng, list(matching.keys()), repo_root)
         else:
-            recipe_slug = rng.choice(list(recipes.keys()))
+            recipe_slug = _pick_weighted_recipe(rng, list(recipes.keys()), repo_root)
         recipe = recipes[recipe_slug]
 
     logger.info("Using recipe: %s (%s)", recipe_slug, recipe.name)
@@ -218,6 +270,7 @@ def main(argv: list[str] | None = None) -> None:
         from sparagmos.slack_source import (
             find_channel_id,
             fetch_image_files,
+            filter_images,
             pick_random_images,
             download_image,
             download_url,
@@ -269,6 +322,14 @@ def main(argv: list[str] | None = None) -> None:
                 logger.error("No images found in #image-gen")
                 sys.exit(1)
 
+            files = filter_images(
+                files, poster=args.poster, age=args.age,
+                freshness=args.freshness, recipe=recipe_slug, state=state,
+            )
+            if not files:
+                logger.error("No images remaining after filters")
+                sys.exit(1)
+
             slack_selected = pick_random_images(
                 files, recipe_slug, remaining, state.processed_combos(), seed
             )
@@ -296,6 +357,7 @@ def main(argv: list[str] | None = None) -> None:
         from sparagmos.slack_source import (
             find_channel_id,
             fetch_image_files,
+            filter_images,
             pick_random_image,
             pick_random_images,
             download_image,
@@ -318,6 +380,14 @@ def main(argv: list[str] | None = None) -> None:
         files = fetch_image_files(client, channel_id)
         if not files:
             logger.error("No images found in #image-gen")
+            sys.exit(1)
+
+        files = filter_images(
+            files, poster=args.poster, age=args.age,
+            freshness=args.freshness, recipe=recipe_slug, state=state,
+        )
+        if not files:
+            logger.error("No images remaining after filters")
             sys.exit(1)
 
         if recipe.inputs == 1:
