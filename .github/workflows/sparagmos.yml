@@ -62,11 +62,14 @@ jobs:
           if git diff --cached --quiet; then
             echo "No state changes."
           else
-            git commit -m "chore: update state ($(date -u +%Y-%m-%d)) [skip ci]"
             for i in 1 2 3 4 5; do
+              # Reset to remote tip and recommit our state.json on top
+              # This avoids rebase conflicts since state.json is machine-generated
+              git fetch origin main
+              git reset --soft origin/main
+              git commit -m "chore: update state ($(date -u +%Y-%m-%d)) [skip ci]"
               git push && break
-              echo "Push failed (attempt $i), pulling and retrying..."
-              git pull --rebase
+              echo "Push failed (attempt $i), retrying..."
               sleep $((RANDOM % 10 + 5))
             done
           fi
