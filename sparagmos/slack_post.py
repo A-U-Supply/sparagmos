@@ -156,17 +156,24 @@ def post_result(
     file_id = file_obj.get("id", "")
 
     # Find the message containing our uploaded file by matching file ID.
+    # Retry because the message may not appear in history immediately.
     posted_ts = ""
     if file_id:
-        try:
-            history = client.conversations_history(channel=channel_id, limit=5)
-            for msg in history.get("messages", []):
-                msg_files = msg.get("files", [])
-                if any(f.get("id") == file_id for f in msg_files):
-                    posted_ts = msg["ts"]
-                    break
-        except Exception:
-            logger.warning("Failed to find posted message in channel history")
+        import time
+        for attempt in range(3):
+            if attempt > 0:
+                time.sleep(2)
+            try:
+                history = client.conversations_history(channel=channel_id, limit=5)
+                for msg in history.get("messages", []):
+                    msg_files = msg.get("files", [])
+                    if any(f.get("id") == file_id for f in msg_files):
+                        posted_ts = msg["ts"]
+                        break
+            except Exception:
+                logger.warning("Failed to read channel history")
+            if posted_ts:
+                break
 
     # Post source attribution as a thread reply
     if posted_ts:
