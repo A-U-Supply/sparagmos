@@ -275,13 +275,25 @@ def _apply_freshness_filter(
         if recipe is None:
             return images
         pairs = state.processed_pairs()
-        return [img for img in images if (img["id"], recipe) not in pairs]
+        strict = [img for img in images if (img["id"], recipe) not in pairs]
+        if strict:
+            return strict
+        logger.info("only_fresh_recipe: none fresh — falling back to weights")
+        for img in images:
+            img["_weight"] = 3.0 if (img["id"], recipe) not in pairs else 1.0
+        return images
 
     if freshness == "only_used_recipe":
         if recipe is None:
             return images
         pairs = state.processed_pairs()
-        return [img for img in images if (img["id"], recipe) in pairs]
+        strict = [img for img in images if (img["id"], recipe) in pairs]
+        if strict:
+            return strict
+        logger.info("only_used_recipe: none used — falling back to weights")
+        for img in images:
+            img["_weight"] = 3.0 if (img["id"], recipe) in pairs else 1.0
+        return images
 
     if freshness == "prefer_untouched":
         all_ids = state.all_file_ids()
@@ -291,14 +303,25 @@ def _apply_freshness_filter(
 
     if freshness == "only_untouched":
         all_ids = state.all_file_ids()
-        return [img for img in images if img["id"] not in all_ids]
+        strict = [img for img in images if img["id"] not in all_ids]
+        if strict:
+            return strict
+        logger.info("only_untouched: none untouched — falling back to weights")
+        for img in images:
+            img["_weight"] = 3.0 if img["id"] not in all_ids else 1.0
+        return images
 
     if freshness == "only_veterans":
-        # Count distinct recipes per file_id
         recipe_counts: Counter[str] = Counter()
         for fid, _recipe in state.processed_pairs():
             recipe_counts[fid] += 1
-        return [img for img in images if recipe_counts.get(img["id"], 0) >= 3]
+        strict = [img for img in images if recipe_counts.get(img["id"], 0) >= 3]
+        if strict:
+            return strict
+        logger.info("only_veterans: none qualify — falling back to weights")
+        for img in images:
+            img["_weight"] = float(recipe_counts.get(img["id"], 0) + 1)
+        return images
 
     logger.warning("Unknown freshness filter: %s — returning all images", freshness)
     return images
@@ -332,6 +355,15 @@ def filter_images(
     Returns:
         Filtered (and possibly weighted) list of image dicts.
     """
+    # Reject contradictory filter combos that will always produce 0 results.
+    # oldest50 picks the least-processed images; only_veterans requires 3+ recipes.
+    if age == "oldest50" and freshness == "only_veterans":
+        raise ValueError(
+            "Contradictory filters: oldest50 selects the least-processed images "
+            "but only_veterans requires images used with 3+ recipes. "
+            "Use one or the other, not both."
+        )
+
     result = list(images)  # shallow copy to avoid mutating caller's list
 
     if poster is not None:
