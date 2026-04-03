@@ -1,5 +1,5 @@
 import type { Env } from "./types";
-import { vote, toggleStar, toggleFavorite, getRatings, getUserVotes } from "./kv";
+import { vote, toggleStar, toggleFavorite, getRatings, getUserVotes, getFavorites } from "./kv";
 import { dispatchWorkflow } from "./github";
 import { buildTypeaheadOptions } from "./modal";
 
@@ -159,6 +159,31 @@ async function updateMessage(
 // Action handlers
 // ---------------------------------------------------------------------------
 
+/** Gather user state for rebuilding message blocks after an action. */
+async function gatherUserState(
+  env: Env,
+  userId: string,
+  slug: string,
+  postedTs: string,
+): Promise<{ rating: RatingData; userVotes: { vote: number; starred: boolean; favorited: boolean } }> {
+  const [allRatings, allUserVotes, favorites] = await Promise.all([
+    getRatings(env.RATINGS),
+    getUserVotes(env.RATINGS, userId),
+    getFavorites(env.RATINGS, userId),
+  ]);
+  const rating: RatingData = allRatings[slug] ?? { up: 0, down: 0, score: 0, last_voted: "" };
+  const starVotersRaw = await env.RATINGS.get(`star_voters:${postedTs}`);
+  const starVoters: string[] = starVotersRaw ? JSON.parse(starVotersRaw) : [];
+  return {
+    rating,
+    userVotes: {
+      vote: allUserVotes[slug] ?? 0,
+      starred: starVoters.includes(userId),
+      favorited: favorites.includes(slug),
+    },
+  };
+}
+
 /** Handle an upvote or downvote action. */
 async function handleVote(
   env: Env,
@@ -168,26 +193,17 @@ async function handleVote(
 ): Promise<void> {
   await vote(env.RATINGS, slug, payload.user.id, direction);
 
-  const ratings = await getRatings(env.RATINGS, slug);
-  const userVotes = await getUserVotes(env.RATINGS, payload.user.id, slug);
   const channel = payload.channel?.id || payload.container?.channel_id;
   const ts = payload.message?.ts || payload.container?.message_ts;
-
   if (!channel || !ts || !payload.message?.blocks) return;
 
-  // Extract posted_ts from the post_actions block_id
   const postBlock = payload.message.blocks.find((b: any) =>
     b.block_id?.startsWith("post_actions:"),
   );
   const postedTs = postBlock?.block_id?.split(":").slice(1).join(":") || ts;
 
-  const updatedBlocks = rebuildBlocks(
-    payload.message.blocks,
-    slug,
-    postedTs,
-    ratings,
-    userVotes,
-  );
+  const { rating, userVotes } = await gatherUserState(env, payload.user.id, slug, postedTs);
+  const updatedBlocks = rebuildBlocks(payload.message.blocks, slug, postedTs, rating, userVotes);
   await updateMessage(env, channel, ts, updatedBlocks);
 }
 
@@ -201,23 +217,15 @@ async function handleStar(
   const colonIdx = value.indexOf(":");
   const slug = colonIdx >= 0 ? value.substring(0, colonIdx) : value;
   const postedTs = colonIdx >= 0 ? value.substring(colonIdx + 1) : "";
+  const channel = payload.channel?.id || payload.container?.channel_id || "";
 
-  await toggleStar(env.RATINGS, payload.user.id, slug, postedTs);
+  await toggleStar(env.RATINGS, postedTs, slug, payload.user.id, channel);
 
-  const ratings = await getRatings(env.RATINGS, slug);
-  const userVotes = await getUserVotes(env.RATINGS, payload.user.id, slug);
-  const channel = payload.channel?.id || payload.container?.channel_id;
   const ts = payload.message?.ts || payload.container?.message_ts;
-
   if (!channel || !ts || !payload.message?.blocks) return;
 
-  const updatedBlocks = rebuildBlocks(
-    payload.message.blocks,
-    slug,
-    postedTs,
-    ratings,
-    userVotes,
-  );
+  const { rating, userVotes } = await gatherUserState(env, payload.user.id, slug, postedTs);
+  const updatedBlocks = rebuildBlocks(payload.message.blocks, slug, postedTs, rating, userVotes);
   await updateMessage(env, channel, ts, updatedBlocks);
 }
 
@@ -229,26 +237,17 @@ async function handleFavorite(
 ): Promise<void> {
   await toggleFavorite(env.RATINGS, payload.user.id, slug);
 
-  const ratings = await getRatings(env.RATINGS, slug);
-  const userVotes = await getUserVotes(env.RATINGS, payload.user.id, slug);
   const channel = payload.channel?.id || payload.container?.channel_id;
   const ts = payload.message?.ts || payload.container?.message_ts;
-
   if (!channel || !ts || !payload.message?.blocks) return;
 
-  // Extract posted_ts from the post_actions block_id
   const postBlock = payload.message.blocks.find((b: any) =>
     b.block_id?.startsWith("post_actions:"),
   );
   const postedTs = postBlock?.block_id?.split(":").slice(1).join(":") || ts;
 
-  const updatedBlocks = rebuildBlocks(
-    payload.message.blocks,
-    slug,
-    postedTs,
-    ratings,
-    userVotes,
-  );
+  const { rating, userVotes } = await gatherUserState(env, payload.user.id, slug, postedTs);
+  const updatedBlocks = rebuildBlocks(payload.message.blocks, slug, postedTs, rating, userVotes);
   await updateMessage(env, channel, ts, updatedBlocks);
 }
 
