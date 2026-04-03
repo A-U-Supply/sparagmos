@@ -1414,6 +1414,42 @@
       ],
       "processed_date": "2026-04-03",
       "posted_ts": "1775210449.106919"
+    },
+    {
+      "source_file_ids": [
+        "F08D3Q8F3CY",
+        "F09G3AERQH1",
+        "F04M63RSC6R",
+        "F07898LRQ0J"
+      ],
+      "source_dates": [
+        "2025-02-08",
+        "2025-09-20",
+        "2023-01-31",
+        "2024-06-15"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "mask-cascade",
+      "effects": [
+        "pca_decompose",
+        "spectral",
+        "pixel_sort",
+        "crt_vhs",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "channel_shift",
+        "dither",
+        "byte_corrupt"
+      ],
+      "processed_date": "2026-04-03",
+      "posted_ts": ""
     }
   ]
 }
