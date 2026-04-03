@@ -78,7 +78,7 @@ function buildHelpText(): string {
 // ---------------------------------------------------------------------------
 
 /** Handle the parsed slash command body. */
-async function handleSlashCommand(body: string, env: Env): Promise<Response> {
+async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext): Promise<Response> {
   const params = new URLSearchParams(body);
   const rawText = (params.get("text") ?? "").trim();
   const { command, urls } = parseSlashCommand(rawText);
@@ -131,8 +131,8 @@ async function handleSlashCommand(body: string, env: Env): Promise<Response> {
   if (!command && urls.length === 0) {
     const triggerId = params.get("trigger_id");
     if (triggerId) {
-      // Don't await — respond to Slack immediately, open modal in background
-      openModal(env, triggerId).catch(console.error);
+      // Respond immediately, open modal in background via waitUntil
+      ctx.waitUntil(openModal(env, triggerId));
     }
     return new Response("", { status: 200 });
   }
@@ -206,8 +206,9 @@ async function openModal(env: Env, triggerId: string): Promise<void> {
     },
     body: JSON.stringify({ trigger_id: triggerId, view }),
   });
-  if (!resp.ok) {
-    console.error(`views.open failed: ${resp.status}`);
+  const data = await resp.json() as { ok: boolean; error?: string };
+  if (!data.ok) {
+    console.error(`views.open failed: ${data.error}`);
   }
 }
 
@@ -216,7 +217,7 @@ async function openModal(env: Env, triggerId: string): Promise<void> {
 // ---------------------------------------------------------------------------
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     // --- API routes backed by KV (GET — no body needed) ---
@@ -255,7 +256,7 @@ export default {
 
       // Slash command endpoint
       if (url.pathname === "/slack/commands") {
-        return handleSlashCommand(body, env);
+        return handleSlashCommand(body, env, ctx);
       }
     }
 
