@@ -165,7 +165,15 @@ def post_result(
                 time.sleep(2)
             try:
                 history = client.conversations_history(channel=channel_id, limit=5)
-                for msg in history.get("messages", []):
+                messages = history.get("messages", [])
+                if attempt == 0:
+                    logger.info(
+                        "Looking for file_id=%s in %d messages: %s",
+                        file_id,
+                        len(messages),
+                        [(m.get("ts"), [f.get("id") for f in m.get("files", [])]) for m in messages],
+                    )
+                for msg in messages:
                     msg_files = msg.get("files", [])
                     if any(f.get("id") == file_id for f in msg_files):
                         posted_ts = msg["ts"]
