@@ -383,14 +383,12 @@ export async function handleInteraction(
             }
             break;
           }
-          case "rating_checkboxes": {
+          case "rating_filter": {
             if (payload.view) {
               const vals = payload.view.state.values;
-              const selectedOptions =
-                vals.rating_block?.rating_checkboxes?.selected_options ?? [];
-              const ratingFilters: string[] = selectedOptions.map(
-                (o: { value: string }) => o.value,
-              );
+              const selected =
+                vals.rating_block?.rating_filter?.selected_option?.value ?? "all";
+              const ratingFilters: string[] = selected !== "all" ? [selected] : [];
               const allRatings = await getRatings(env.RATINGS);
               const channelId = payload.view.private_metadata || "";
               const updatedView = buildModalView(channelId, allRatings, ratingFilters);
@@ -448,11 +446,9 @@ export async function handleInteraction(
         const freshness =
           vals.freshness_block?.freshness_filter?.selected_option?.value ??
           "none";
-        const ratingSelected =
-          vals.rating_block?.rating_checkboxes?.selected_options ?? [];
-        const rating = ratingSelected
-          .map((o: { value: string }) => o.value)
-          .join(",");
+        const ratingValue =
+          vals.rating_block?.rating_filter?.selected_option?.value ?? "all";
+        const rating = ratingValue !== "all" ? ratingValue : "";
 
         const resolvedRecipe =
           recipe && recipe !== "random" ? recipe : "";
