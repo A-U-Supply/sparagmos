@@ -103,6 +103,7 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
     return new Response(
       JSON.stringify({
         response_type: "ephemeral",
+        text: "Recent sparagmos runs",
         blocks,
       }),
       { headers: { "Content-Type": "application/json" } },
@@ -130,9 +131,9 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
   // No command → open the modal
   if (!command && urls.length === 0) {
     const triggerId = params.get("trigger_id");
+    const channelId = params.get("channel_id") ?? "";
     if (triggerId) {
-      // Respond immediately, open modal in background via waitUntil
-      ctx.waitUntil(openModal(env, triggerId));
+      ctx.waitUntil(openModal(env, triggerId, channelId));
     }
     return new Response("", { status: 200 });
   }
@@ -196,8 +197,8 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
 // ---------------------------------------------------------------------------
 
 /** Open the Sparagmos modal via the Slack views.open API. */
-async function openModal(env: Env, triggerId: string): Promise<void> {
-  const view = buildModalView();
+async function openModal(env: Env, triggerId: string, channelId: string): Promise<void> {
+  const view = buildModalView(channelId);
   const resp = await fetch("https://slack.com/api/views.open", {
     method: "POST",
     headers: {
@@ -251,7 +252,7 @@ export default {
 
       // Slack interaction payloads (modals, buttons, etc.)
       if (url.pathname === "/slack/interactions") {
-        return handleInteraction(body, env);
+        return handleInteraction(body, env, ctx);
       }
 
       // Slash command endpoint

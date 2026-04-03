@@ -1,35 +1,77 @@
 import { RECIPES } from "./recipes";
 import type { Recipe } from "./recipes";
-import { getFavorites, getRatings } from "./kv";
-import type { RatingData } from "./kv";
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Truncate a string, adding ellipsis if needed. */
+function truncate(s: string, maxLen: number): string {
+  if (s.length <= maxLen) return s;
+  return s.slice(0, maxLen - 1) + "\u2026";
+}
 
 // ---------------------------------------------------------------------------
 // Modal view builder
 // ---------------------------------------------------------------------------
 
+/** Build static option_groups for the recipe selector. */
+function buildRecipeOptionGroups(): object[] {
+  const groups: Array<{ label: { type: string; text: string }; options: object[] }> = [];
+
+  // Group recipes by input count
+  const byInputs = new Map<number, Recipe[]>();
+  for (const r of RECIPES) {
+    const list = byInputs.get(r.inputs);
+    if (list) list.push(r);
+    else byInputs.set(r.inputs, [r]);
+  }
+
+  // Random option first
+  groups.push({
+    label: { type: "plain_text", text: "Special" },
+    options: [{ text: { type: "plain_text", text: "\ud83c\udfb2 Random" }, value: "random" }],
+  });
+
+  // Then by input count ascending
+  for (const count of [...byInputs.keys()].sort((a, b) => a - b)) {
+    const recipes = byInputs.get(count)!;
+    groups.push({
+      label: { type: "plain_text", text: `${count} inputs` },
+      options: recipes.map((r) => ({
+        text: { type: "plain_text", text: truncate(r.name, 75) },
+        value: r.slug,
+      })),
+    });
+  }
+
+  return groups;
+}
+
 /** Build the Slack modal view object for `views.open`. */
-export function buildModalView(): object {
+export function buildModalView(channelId: string = ""): object {
   return {
     type: "modal",
     callback_id: "sparagmos_run",
+    private_metadata: channelId,
     title: { type: "plain_text", text: "Sparagmos" },
     submit: { type: "plain_text", text: "Destroy" },
     close: { type: "plain_text", text: "Cancel" },
     blocks: [
-      // Recipe select (external data source for typeahead)
+      // Recipe select (static with built-in Slack typeahead filtering)
       {
         type: "input",
         block_id: "recipe_block",
         optional: true,
         label: { type: "plain_text", text: "Recipe" },
         element: {
-          type: "external_select",
+          type: "static_select",
           action_id: "recipe_select",
           placeholder: {
             type: "plain_text",
             text: "Search recipes or leave empty for Random",
           },
-          min_query_length: 0,
+          option_groups: buildRecipeOptionGroups(),
         },
       },
       // Image URLs (optional multiline text)
@@ -48,22 +90,16 @@ export function buildModalView(): object {
           },
         },
       },
-      // Poster filter
+      // Poster filter (native Slack user picker)
       {
         type: "input",
         block_id: "poster_block",
         optional: true,
         label: { type: "plain_text", text: "Poster" },
         element: {
-          type: "static_select",
+          type: "users_select",
           action_id: "poster_filter",
           placeholder: { type: "plain_text", text: "Anyone" },
-          options: [
-            {
-              text: { type: "plain_text", text: "Anyone" },
-              value: "anyone",
-            },
-          ],
         },
       },
       // Age filter
@@ -232,154 +268,4 @@ export function buildModalView(): object {
       },
     ],
   };
-}
-
-// ---------------------------------------------------------------------------
-// Typeahead options builder
-// ---------------------------------------------------------------------------
-
-/** Truncate a string to maxLen chars, adding ellipsis if needed. */
-function truncate(s: string, maxLen: number): string {
-  if (s.length <= maxLen) return s;
-  return s.slice(0, maxLen - 1) + "\u2026";
-}
-
-/** Format a recipe as a Slack option for external_select. */
-function recipeToOption(
-  recipe: Recipe,
-  ratings: Record<string, RatingData>,
-): { text: { type: string; text: string }; description?: { type: string; text: string }; value: string } {
-  const rating = ratings[recipe.slug];
-  const scoreStr = rating && rating.score !== 0
-    ? ` [${rating.score > 0 ? "+" : ""}${rating.score}]`
-    : "";
-  const text = truncate(
-    `${recipe.name} (${recipe.inputs} inputs)${scoreStr}`,
-    75,
-  );
-  const option: {
-    text: { type: string; text: string };
-    description?: { type: string; text: string };
-    value: string;
-  } = {
-    text: { type: "plain_text", text },
-    value: recipe.slug,
-  };
-  // Add effects chain as description (max 75 chars)
-  if (recipe.effects) {
-    option.description = {
-      type: "plain_text",
-      text: truncate(recipe.effects, 75),
-    };
-  }
-  return option;
-}
-
-/**
- * Build typeahead option groups for the recipe external_select.
- *
- * Called on `block_suggestion` payloads when the user types in the
- * recipe selector. Returns option_groups with Random, Favorites,
- * and per-input-count groups.
- */
-export async function buildTypeaheadOptions(
-  query: string,
-  userId: string,
-  kv: KVNamespace,
-): Promise<object> {
-  const [favorites, ratings] = await Promise.all([
-    getFavorites(kv, userId),
-    getRatings(kv),
-  ]);
-
-  const lowerQuery = query.toLowerCase();
-
-  // Filter recipes matching query (by slug or name)
-  const matched = RECIPES.filter(
-    (r) =>
-      r.slug.includes(lowerQuery) ||
-      r.name.toLowerCase().includes(lowerQuery),
-  );
-
-  // Sort helper: by rating score descending
-  const byScore = (a: Recipe, b: Recipe): number => {
-    const sa = ratings[a.slug]?.score ?? 0;
-    const sb = ratings[b.slug]?.score ?? 0;
-    return sb - sa;
-  };
-
-  const groups: Array<{
-    label: { type: string; text: string };
-    options: Array<object>;
-  }> = [];
-
-  // Random option (always present)
-  groups.push({
-    label: { type: "plain_text", text: "Special" },
-    options: [
-      {
-        text: { type: "plain_text", text: "Random" },
-        description: {
-          type: "plain_text",
-          text: "Let fate decide",
-        },
-        value: "random",
-      },
-    ],
-  });
-
-  // Favorites group
-  const favSet = new Set(favorites);
-  const favMatched = matched
-    .filter((r) => favSet.has(r.slug))
-    .sort(byScore);
-  if (favMatched.length > 0) {
-    groups.push({
-      label: { type: "plain_text", text: "Favorites" },
-      options: favMatched.map((r) => recipeToOption(r, ratings)),
-    });
-  }
-
-  // Group by input count
-  const byInputs = new Map<number, Recipe[]>();
-  for (const r of matched) {
-    const list = byInputs.get(r.inputs);
-    if (list) {
-      list.push(r);
-    } else {
-      byInputs.set(r.inputs, [r]);
-    }
-  }
-
-  const sortedCounts = [...byInputs.keys()].sort((a, b) => a - b);
-  for (const count of sortedCounts) {
-    const recipes = byInputs.get(count)!.sort(byScore);
-    groups.push({
-      label: { type: "plain_text", text: `${count} inputs` },
-      options: recipes.map((r) => recipeToOption(r, ratings)),
-    });
-  }
-
-  // Slack limits external_select to 100 options total.
-  // Trim from the end of the last groups if we exceed that.
-  let total = 0;
-  for (const g of groups) {
-    total += g.options.length;
-  }
-  while (total > 100) {
-    // Remove options from the last group
-    const lastGroup = groups[groups.length - 1];
-    if (lastGroup.options.length > 1) {
-      lastGroup.options.pop();
-      total--;
-    } else {
-      groups.pop();
-      total--;
-    }
-  }
-
-  // Remove any groups that ended up empty (shouldn't happen, but defensive)
-  const nonEmpty = groups.filter((g) => g.options.length > 0);
-
-  return { option_groups: nonEmpty };
 }
