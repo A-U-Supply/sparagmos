@@ -456,33 +456,35 @@ export async function handleInteraction(
         const userId = payload.user.id;
         const recipeName = resolvedRecipe || "random";
 
-        // Dispatch and fetch runs in parallel, then show status in the modal
-        const [ok, runs] = await Promise.all([
-          dispatchWorkflow(env, resolvedRecipe, urls, {
+        // Dispatch in background, post ephemeral confirmation to the channel
+        const work = (async () => {
+          const ok = await dispatchWorkflow(env, resolvedRecipe, urls, {
             poster: poster ?? undefined,
             age: age !== "any" ? age : undefined,
             freshness: freshness !== "none" ? freshness : undefined,
             rating: rating || undefined,
-          }),
-          fetchWorkflowRuns(env),
-        ]);
+          });
 
-        const view = buildStatusView(runs) as { blocks: object[]; close?: object };
-        const confirmBlock = {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: ok
-              ? `:art: *${recipeName}* dispatched! Results in #img-junkyard in ~2-5 min.`
-              : `:warning: Failed to dispatch workflow.`,
-          },
-        };
-        view.blocks = [confirmBlock, { type: "divider" }, ...view.blocks];
-        view.close = { type: "plain_text", text: "Done" };
-
-        return new Response(JSON.stringify({ response_action: "update", view }), {
-          headers: { "Content-Type": "application/json" },
-        });
+          if (channelId) {
+            const msg = ok
+              ? `:art: Firing up *${recipeName}*… results in #img-junkyard in ~2-5 min.`
+              : `:warning: Failed to dispatch workflow.`;
+            const resp = await fetch("https://slack.com/api/chat.postEphemeral", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`,
+              },
+              body: JSON.stringify({ channel: channelId, user: userId, text: msg }),
+            });
+            const data = await resp.json() as { ok: boolean; error?: string };
+            if (!data.ok) {
+              console.error(`chat.postEphemeral failed: ${data.error}`);
+            }
+          }
+        })();
+        if (ctx) ctx.waitUntil(work);
+        else work.catch(console.error);
       }
       return new Response(JSON.stringify({ response_action: "clear" }), {
         headers: { "Content-Type": "application/json" },
