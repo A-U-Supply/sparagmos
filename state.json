@@ -1695,65 +1695,29 @@
     },
     {
       "source_file_ids": [
-        "F085VHV1K8D",
-        "F09CZC60ZKL",
-        "F040DDC4K6V"
+        "F0AQFR9MBPB",
+        "F04N1KVKBL1",
+        "F0A65GDJALS",
+        "F080SSARF8S"
       ],
       "source_dates": [
-        "2024-12-20",
-        "2025-09-01",
-        "2022-08-27"
+        "2026-03-31",
+        "2023-02-02",
+        "2025-12-30",
+        "2024-11-14"
       ],
       "source_users": [
+        "U03TD4SUDKL",
         "U03TD4SUDKL",
         "U03TD4SUDKL",
         "U03TD4SUDKL"
       ],
-      "recipe": "ancients-stencil",
+      "recipe": "ancients-collage",
       "effects": [
-        "ancient_stencil"
+        "ancient_collage"
       ],
       "processed_date": "2026-04-03",
-      "posted_ts": ""
-    },
-    {
-      "source_file_ids": [
-        "F0AJYJA8MU5",
-        "F08CY2MT2AG",
-        "F0A5Q3Q4M9D",
-        "F080SN41QR4",
-        "F0AEGDX4BP1"
-      ],
-      "source_dates": [
-        "2026-03-06",
-        "2025-02-11",
-        "2025-12-30",
-        "2024-11-15",
-        "2026-02-13"
-      ],
-      "source_users": [
-        "U03TD7FSUAE",
-        "U03TD7FSUAE",
-        "U03TD4SUDKL",
-        "U03TD4SUDKL",
-        "U03TD7FSUAE"
-      ],
-      "recipe": "composite-quilt",
-      "effects": [
-        "pixel_sort",
-        "crt_vhs",
-        "spectral",
-        "dither",
-        "pca_decompose",
-        "fragment",
-        "mask_composite",
-        "fragment",
-        "mask_composite",
-        "channel_shift",
-        "jpeg_destroy"
-      ],
-      "processed_date": "2026-04-03",
-      "posted_ts": "1775259419.095169"
+      "posted_ts": "1775259659.893529"
     }
   ]
 }

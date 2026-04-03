@@ -456,7 +456,7 @@ export async function handleInteraction(
         const userId = payload.user.id;
         const recipeName = resolvedRecipe || "random";
 
-        // Dispatch in background, post ephemeral confirmation to the channel
+        // Dispatch and confirm in background — modal must respond immediately
         const work = (async () => {
           const ok = await dispatchWorkflow(env, resolvedRecipe, urls, {
             poster: poster ?? undefined,
@@ -467,9 +467,9 @@ export async function handleInteraction(
 
           if (channelId) {
             const msg = ok
-              ? `:art: Firing up *${recipeName}*… results in #img-junkyard in ~2-5 min.`
+              ? `:art: Firing up *${recipeName}*... results in #img-junkyard in ~2-5 min.\nUse \`/sparagmos status\` to check progress.`
               : `:warning: Failed to dispatch workflow.`;
-            const resp = await fetch("https://slack.com/api/chat.postEphemeral", {
+            await fetch("https://slack.com/api/chat.postEphemeral", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -477,10 +477,6 @@ export async function handleInteraction(
               },
               body: JSON.stringify({ channel: channelId, user: userId, text: msg }),
             });
-            const data = await resp.json() as { ok: boolean; error?: string };
-            if (!data.ok) {
-              console.error(`chat.postEphemeral failed: ${data.error}`);
-            }
           }
         })();
         if (ctx) ctx.waitUntil(work);
