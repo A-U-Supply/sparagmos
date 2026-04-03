@@ -1325,6 +1325,35 @@
       ],
       "processed_date": "2026-04-03",
       "posted_ts": "1775180300.327599"
+    },
+    {
+      "source_file_ids": [
+        "F08K3HW9BE3",
+        "F08ABC6R4AJ",
+        "F04U6PH6NBY"
+      ],
+      "source_dates": [
+        "2025-03-27",
+        "2025-01-27",
+        "2023-03-16"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "edge-ghosts",
+      "effects": [
+        "spectral",
+        "pca_decompose",
+        "channel_shift",
+        "mask_composite",
+        "mask_composite",
+        "spectral",
+        "channel_shift"
+      ],
+      "processed_date": "2026-04-03",
+      "posted_ts": "1775185474.559899"
     }
   ]
 }
