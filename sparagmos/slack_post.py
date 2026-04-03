@@ -138,7 +138,7 @@ def _build_thread_blocks(
                 },
                 {
                     "type": "button",
-                    "text": {"type": "plain_text", "text": "\u2606 Save Recipe", "emoji": True},
+                    "text": {"type": "plain_text", "text": "\ud83d\udccc Pin Recipe", "emoji": True},
                     "action_id": "favorite",
                     "value": recipe_slug,
                 },

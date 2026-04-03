@@ -1,6 +1,7 @@
 import type { Env } from "./types";
-import { vote, toggleStar, toggleFavorite, getRatings, getUserVotes, getFavorites } from "./kv";
+import { vote, toggleStar, toggleFavorite, getRatings, getUserVotes, getFavorites, getStars } from "./kv";
 import { dispatchWorkflow } from "./github";
+import { buildBestView, buildPinnedView, buildHelpView } from "./modal";
 
 
 // ---------------------------------------------------------------------------
@@ -53,7 +54,7 @@ function buildVoteButtons(
 ): any {
   const upLabel = ratings.up > 0 ? `\ud83d\udc4d ${ratings.up}` : "\ud83d\udc4d";
   const downLabel = ratings.down > 0 ? `\ud83d\udc4e ${ratings.down}` : "\ud83d\udc4e";
-  const favLabel = userVotes.favorited ? "\u2605 Saved" : "\u2606 Save Recipe";
+  const favLabel = userVotes.favorited ? "\ud83d\udccc Pinned" : "\ud83d\udccc Pin Recipe";
 
   return {
     type: "actions",
@@ -152,6 +153,26 @@ async function updateMessage(
   });
   if (!resp.ok) {
     console.error(`chat.update failed: ${resp.status}`);
+  }
+}
+
+/** Push a new view onto the Slack modal stack. */
+async function pushView(
+  env: Env,
+  triggerId: string,
+  view: object,
+): Promise<void> {
+  const resp = await fetch("https://slack.com/api/views.push", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`,
+    },
+    body: JSON.stringify({ trigger_id: triggerId, view }),
+  });
+  const data = await resp.json() as { ok: boolean; error?: string };
+  if (!data.ok) {
+    console.error(`views.push failed: ${data.error}`);
   }
 }
 
@@ -310,8 +331,56 @@ export async function handleInteraction(
           case "retry":
             await handleRerun(env, action.value);
             break;
+          case "modal_open_best": {
+            if (payload.trigger_id) {
+              const stars = await getStars(env.RATINGS);
+              const view = buildBestView(stars, env.SLACK_WORKSPACE);
+              await pushView(env, payload.trigger_id, view);
+            }
+            break;
+          }
+          case "modal_open_pinned": {
+            if (payload.trigger_id) {
+              const favorites = await getFavorites(env.RATINGS, payload.user.id);
+              const view = buildPinnedView(favorites);
+              await pushView(env, payload.trigger_id, view);
+            }
+            break;
+          }
+          case "modal_open_help": {
+            if (payload.trigger_id) {
+              const view = buildHelpView();
+              await pushView(env, payload.trigger_id, view);
+            }
+            break;
+          }
+          case "run_pinned": {
+            const slug = action.value;
+            const work = (async () => {
+              const ok = await dispatchWorkflow(env, slug);
+              // Post ephemeral confirmation if we have channel context
+              const channelId = payload.view?.private_metadata || "";
+              if (channelId) {
+                const msg = ok
+                  ? `:art: Firing up *${slug}*... results in #img-junkyard in ~2-5 min.`
+                  : `:warning: Failed to dispatch workflow.`;
+                await fetch("https://slack.com/api/chat.postEphemeral", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`,
+                  },
+                  body: JSON.stringify({ channel: channelId, user: payload.user.id, text: msg }),
+                });
+              }
+            })();
+            if (ctx) ctx.waitUntil(work);
+            else work.catch(console.error);
+            break;
+          }
           default:
-            console.warn(`Unknown action_id: ${action.action_id}`);
+            // Ignore unknown actions (e.g. view_star URL buttons)
+            break;
         }
       }
       // Slack expects 200 OK for block_actions acknowledgement

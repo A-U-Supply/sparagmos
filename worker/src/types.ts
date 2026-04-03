@@ -3,6 +3,7 @@ export interface Env {
   SLACK_SIGNING_SECRET: string;
   GITHUB_TOKEN: string;
   SLACK_BOT_TOKEN: string;
+  SLACK_WORKSPACE: string;
   RATINGS: KVNamespace;
 }
 

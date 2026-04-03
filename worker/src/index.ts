@@ -11,7 +11,7 @@ import { dispatchWorkflow, fetchWorkflowRuns } from "./github";
 import { handleInteraction } from "./interactions";
 import { getRatings, getStars } from "./kv";
 import { buildStatusBlocks } from "./blocks";
-import { buildModalView } from "./modal";
+import { buildModalView, buildBestView, buildHelpView } from "./modal";
 
 // Re-export types and functions that tests (and consumers) depend on
 export type { Env, ParsedCommand } from "./types";
@@ -83,8 +83,16 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
   const rawText = (params.get("text") ?? "").trim();
   const { command, urls } = parseSlashCommand(rawText);
 
-  // Help
+  // Help (modal)
   if (command === "help") {
+    const triggerId = params.get("trigger_id");
+    if (triggerId) {
+      ctx.waitUntil(openViewModal(env, triggerId, buildHelpView()));
+      return new Response(JSON.stringify({ response_type: "ephemeral" }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    // Fallback to text if no trigger_id
     return slackResponse(buildHelpText());
   }
 
@@ -110,8 +118,19 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
     );
   }
 
-  // Hall of Fame
+  // Hall of Fame (modal)
   if (command === "best") {
+    const triggerId = params.get("trigger_id");
+    if (triggerId) {
+      ctx.waitUntil((async () => {
+        const stars = await getStars(env.RATINGS);
+        await openViewModal(env, triggerId, buildBestView(stars, env.SLACK_WORKSPACE));
+      })());
+      return new Response(JSON.stringify({ response_type: "ephemeral" }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    // Fallback to text if no trigger_id
     const stars = await getStars(env.RATINGS);
     if (stars.length === 0) {
       return slackResponse(
@@ -135,7 +154,9 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
     if (triggerId) {
       ctx.waitUntil(openModal(env, triggerId, channelId));
     }
-    return new Response("", { status: 200 });
+    return new Response(JSON.stringify({ response_type: "ephemeral" }), {
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   // Explicit "random" or bare URLs still dispatch directly
@@ -196,7 +217,23 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
 // Modal opener
 // ---------------------------------------------------------------------------
 
-/** Open the Sparagmos modal via the Slack views.open API. */
+/** Open an arbitrary modal view via the Slack views.open API. */
+async function openViewModal(env: Env, triggerId: string, view: object): Promise<void> {
+  const resp = await fetch("https://slack.com/api/views.open", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`,
+    },
+    body: JSON.stringify({ trigger_id: triggerId, view }),
+  });
+  const data = await resp.json() as { ok: boolean; error?: string };
+  if (!data.ok) {
+    console.error(`views.open failed: ${data.error}`);
+  }
+}
+
+/** Open the Sparagmos recipe picker modal via the Slack views.open API. */
 async function openModal(env: Env, triggerId: string, channelId: string): Promise<void> {
   const view = buildModalView(channelId);
   const resp = await fetch("https://slack.com/api/views.open", {
