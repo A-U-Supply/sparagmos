@@ -158,9 +158,12 @@ def test_pick_random_images_deterministic():
 def test_post_result_uploads_with_main_comment_only(tmp_path):
     """Main message contains recipe + effects, no source info."""
     client = MagicMock()
-    client.files_upload_v2.return_value = {"ok": True}
+    client.files_upload_v2.return_value = {
+        "ok": True,
+        "files": [{"id": "F999"}],
+    }
     client.conversations_history.return_value = {
-        "messages": [{"ts": "111.222"}],
+        "messages": [{"ts": "111.222", "files": [{"id": "F999"}]}],
     }
     client.users_info.return_value = {
         "user": {"profile": {"display_name": "brendan", "real_name": "Brendan"}}
@@ -186,12 +189,20 @@ def test_post_result_uploads_with_main_comment_only(tmp_path):
     assert "http" not in comment
 
 
-def test_post_result_posts_thread_reply(tmp_path):
-    """After upload, channel history is read to get ts, then thread reply is posted."""
+def test_post_result_matches_file_id_in_history(tmp_path):
+    """Thread reply goes to the message matching our file ID, not just the latest."""
     client = MagicMock()
-    client.files_upload_v2.return_value = {"ok": True}
+    client.files_upload_v2.return_value = {
+        "ok": True,
+        "files": [{"id": "F_OURS"}],
+    }
+    # Channel has other messages — ours is second, not first
     client.conversations_history.return_value = {
-        "messages": [{"ts": "1234567890.123456"}],
+        "messages": [
+            {"ts": "999.000", "text": "someone else's message"},
+            {"ts": "888.000", "files": [{"id": "F_OURS"}]},
+            {"ts": "777.000", "files": [{"id": "F_OLD"}]},
+        ],
     }
     client.users_info.return_value = {
         "user": {"profile": {"display_name": "brendan", "real_name": "Brendan"}}
@@ -207,23 +218,21 @@ def test_post_result_posts_thread_reply(tmp_path):
 
     post_result(client, "C456", result, sources, "image-gen", tmp_path)
 
-    # Channel history read to get message timestamp
-    client.conversations_history.assert_called_once_with(channel="C456", limit=1)
+    # History searched with limit=5
+    client.conversations_history.assert_called_once_with(channel="C456", limit=5)
 
-    # Thread reply posted
+    # Thread reply goes to OUR message (888.000), not the latest (999.000)
     client.chat_postMessage.assert_called_once()
     reply_kwargs = client.chat_postMessage.call_args[1]
-    assert reply_kwargs["channel"] == "C456"
-    assert reply_kwargs["thread_ts"] == "1234567890.123456"
+    assert reply_kwargs["thread_ts"] == "888.000"
     assert "brendan" in reply_kwargs["text"]
     assert "https://link1" in reply_kwargs["text"]
 
 
-def test_post_result_no_thread_without_history(tmp_path):
-    """If channel history is empty, skip the thread reply gracefully."""
+def test_post_result_no_thread_without_file_id(tmp_path):
+    """If upload returns no file ID, skip the thread reply gracefully."""
     client = MagicMock()
     client.files_upload_v2.return_value = {"ok": True}
-    client.conversations_history.return_value = {"messages": []}
     client.users_info.return_value = {
         "user": {"profile": {"display_name": "brendan", "real_name": "Brendan"}}
     }
@@ -238,7 +247,7 @@ def test_post_result_no_thread_without_history(tmp_path):
 
     post_result(client, "C456", result, sources, "image-gen", tmp_path)
 
-    client.files_info.assert_not_called()
+    client.conversations_history.assert_not_called()
     client.chat_postMessage.assert_not_called()
 
 
