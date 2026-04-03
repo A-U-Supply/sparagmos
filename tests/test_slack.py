@@ -89,6 +89,54 @@ def test_fetch_image_files():
     assert files[0]["id"] == "F1"
 
 
+def test_fetch_image_files_prefers_file_user_over_msg_user():
+    """When a file has its own user field (the uploader), use that instead of
+    the message user (who may be a bot that shared it)."""
+    client = MagicMock()
+    client.conversations_history.return_value = _mock_conversations_history([
+        {
+            "ts": "1000.0",
+            "user": "U_BOT",  # bot posted the message
+            "files": [
+                {
+                    "id": "F1",
+                    "mimetype": "image/png",
+                    "url_private_download": "https://files.slack.com/F1.png",
+                    "name": "art.png",
+                    "user": "U_HUMAN",  # but a human uploaded the file
+                    "timestamp": 1000,
+                },
+            ],
+        },
+    ])
+    files = fetch_image_files(client, "C123")
+    assert len(files) == 1
+    assert files[0]["user"] == "U_HUMAN"
+
+
+def test_fetch_image_files_falls_back_to_msg_user():
+    """When a file has no user field, fall back to the message user."""
+    client = MagicMock()
+    client.conversations_history.return_value = _mock_conversations_history([
+        {
+            "ts": "1000.0",
+            "user": "U_MSG",
+            "files": [
+                {
+                    "id": "F1",
+                    "mimetype": "image/png",
+                    "url_private_download": "https://files.slack.com/F1.png",
+                    "name": "art.png",
+                    "timestamp": 1000,
+                },
+            ],
+        },
+    ])
+    files = fetch_image_files(client, "C123")
+    assert len(files) == 1
+    assert files[0]["user"] == "U_MSG"
+
+
 def test_pick_random_image_excludes_processed():
     files = [
         {"id": "F1", "user": "U1", "timestamp": 1000},
