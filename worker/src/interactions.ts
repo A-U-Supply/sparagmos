@@ -1,7 +1,7 @@
 import type { Env } from "./types";
 import { vote, toggleStar, toggleFavorite, getRatings, getUserVotes, getFavorites } from "./kv";
 import { dispatchWorkflow } from "./github";
-import { buildTypeaheadOptions } from "./modal";
+
 
 // ---------------------------------------------------------------------------
 // Slack interaction payload types
@@ -273,6 +273,7 @@ async function handleRerun(
 export async function handleInteraction(
   body: string,
   env: Env,
+  ctx?: ExecutionContext,
 ): Promise<Response> {
   const params = new URLSearchParams(body);
   const payloadStr = params.get("payload");
@@ -328,21 +329,43 @@ export async function handleInteraction(
           .map((u: string) => u.trim())
           .filter(Boolean);
         const poster =
-          vals.poster_block?.poster_filter?.selected_option?.value ?? "anyone";
+          vals.poster_block?.poster_filter?.selected_user ?? null;
         const age =
           vals.age_block?.age_filter?.selected_option?.value ?? "any";
         const freshness =
           vals.freshness_block?.freshness_filter?.selected_option?.value ??
           "none";
 
-        // Dispatch in the background — modal must respond quickly
         const resolvedRecipe =
           recipe && recipe !== "random" ? recipe : "";
-        dispatchWorkflow(env, resolvedRecipe, urls, {
-          poster: poster !== "anyone" ? poster : undefined,
-          age: age !== "any" ? age : undefined,
-          freshness: freshness !== "none" ? freshness : undefined,
-        }).catch(console.error);
+        const channelId = payload.view.private_metadata;
+        const userId = payload.user.id;
+        const recipeName = resolvedRecipe || "random";
+
+        // Dispatch and confirm in background — modal must respond immediately
+        const work = (async () => {
+          const ok = await dispatchWorkflow(env, resolvedRecipe, urls, {
+            poster: poster ?? undefined,
+            age: age !== "any" ? age : undefined,
+            freshness: freshness !== "none" ? freshness : undefined,
+          });
+
+          if (channelId) {
+            const msg = ok
+              ? `:art: Firing up *${recipeName}*... results in #img-junkyard in ~2-5 min.`
+              : `:warning: Failed to dispatch workflow.`;
+            await fetch("https://slack.com/api/chat.postEphemeral", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`,
+              },
+              body: JSON.stringify({ channel: channelId, user: userId, text: msg }),
+            });
+          }
+        })();
+        if (ctx) ctx.waitUntil(work);
+        else work.catch(console.error);
       }
       return new Response(JSON.stringify({ response_action: "clear" }), {
         headers: { "Content-Type": "application/json" },
@@ -350,17 +373,7 @@ export async function handleInteraction(
     }
 
     case "block_suggestion": {
-      if (payload.action_id === "recipe_select") {
-        const query = payload.value ?? "";
-        const result = await buildTypeaheadOptions(
-          query,
-          payload.user.id,
-          env.RATINGS,
-        );
-        return new Response(JSON.stringify(result), {
-          headers: { "Content-Type": "application/json" },
-        });
-      }
+      // Static select handles filtering client-side; no server suggestions needed
       return new Response(JSON.stringify({ options: [] }), {
         headers: { "Content-Type": "application/json" },
       });

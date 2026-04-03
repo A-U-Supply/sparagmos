@@ -78,7 +78,7 @@ function buildHelpText(): string {
 // ---------------------------------------------------------------------------
 
 /** Handle the parsed slash command body. */
-async function handleSlashCommand(body: string, env: Env): Promise<Response> {
+async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext): Promise<Response> {
   const params = new URLSearchParams(body);
   const rawText = (params.get("text") ?? "").trim();
   const { command, urls } = parseSlashCommand(rawText);
@@ -103,6 +103,7 @@ async function handleSlashCommand(body: string, env: Env): Promise<Response> {
     return new Response(
       JSON.stringify({
         response_type: "ephemeral",
+        text: "Recent sparagmos runs",
         blocks,
       }),
       { headers: { "Content-Type": "application/json" } },
@@ -130,9 +131,9 @@ async function handleSlashCommand(body: string, env: Env): Promise<Response> {
   // No command → open the modal
   if (!command && urls.length === 0) {
     const triggerId = params.get("trigger_id");
+    const channelId = params.get("channel_id") ?? "";
     if (triggerId) {
-      // Don't await — respond to Slack immediately, open modal in background
-      openModal(env, triggerId).catch(console.error);
+      ctx.waitUntil(openModal(env, triggerId, channelId));
     }
     return new Response("", { status: 200 });
   }
@@ -196,8 +197,8 @@ async function handleSlashCommand(body: string, env: Env): Promise<Response> {
 // ---------------------------------------------------------------------------
 
 /** Open the Sparagmos modal via the Slack views.open API. */
-async function openModal(env: Env, triggerId: string): Promise<void> {
-  const view = buildModalView();
+async function openModal(env: Env, triggerId: string, channelId: string): Promise<void> {
+  const view = buildModalView(channelId);
   const resp = await fetch("https://slack.com/api/views.open", {
     method: "POST",
     headers: {
@@ -206,8 +207,9 @@ async function openModal(env: Env, triggerId: string): Promise<void> {
     },
     body: JSON.stringify({ trigger_id: triggerId, view }),
   });
-  if (!resp.ok) {
-    console.error(`views.open failed: ${resp.status}`);
+  const data = await resp.json() as { ok: boolean; error?: string };
+  if (!data.ok) {
+    console.error(`views.open failed: ${data.error}`);
   }
 }
 
@@ -216,7 +218,7 @@ async function openModal(env: Env, triggerId: string): Promise<void> {
 // ---------------------------------------------------------------------------
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     // --- API routes backed by KV (GET — no body needed) ---
@@ -250,12 +252,12 @@ export default {
 
       // Slack interaction payloads (modals, buttons, etc.)
       if (url.pathname === "/slack/interactions") {
-        return handleInteraction(body, env);
+        return handleInteraction(body, env, ctx);
       }
 
       // Slash command endpoint
       if (url.pathname === "/slack/commands") {
-        return handleSlashCommand(body, env);
+        return handleSlashCommand(body, env, ctx);
       }
     }
 
