@@ -9,6 +9,7 @@ import type { Env } from "./types";
 import { verifySlackSignature, parseSlashCommand, slackResponse } from "./slack";
 import { dispatchWorkflow, fetchWorkflowStatus } from "./github";
 import { handleInteraction } from "./interactions";
+import { getRatings, getStars } from "./kv";
 
 // Re-export types and functions that tests (and consumers) depend on
 export type { Env, ParsedCommand } from "./types";
@@ -163,15 +164,17 @@ export default {
       return handleInteraction(request, env);
     }
 
-    // --- Placeholder API routes ---
+    // --- API routes backed by KV ---
     if (request.method === "GET" && url.pathname === "/api/ratings") {
-      return new Response(JSON.stringify({}), {
+      const ratings = await getRatings(env.RATINGS);
+      return new Response(JSON.stringify(ratings), {
         headers: { "Content-Type": "application/json" },
       });
     }
 
     if (request.method === "GET" && url.pathname === "/api/stars") {
-      return new Response(JSON.stringify([]), {
+      const stars = await getStars(env.RATINGS);
+      return new Response(JSON.stringify(stars), {
         headers: { "Content-Type": "application/json" },
       });
     }
