@@ -82,7 +82,7 @@ export function buildStatusBlocks(runs: WorkflowRun[]): object[] {
         type: "button",
         text: { type: "plain_text", text: buttonText },
         action_id: actionId,
-        value: "",
+        value: "random",
       },
     });
   }
