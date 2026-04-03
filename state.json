@@ -1228,6 +1228,41 @@
       ],
       "processed_date": "2026-04-03",
       "posted_ts": "1775175626.895469"
+    },
+    {
+      "source_file_ids": [
+        "F06975ZM4TT",
+        "F0A9AUH8X7Y",
+        "F040QFGTC1W",
+        "F059DH3Q2B1"
+      ],
+      "source_dates": [
+        "2023-12-06",
+        "2026-01-17",
+        "2022-08-27",
+        "2023-05-28"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "stencil-burn",
+      "effects": [
+        "dither",
+        "channel_shift",
+        "pixel_sort",
+        "pca_decompose",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "pixel_sort",
+        "byte_corrupt",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-03",
+      "posted_ts": "1775179154.000929"
     }
   ]
 }
