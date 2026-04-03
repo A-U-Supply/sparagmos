@@ -132,6 +132,26 @@ function rebuildBlocks(
 // Slack API helpers
 // ---------------------------------------------------------------------------
 
+/** Build Block Kit blocks for a dispatch confirmation with a status button. */
+function confirmationBlocks(text: string): object[] {
+  return [
+    {
+      type: "section",
+      text: { type: "mrkdwn", text },
+    },
+    {
+      type: "actions",
+      elements: [
+        {
+          type: "button",
+          text: { type: "plain_text", text: "Check Status" },
+          action_id: "modal_open_status",
+        },
+      ],
+    },
+  ];
+}
+
 /** Update an existing Slack message with new blocks. */
 async function updateMessage(
   env: Env,
@@ -174,6 +194,26 @@ async function pushView(
   const data = await resp.json() as { ok: boolean; error?: string };
   if (!data.ok) {
     console.error(`views.push failed: ${data.error}`);
+  }
+}
+
+/** Open a new modal view (not pushed onto an existing stack). */
+async function openView(
+  env: Env,
+  triggerId: string,
+  view: object,
+): Promise<void> {
+  const resp = await fetch("https://slack.com/api/views.open", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`,
+    },
+    body: JSON.stringify({ trigger_id: triggerId, view }),
+  });
+  const data = await resp.json() as { ok: boolean; error?: string };
+  if (!data.ok) {
+    console.error(`views.open failed: ${data.error}`);
   }
 }
 
@@ -379,7 +419,12 @@ export async function handleInteraction(
             if (payload.trigger_id) {
               const runs = await fetchWorkflowRuns(env);
               const view = buildStatusView(runs);
-              await pushView(env, payload.trigger_id, view);
+              // Use views.open from message buttons, views.push from modal buttons
+              if (payload.view) {
+                await pushView(env, payload.trigger_id, view);
+              } else {
+                await openView(env, payload.trigger_id, view);
+              }
             }
             break;
           }
@@ -404,15 +449,17 @@ export async function handleInteraction(
               const channelId = payload.view?.private_metadata || "";
               if (channelId) {
                 const msg = ok
-                  ? `:art: Firing up *${slug}*... results in #img-junkyard in ~2-5 min.\nUse \`/sparagmos status\` to check progress.`
+                  ? `:art: Firing up *${slug}*... results in #img-junkyard in ~2-5 min.`
                   : `:warning: Failed to dispatch workflow.`;
+                const body: Record<string, unknown> = { channel: channelId, user: payload.user.id, text: msg };
+                if (ok) body.blocks = confirmationBlocks(msg);
                 await fetch("https://slack.com/api/chat.postEphemeral", {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`,
                   },
-                  body: JSON.stringify({ channel: channelId, user: payload.user.id, text: msg }),
+                  body: JSON.stringify(body),
                 });
               }
             })();
@@ -467,15 +514,17 @@ export async function handleInteraction(
 
           if (channelId) {
             const msg = ok
-              ? `:art: Firing up *${recipeName}*... results in #img-junkyard in ~2-5 min.\nUse \`/sparagmos status\` to check progress.`
+              ? `:art: Firing up *${recipeName}*... results in #img-junkyard in ~2-5 min.`
               : `:warning: Failed to dispatch workflow.`;
+            const body: Record<string, unknown> = { channel: channelId, user: userId, text: msg };
+            if (ok) body.blocks = confirmationBlocks(msg);
             await fetch("https://slack.com/api/chat.postEphemeral", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`,
               },
-              body: JSON.stringify({ channel: channelId, user: userId, text: msg }),
+              body: JSON.stringify(body),
             });
           }
         })();

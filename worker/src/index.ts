@@ -167,8 +167,26 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
         urls.length > 0
           ? ` with ${urls.length} provided image(s)`
           : "";
-      return slackResponse(
-        `:game_die: Firing up a random recipe${urlNote}... results in #img-junkyard in ~2-5 min.\nUse \`/sparagmos status\` to check progress.`,
+      const msg = `:game_die: Firing up a random recipe${urlNote}... results in #img-junkyard in ~2-5 min.`;
+      return new Response(
+        JSON.stringify({
+          response_type: "ephemeral",
+          text: msg,
+          blocks: [
+            { type: "section", text: { type: "mrkdwn", text: msg } },
+            {
+              type: "actions",
+              elements: [
+                {
+                  type: "button",
+                  text: { type: "plain_text", text: "Check Status" },
+                  action_id: "modal_open_status",
+                },
+              ],
+            },
+          ],
+        }),
+        { headers: { "Content-Type": "application/json" } },
       );
     }
     return slackResponse(
@@ -192,8 +210,26 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
         urls.length > 0
           ? ` with ${urls.length} provided image(s)`
           : "";
-      return slackResponse(
-        `:art: Firing up *${command}*${urlNote}... results in #img-junkyard in ~2-5 min.\nUse \`/sparagmos status\` to check progress.`,
+      const msg = `:art: Firing up *${command}*${urlNote}... results in #img-junkyard in ~2-5 min.`;
+      return new Response(
+        JSON.stringify({
+          response_type: "ephemeral",
+          text: msg,
+          blocks: [
+            { type: "section", text: { type: "mrkdwn", text: msg } },
+            {
+              type: "actions",
+              elements: [
+                {
+                  type: "button",
+                  text: { type: "plain_text", text: "Check Status" },
+                  action_id: "modal_open_status",
+                },
+              ],
+            },
+          ],
+        }),
+        { headers: { "Content-Type": "application/json" } },
       );
     }
     return slackResponse(
