@@ -1695,23 +1695,39 @@
     },
     {
       "source_file_ids": [
-        "F085VHV1K8D",
-        "F09CZC60ZKL",
-        "F040DDC4K6V"
+        "F06KUKA4A5Q",
+        "F08EEP49BDL",
+        "F04BEE9JP42",
+        "F08EN8C4FU2",
+        "F05622XAD37"
       ],
       "source_dates": [
-        "2024-12-20",
-        "2025-09-01",
-        "2022-08-27"
+        "2024-02-21",
+        "2025-02-23",
+        "2022-11-17",
+        "2025-02-23",
+        "2023-05-03"
       ],
       "source_users": [
         "U03TD4SUDKL",
         "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
         "U03TD4SUDKL"
       ],
-      "recipe": "ancients-stencil",
+      "recipe": "silhouette-swap",
       "effects": [
-        "ancient_stencil"
+        "pca_decompose",
+        "pca_decompose",
+        "pca_decompose",
+        "pca_decompose",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "collage",
+        "pixel_sort",
+        "byte_corrupt"
       ],
       "processed_date": "2026-04-03",
       "posted_ts": ""
