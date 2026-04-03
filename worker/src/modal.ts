@@ -278,7 +278,7 @@ export function buildHelpView(): object {
       type: "mrkdwn",
       text: [
         "*Recipe* \u2014 Pick a recipe or leave on Random. Type to search.",
-        "*Image URLs* \u2014 Paste Slack image permalinks (one per line). If you provide fewer than the recipe needs, the rest are picked randomly from #image-gen.",
+        "*Image URLs* \u2014 Paste image URLs (one per line) \u2014 Slack permalinks or any public URL. If you provide fewer than the recipe needs, the rest are picked randomly from #image-gen.",
         "*Poster* \u2014 Only use images from a specific person.",
         "*Age* \u2014 Filter source images by how old they are.",
         "*Freshness* \u2014 Prefer images that haven't been used before, or remix veterans.",
@@ -300,7 +300,7 @@ export function buildHelpView(): object {
       type: "mrkdwn",
       text: [
         "Every output posted to #img-junkyard has \ud83d\udc4d and \ud83d\udc4e buttons in its thread.",
-        "Votes are tracked per recipe \u2014 they affect the *Filter by rating* options and weighted random selection.",
+        "Votes are tracked per recipe \u2014 they affect the *Filter by rating* options and weighted random selection (higher-rated recipes are more likely to be picked by Random).",
         "Click again to toggle your vote off. Change your vote any time.",
       ].join("\n"),
     },
@@ -346,6 +346,24 @@ export function buildHelpView(): object {
 
   blocks.push({ type: "divider" });
 
+  // Rerunning
+  blocks.push({
+    type: "header",
+    text: { type: "plain_text", text: "\ud83d\udd04 Rerunning", emoji: true },
+  });
+  blocks.push({
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: [
+        "The \ud83d\udd04 *Rerun* button in threads reruns the same recipe with the same source images.",
+        "Use it to get a fresh take when a recipe uses randomized parameters.",
+      ].join("\n"),
+    },
+  });
+
+  blocks.push({ type: "divider" });
+
   // How It Works
   blocks.push({
     type: "header",
@@ -379,7 +397,7 @@ export function buildHelpView(): object {
         `\u2022 ${RECIPES.length} recipes available, each requiring ${rangeStr} input images`,
         "\u2022 Recipe names are kebab-case (e.g. `mosaic-dissolution`, `double-exposure`)",
         "\u2022 Misspell a name? You'll get suggestions",
-        "\u2022 To get a Slack image permalink: right-click an image \u2192 Copy link",
+        "\u2022 Any public image URL works \u2014 for Slack images, right-click \u2192 Copy link",
         "\u2022 More inputs usually means more chaos",
       ].join("\n"),
     },
