@@ -1263,6 +1263,45 @@
       ],
       "processed_date": "2026-04-03",
       "posted_ts": "1775179154.000929"
+    },
+    {
+      "source_file_ids": [
+        "F0ALD7YCUMR",
+        "F06G5NCS151",
+        "F04LTUJ0ELF",
+        "F099KQDFPFD",
+        "F092UGNDBMM"
+      ],
+      "source_dates": [
+        "2026-03-14",
+        "2024-01-29",
+        "2023-01-31",
+        "2025-08-10",
+        "2025-06-26"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "cross-pollinate",
+      "effects": [
+        "channel_shift",
+        "dither",
+        "spectral",
+        "crt_vhs",
+        "pca_decompose",
+        "mask_composite",
+        "mask_composite",
+        "blend",
+        "mask_composite",
+        "channel_shift",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-03",
+      "posted_ts": "1775179290.697769"
     }
   ]
 }
