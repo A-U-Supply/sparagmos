@@ -1,6 +1,6 @@
 import { RECIPES, getRecipe } from "./recipes";
 import type { Recipe } from "./recipes";
-import type { StarData } from "./kv";
+import type { RatingData, StarData } from "./kv";
 import type { WorkflowRun } from "./types";
 import { buildStatusBlocks } from "./blocks";
 
@@ -18,13 +18,35 @@ function truncate(s: string, maxLen: number): string {
 // Modal view builder
 // ---------------------------------------------------------------------------
 
+/** Check whether a recipe matches the active rating filters. */
+function matchesRatingFilter(
+  slug: string,
+  ratings: Record<string, RatingData>,
+  filters: string[],
+): boolean {
+  if (filters.length === 0) return true;
+  const score = ratings[slug]?.score ?? 0;
+  const isUnrated = !(slug in ratings) || score === 0;
+  for (const f of filters) {
+    if (f === "top" && score >= 3) return true;
+    if (f === "positive" && score > 0) return true;
+    if (f === "unrated" && isUnrated) return true;
+    if (f === "underdogs" && score < 0) return true;
+  }
+  return false;
+}
+
 /** Build static option_groups for the recipe selector. */
-function buildRecipeOptionGroups(): object[] {
+function buildRecipeOptionGroups(
+  ratings: Record<string, RatingData> = {},
+  ratingFilters: string[] = [],
+): object[] {
   const groups: Array<{ label: { type: string; text: string }; options: object[] }> = [];
 
-  // Group recipes by input count
+  // Group recipes by input count, applying rating filter
   const byInputs = new Map<number, Recipe[]>();
   for (const r of RECIPES) {
+    if (!matchesRatingFilter(r.slug, ratings, ratingFilters)) continue;
     const list = byInputs.get(r.inputs);
     if (list) list.push(r);
     else byInputs.set(r.inputs, [r]);
@@ -49,6 +71,15 @@ function buildRecipeOptionGroups(): object[] {
   }
 
   return groups;
+}
+
+/** Count how many recipes pass the current rating filter. */
+function countFilteredRecipes(
+  ratings: Record<string, RatingData>,
+  ratingFilters: string[],
+): number {
+  if (ratingFilters.length === 0) return RECIPES.length;
+  return RECIPES.filter((r) => matchesRatingFilter(r.slug, ratings, ratingFilters)).length;
 }
 
 // ---------------------------------------------------------------------------
@@ -246,12 +277,12 @@ export function buildHelpView(): object {
     text: {
       type: "mrkdwn",
       text: [
-        "*Recipe* \u2014 Pick a recipe or leave empty for random. Type to search.",
+        "*Recipe* \u2014 Pick a recipe or leave on Random. Type to search.",
         "*Image URLs* \u2014 Paste Slack image permalinks (one per line). If you provide fewer than the recipe needs, the rest are picked randomly from #image-gen.",
         "*Poster* \u2014 Only use images from a specific person.",
         "*Age* \u2014 Filter source images by how old they are.",
         "*Freshness* \u2014 Prefer images that haven't been used before, or remix veterans.",
-        "*Rating* \u2014 Filter to top-rated, positive, unrated, or underdog recipes.",
+        "*Rating checkboxes* \u2014 Check one or more to filter the recipe dropdown by rating. Also controls which pool random picks from.",
       ].join("\n"),
     },
   });
@@ -269,7 +300,7 @@ export function buildHelpView(): object {
       type: "mrkdwn",
       text: [
         "Every output posted to #img-junkyard has \ud83d\udc4d and \ud83d\udc4e buttons in its thread.",
-        "Votes are tracked per recipe \u2014 they affect the *Rating* filter in the modal.",
+        "Votes are tracked per recipe \u2014 they affect the *Rating* checkboxes and weighted random selection.",
         "Click again to toggle your vote off. Change your vote any time.",
       ].join("\n"),
     },
@@ -386,7 +417,35 @@ export function buildStatusView(runs: WorkflowRun[]): object {
 // ---------------------------------------------------------------------------
 
 /** Build the Slack modal view object for `views.open`. */
-export function buildModalView(channelId: string = ""): object {
+export function buildModalView(
+  channelId: string = "",
+  ratings: Record<string, RatingData> = {},
+  ratingFilters: string[] = [],
+): object {
+  const RANDOM_OPTION = { text: { type: "plain_text", text: "\ud83c\udfb2 Random" }, value: "random" };
+  const filteredCount = countFilteredRecipes(ratings, ratingFilters);
+  const countText = ratingFilters.length > 0
+    ? `_${filteredCount} of ${RECIPES.length} recipes shown_`
+    : `_${RECIPES.length} recipes available_`;
+
+  // Build checkboxes with current selection preserved
+  const ratingCheckboxOptions = [
+    { text: { type: "plain_text", text: "Top rated (+3 or higher)" }, value: "top" },
+    { text: { type: "plain_text", text: "Positive only" }, value: "positive" },
+    { text: { type: "plain_text", text: "Unrated" }, value: "unrated" },
+    { text: { type: "plain_text", text: "Underdogs (below 0)" }, value: "underdogs" },
+  ];
+  const ratingCheckboxElement: Record<string, unknown> = {
+    type: "checkboxes",
+    action_id: "rating_checkboxes",
+    options: ratingCheckboxOptions,
+  };
+  if (ratingFilters.length > 0) {
+    ratingCheckboxElement.initial_options = ratingCheckboxOptions.filter(
+      (o) => ratingFilters.includes(o.value),
+    );
+  }
+
   return {
     type: "modal",
     callback_id: "sparagmos_run",
@@ -404,6 +463,17 @@ export function buildModalView(channelId: string = ""): object {
         },
       },
       { type: "divider" },
+      // ── Recipe section ──
+      {
+        type: "section",
+        text: { type: "mrkdwn", text: "*:bar_chart: Recipe*" },
+      },
+      // Rating checkboxes (dispatch_action triggers views.update on toggle)
+      {
+        type: "actions",
+        block_id: "rating_block",
+        elements: [ratingCheckboxElement],
+      },
       // Recipe select (static with built-in Slack typeahead filtering)
       {
         type: "input",
@@ -413,12 +483,18 @@ export function buildModalView(channelId: string = ""): object {
         element: {
           type: "static_select",
           action_id: "recipe_select",
+          initial_option: RANDOM_OPTION,
           placeholder: {
             type: "plain_text",
-            text: "Search recipes or leave empty for Random",
+            text: "Search recipes\u2026",
           },
-          option_groups: buildRecipeOptionGroups(),
+          option_groups: buildRecipeOptionGroups(ratings, ratingFilters),
         },
+      },
+      // ── Images section ──
+      {
+        type: "section",
+        text: { type: "mrkdwn", text: "*:frame_with_picture: Images*" },
       },
       // Image URLs (optional multiline text)
       {
@@ -435,6 +511,11 @@ export function buildModalView(channelId: string = ""): object {
             text: "Paste URLs, one per line (optional)",
           },
         },
+      },
+      // ── Filters section ──
+      {
+        type: "section",
+        text: { type: "mrkdwn", text: "*:mag: Filters*" },
       },
       // Poster filter (native Slack user picker)
       {
@@ -459,49 +540,16 @@ export function buildModalView(channelId: string = ""): object {
           action_id: "age_filter",
           placeholder: { type: "plain_text", text: "Any time" },
           options: [
-            {
-              text: { type: "plain_text", text: "Any time" },
-              value: "any",
-            },
-            {
-              text: { type: "plain_text", text: "Last 24 hours" },
-              value: "24h",
-            },
-            {
-              text: { type: "plain_text", text: "Last 7 days" },
-              value: "7d",
-            },
-            {
-              text: { type: "plain_text", text: "Last 30 days" },
-              value: "30d",
-            },
-            {
-              text: { type: "plain_text", text: "1-3 months ago" },
-              value: "1-3mo",
-            },
-            {
-              text: { type: "plain_text", text: "3-6 months ago" },
-              value: "3-6mo",
-            },
-            {
-              text: { type: "plain_text", text: "6-12 months ago" },
-              value: "6-12mo",
-            },
-            {
-              text: { type: "plain_text", text: "Over 1 year ago" },
-              value: "1y+",
-            },
-            {
-              text: { type: "plain_text", text: "Over 2 years ago" },
-              value: "2y+",
-            },
-            {
-              text: {
-                type: "plain_text",
-                text: "The deep cut (oldest 50)",
-              },
-              value: "oldest50",
-            },
+            { text: { type: "plain_text", text: "Any time" }, value: "any" },
+            { text: { type: "plain_text", text: "Last 24 hours" }, value: "24h" },
+            { text: { type: "plain_text", text: "Last 7 days" }, value: "7d" },
+            { text: { type: "plain_text", text: "Last 30 days" }, value: "30d" },
+            { text: { type: "plain_text", text: "1-3 months ago" }, value: "1-3mo" },
+            { text: { type: "plain_text", text: "3-6 months ago" }, value: "3-6mo" },
+            { text: { type: "plain_text", text: "6-12 months ago" }, value: "6-12mo" },
+            { text: { type: "plain_text", text: "Over 1 year ago" }, value: "1y+" },
+            { text: { type: "plain_text", text: "Over 2 years ago" }, value: "2y+" },
+            { text: { type: "plain_text", text: "The deep cut (oldest 50)" }, value: "oldest50" },
           ],
         },
       },
@@ -514,93 +562,27 @@ export function buildModalView(channelId: string = ""): object {
         element: {
           type: "static_select",
           action_id: "freshness_filter",
-          placeholder: {
-            type: "plain_text",
-            text: "Prefer fresh for recipe",
-          },
+          placeholder: { type: "plain_text", text: "Prefer fresh for recipe" },
           options: [
-            {
-              text: { type: "plain_text", text: "No preference" },
-              value: "none",
-            },
-            {
-              text: {
-                type: "plain_text",
-                text: "Prefer fresh for recipe",
-              },
-              value: "prefer_fresh_recipe",
-            },
-            {
-              text: {
-                type: "plain_text",
-                text: "Only fresh for recipe",
-              },
-              value: "only_fresh_recipe",
-            },
-            {
-              text: {
-                type: "plain_text",
-                text: "Only used with recipe (remix)",
-              },
-              value: "only_used_recipe",
-            },
-            {
-              text: { type: "plain_text", text: "Prefer untouched" },
-              value: "prefer_untouched",
-            },
-            {
-              text: { type: "plain_text", text: "Only untouched" },
-              value: "only_untouched",
-            },
-            {
-              text: {
-                type: "plain_text",
-                text: "Only veterans (3+ recipes)",
-              },
-              value: "only_veterans",
-            },
+            { text: { type: "plain_text", text: "No preference" }, value: "none" },
+            { text: { type: "plain_text", text: "Prefer fresh for recipe" }, value: "prefer_fresh_recipe" },
+            { text: { type: "plain_text", text: "Only fresh for recipe" }, value: "only_fresh_recipe" },
+            { text: { type: "plain_text", text: "Only used with recipe (remix)" }, value: "only_used_recipe" },
+            { text: { type: "plain_text", text: "Prefer untouched" }, value: "prefer_untouched" },
+            { text: { type: "plain_text", text: "Only untouched" }, value: "only_untouched" },
+            { text: { type: "plain_text", text: "Only veterans (3+ recipes)" }, value: "only_veterans" },
           ],
         },
       },
-      // Rating filter
+      // ── Tools section ──
+      { type: "divider" },
       {
-        type: "input",
-        block_id: "rating_block",
-        optional: true,
-        label: { type: "plain_text", text: "Rating" },
-        element: {
-          type: "static_select",
-          action_id: "rating_filter",
-          placeholder: { type: "plain_text", text: "All recipes" },
-          options: [
-            {
-              text: { type: "plain_text", text: "All recipes" },
-              value: "all",
-            },
-            {
-              text: {
-                type: "plain_text",
-                text: "Top rated (+3 or higher)",
-              },
-              value: "top",
-            },
-            {
-              text: { type: "plain_text", text: "Positive only" },
-              value: "positive",
-            },
-            {
-              text: { type: "plain_text", text: "Unrated" },
-              value: "unrated",
-            },
-            {
-              text: {
-                type: "plain_text",
-                text: "Underdogs (below 0)",
-              },
-              value: "underdogs",
-            },
-          ],
-        },
+        type: "section",
+        text: { type: "mrkdwn", text: "*:toolbox: Tools*" },
+      },
+      {
+        type: "context",
+        elements: [{ type: "mrkdwn", text: countText }],
       },
       // Footer actions
       {
@@ -626,16 +608,6 @@ export function buildModalView(channelId: string = ""): object {
             type: "button",
             text: { type: "plain_text", text: "\u2753 Help", emoji: true },
             action_id: "modal_open_help",
-          },
-        ],
-      },
-      // Footer context
-      {
-        type: "context",
-        elements: [
-          {
-            type: "mrkdwn",
-            text: `_${RECIPES.length} recipes available_`,
           },
         ],
       },

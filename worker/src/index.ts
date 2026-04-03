@@ -235,7 +235,8 @@ async function openViewModal(env: Env, triggerId: string, view: object): Promise
 
 /** Open the Sparagmos recipe picker modal via the Slack views.open API. */
 async function openModal(env: Env, triggerId: string, channelId: string): Promise<void> {
-  const view = buildModalView(channelId);
+  const ratings = await getRatings(env.RATINGS);
+  const view = buildModalView(channelId, ratings);
   const resp = await fetch("https://slack.com/api/views.open", {
     method: "POST",
     headers: {

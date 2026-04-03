@@ -431,8 +431,13 @@ def test_weighted_sample_more_than_available():
 def test_pick_weighted_recipe_with_ratings(tmp_path):
     from sparagmos.cli import _pick_weighted_recipe
 
+    # Use the real nested dict format from ratings.json
     ratings_path = tmp_path / "ratings.json"
-    ratings_path.write_text('{"great": 8, "bad": -4, "ok": 0}')
+    ratings_path.write_text(
+        '{"great": {"up": 10, "down": 2, "score": 8, "last_voted": "2026-04-03"},'
+        ' "bad": {"up": 0, "down": 4, "score": -4, "last_voted": "2026-04-03"},'
+        ' "ok": {"up": 1, "down": 1, "score": 0, "last_voted": "2026-04-03"}}'
+    )
 
     counts: dict[str, int] = {"great": 0, "bad": 0, "ok": 0}
     for i in range(1000):
@@ -459,3 +464,57 @@ def test_pick_weighted_recipe_empty_ratings(tmp_path):
     rng = random.Random(42)
     slug = _pick_weighted_recipe(rng, ["a", "b", "c"], tmp_path)
     assert slug in {"a", "b", "c"}
+
+
+# ── Rating filter ──────────────────────────────────────────────────────
+
+
+def test_filter_by_rating_top():
+    from sparagmos.cli import _filter_by_rating
+
+    ratings = {"a": 5, "b": 3, "c": 1, "d": -2}
+    result = _filter_by_rating(["a", "b", "c", "d", "e"], "top", ratings)
+    assert set(result) == {"a", "b"}
+
+
+def test_filter_by_rating_positive():
+    from sparagmos.cli import _filter_by_rating
+
+    ratings = {"a": 5, "b": 3, "c": 1, "d": -2}
+    result = _filter_by_rating(["a", "b", "c", "d", "e"], "positive", ratings)
+    assert set(result) == {"a", "b", "c"}
+
+
+def test_filter_by_rating_unrated():
+    from sparagmos.cli import _filter_by_rating
+
+    ratings = {"a": 5, "b": 0, "d": -2}
+    result = _filter_by_rating(["a", "b", "c", "d"], "unrated", ratings)
+    # b has score 0, c is absent from ratings → both unrated
+    assert set(result) == {"b", "c"}
+
+
+def test_filter_by_rating_underdogs():
+    from sparagmos.cli import _filter_by_rating
+
+    ratings = {"a": 5, "b": -1, "c": -3}
+    result = _filter_by_rating(["a", "b", "c", "d"], "underdogs", ratings)
+    assert set(result) == {"b", "c"}
+
+
+def test_filter_by_rating_combined():
+    from sparagmos.cli import _filter_by_rating
+
+    ratings = {"a": 5, "b": -1, "c": 0}
+    result = _filter_by_rating(["a", "b", "c", "d"], "top,underdogs", ratings)
+    # top: a (5>=3), underdogs: b (-1<0)
+    assert set(result) == {"a", "b"}
+
+
+def test_filter_by_rating_empty_returns_all():
+    from sparagmos.cli import _filter_by_rating
+
+    ratings = {"a": 5}
+    # If filter matches nothing, fall back to full list
+    result = _filter_by_rating(["x", "y", "z"], "top", ratings)
+    assert result == ["x", "y", "z"]

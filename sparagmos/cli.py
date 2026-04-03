@@ -90,6 +90,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Filter images by freshness (prefer_fresh_recipe, only_fresh_recipe, "
         "only_used_recipe, prefer_untouched, only_untouched, only_veterans)",
     )
+    parser.add_argument(
+        "--rating",
+        default=None,
+        help="Filter recipes by rating before selection (comma-separated: top,positive,unrated,underdogs)",
+    )
     return parser
 
 
@@ -119,10 +124,43 @@ def _load_ratings(repo_root: Path) -> dict[str, int]:
     try:
         data = json.loads(path.read_text())
         if isinstance(data, dict):
-            return {k: int(v) for k, v in data.items() if isinstance(v, (int, float))}
+            result: dict[str, int] = {}
+            for k, v in data.items():
+                if isinstance(v, dict) and "score" in v:
+                    result[k] = int(v["score"])
+                elif isinstance(v, (int, float)):
+                    result[k] = int(v)
+            return result
     except (json.JSONDecodeError, ValueError) as exc:
         logger.warning("Failed to parse ratings.json: %s", exc)
     return {}
+
+
+def _filter_by_rating(
+    slugs: list[str], rating_csv: str, ratings: dict[str, int]
+) -> list[str]:
+    """Filter recipe slugs by rating categories.
+
+    ``rating_csv`` is a comma-separated string of categories:
+    top (score >= 3), positive (score > 0), unrated (score == 0 or absent),
+    underdogs (score < 0).  Returns the union of matching slugs.
+    """
+    categories = {c.strip() for c in rating_csv.split(",") if c.strip()}
+    if not categories:
+        return slugs
+
+    kept: list[str] = []
+    for slug in slugs:
+        score = ratings.get(slug, 0)
+        if "top" in categories and score >= 3:
+            kept.append(slug)
+        elif "positive" in categories and score > 0:
+            kept.append(slug)
+        elif "unrated" in categories and (slug not in ratings or score == 0):
+            kept.append(slug)
+        elif "underdogs" in categories and score < 0:
+            kept.append(slug)
+    return kept if kept else slugs  # fall back to all if filter empties the list
 
 
 def _pick_weighted_recipe(
@@ -250,9 +288,14 @@ def main(argv: list[str] | None = None) -> None:
                     sorted({v.inputs for v in recipes.values()}),
                 )
                 sys.exit(1)
-            recipe_slug = _pick_weighted_recipe(rng, list(matching.keys()), repo_root)
+            eligible = list(matching.keys())
         else:
-            recipe_slug = _pick_weighted_recipe(rng, list(recipes.keys()), repo_root)
+            eligible = list(recipes.keys())
+        # Apply rating filter before weighted pick
+        if args.rating:
+            ratings = _load_ratings(repo_root)
+            eligible = _filter_by_rating(eligible, args.rating, ratings)
+        recipe_slug = _pick_weighted_recipe(rng, eligible, repo_root)
         recipe = recipes[recipe_slug]
 
     logger.info("Using recipe: %s (%s)", recipe_slug, recipe.name)
