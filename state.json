@@ -1557,6 +1557,29 @@
       ],
       "processed_date": "2026-04-03",
       "posted_ts": "1775239619.895339"
+    },
+    {
+      "source_file_ids": [
+        "url:487283f082c8",
+        "url:32b3df83ef57",
+        "F08QQH87BC1"
+      ],
+      "source_dates": [
+        "2026-04-03",
+        "2026-04-03",
+        "2025-04-30"
+      ],
+      "source_users": [
+        "url",
+        "url",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "ancients-stencil",
+      "effects": [
+        "ancient_stencil"
+      ],
+      "processed_date": "2026-04-03",
+      "posted_ts": "1775240197.691269"
     }
   ]
 }
