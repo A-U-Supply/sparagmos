@@ -12,7 +12,7 @@ export async function dispatchWorkflow(
   env: Env,
   recipe: string,
   images: string[] = [],
-  filters?: { poster?: string; age?: string; freshness?: string },
+  filters?: { poster?: string; age?: string; freshness?: string; rating?: string },
 ): Promise<boolean> {
   const inputs: Record<string, string> = { recipe };
   if (images.length > 0) {
@@ -21,6 +21,7 @@ export async function dispatchWorkflow(
   if (filters?.poster) inputs.poster = filters.poster;
   if (filters?.age) inputs.age = filters.age;
   if (filters?.freshness) inputs.freshness = filters.freshness;
+  if (filters?.rating) inputs.rating = filters.rating;
 
   const response = await fetch(
     "https://api.github.com/repos/A-U-Supply/sparagmos/actions/workflows/sparagmos.yml/dispatches",

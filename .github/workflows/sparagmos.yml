@@ -20,6 +20,9 @@ on:
       freshness:
         description: 'Filter by image freshness'
         default: ''
+      rating:
+        description: 'Filter recipes by rating (comma-separated: top,positive,unrated,underdogs)'
+        default: ''
 
 jobs:
   sparagmos:
@@ -69,6 +72,9 @@ jobs:
           fi
           if [ -n "${{ inputs.freshness }}" ]; then
             CMD="$CMD --freshness ${{ inputs.freshness }}"
+          fi
+          if [ -n "${{ inputs.rating }}" ]; then
+            CMD="$CMD --rating ${{ inputs.rating }}"
           fi
           $CMD
 

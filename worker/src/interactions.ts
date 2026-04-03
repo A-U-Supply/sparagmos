@@ -1,7 +1,7 @@
 import type { Env } from "./types";
 import { vote, toggleStar, toggleFavorite, getRatings, getUserVotes, getFavorites, getStars } from "./kv";
 import { dispatchWorkflow, fetchWorkflowRuns } from "./github";
-import { buildBestView, buildPinnedView, buildHelpView, buildStatusView } from "./modal";
+import { buildModalView, buildBestView, buildPinnedView, buildHelpView, buildStatusView } from "./modal";
 
 
 // ---------------------------------------------------------------------------
@@ -19,6 +19,7 @@ interface SlackInteractionPayload {
     block_id: string;
   }>;
   view?: {
+    id: string;
     callback_id: string;
     state: { values: Record<string, Record<string, any>> };
     private_metadata: string;
@@ -173,6 +174,26 @@ async function pushView(
   const data = await resp.json() as { ok: boolean; error?: string };
   if (!data.ok) {
     console.error(`views.push failed: ${data.error}`);
+  }
+}
+
+/** Update an existing modal view in place. */
+async function updateView(
+  env: Env,
+  viewId: string,
+  view: object,
+): Promise<void> {
+  const resp = await fetch("https://slack.com/api/views.update", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`,
+    },
+    body: JSON.stringify({ view_id: viewId, view }),
+  });
+  const data = await resp.json() as { ok: boolean; error?: string };
+  if (!data.ok) {
+    console.error(`views.update failed: ${data.error}`);
   }
 }
 
@@ -362,6 +383,21 @@ export async function handleInteraction(
             }
             break;
           }
+          case "rating_checkboxes": {
+            if (payload.view) {
+              const vals = payload.view.state.values;
+              const selectedOptions =
+                vals.rating_block?.rating_checkboxes?.selected_options ?? [];
+              const ratingFilters: string[] = selectedOptions.map(
+                (o: { value: string }) => o.value,
+              );
+              const allRatings = await getRatings(env.RATINGS);
+              const channelId = payload.view.private_metadata || "";
+              const updatedView = buildModalView(channelId, allRatings, ratingFilters);
+              await updateView(env, payload.view.id, updatedView);
+            }
+            break;
+          }
           case "run_pinned": {
             const slug = action.value;
             const work = (async () => {
@@ -412,6 +448,11 @@ export async function handleInteraction(
         const freshness =
           vals.freshness_block?.freshness_filter?.selected_option?.value ??
           "none";
+        const ratingSelected =
+          vals.rating_block?.rating_checkboxes?.selected_options ?? [];
+        const rating = ratingSelected
+          .map((o: { value: string }) => o.value)
+          .join(",");
 
         const resolvedRecipe =
           recipe && recipe !== "random" ? recipe : "";
@@ -425,6 +466,7 @@ export async function handleInteraction(
             poster: poster ?? undefined,
             age: age !== "any" ? age : undefined,
             freshness: freshness !== "none" ? freshness : undefined,
+            rating: rating || undefined,
           });
 
           if (channelId) {
