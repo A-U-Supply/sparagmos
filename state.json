@@ -1531,6 +1531,32 @@
       ],
       "processed_date": "2026-04-03",
       "posted_ts": "1775238729.481649"
+    },
+    {
+      "source_file_ids": [
+        "url:487283f082c8",
+        "url:4e19ba298b6f",
+        "F07F53VGUCE",
+        "F06TXGNLVLP"
+      ],
+      "source_dates": [
+        "2026-04-03",
+        "2026-04-03",
+        "2024-08-02",
+        "2024-04-15"
+      ],
+      "source_users": [
+        "url",
+        "url",
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "ancients-collage",
+      "effects": [
+        "ancient_collage"
+      ],
+      "processed_date": "2026-04-03",
+      "posted_ts": "1775239619.895339"
     }
   ]
 }
