@@ -12,11 +12,15 @@ export async function dispatchWorkflow(
   env: Env,
   recipe: string,
   images: string[] = [],
+  filters?: { poster?: string; age?: string; freshness?: string },
 ): Promise<boolean> {
   const inputs: Record<string, string> = { recipe };
   if (images.length > 0) {
     inputs.images = images.join(",");
   }
+  if (filters?.poster) inputs.poster = filters.poster;
+  if (filters?.age) inputs.age = filters.age;
+  if (filters?.freshness) inputs.freshness = filters.freshness;
 
   const response = await fetch(
     "https://api.github.com/repos/A-U-Supply/sparagmos/actions/workflows/sparagmos.yml/dispatches",
@@ -86,9 +90,9 @@ export function formatRun(run: WorkflowRun): string {
 
 /**
  * Fetch recent sparagmos workflow runs from the GitHub Actions API.
- * Returns a formatted Slack message.
+ * Returns the raw WorkflowRun array.
  */
-export async function fetchWorkflowStatus(env: Env): Promise<string> {
+export async function fetchWorkflowRuns(env: Env): Promise<WorkflowRun[]> {
   const response = await fetch(
     "https://api.github.com/repos/A-U-Supply/sparagmos/actions/workflows/sparagmos.yml/runs?per_page=3",
     {
@@ -102,11 +106,19 @@ export async function fetchWorkflowStatus(env: Env): Promise<string> {
   );
 
   if (!response.ok) {
-    return ":warning: Failed to fetch workflow status from GitHub.";
+    return [];
   }
 
   const data = (await response.json()) as { workflow_runs: WorkflowRun[] };
-  const runs = data.workflow_runs;
+  return data.workflow_runs;
+}
+
+/**
+ * Fetch recent sparagmos workflow runs from the GitHub Actions API.
+ * Returns a formatted Slack message.
+ */
+export async function fetchWorkflowStatus(env: Env): Promise<string> {
+  const runs = await fetchWorkflowRuns(env);
 
   if (runs.length === 0) {
     return "No recent runs found.";

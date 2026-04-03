@@ -7,14 +7,15 @@ import {
 } from "./recipes";
 import type { Env } from "./types";
 import { verifySlackSignature, parseSlashCommand, slackResponse } from "./slack";
-import { dispatchWorkflow, fetchWorkflowStatus } from "./github";
+import { dispatchWorkflow, fetchWorkflowRuns } from "./github";
 import { handleInteraction } from "./interactions";
 import { getRatings, getStars } from "./kv";
+import { buildStatusBlocks } from "./blocks";
 
 // Re-export types and functions that tests (and consumers) depend on
 export type { Env, ParsedCommand } from "./types";
 export { parseSlashCommand } from "./slack";
-export { fetchWorkflowStatus } from "./github";
+export { fetchWorkflowRuns } from "./github";
 
 // ---------------------------------------------------------------------------
 // Help text
@@ -38,6 +39,7 @@ function buildHelpText(): string {
     "  `/sparagmos <recipe>` -- run a specific recipe with random images",
     "  `/sparagmos list` -- show all available recipes grouped by input count",
     "  `/sparagmos status` -- check recent run status",
+    "  `/sparagmos best` -- show Hall of Fame (starred outputs)",
     "  `/sparagmos help` -- show this message",
     "",
     "*Image URL support:*",
@@ -90,10 +92,38 @@ async function handleSlashCommand(body: string, env: Env): Promise<Response> {
     return slackResponse(formatRecipeList());
   }
 
-  // Status
+  // Status (rich Block Kit)
   if (command === "status") {
-    const status = await fetchWorkflowStatus(env);
-    return slackResponse(status);
+    const runs = await fetchWorkflowRuns(env);
+    if (runs.length === 0) {
+      return slackResponse("No recent runs found.");
+    }
+    const blocks = buildStatusBlocks(runs);
+    return new Response(
+      JSON.stringify({
+        response_type: "ephemeral",
+        blocks,
+      }),
+      { headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  // Hall of Fame
+  if (command === "best") {
+    const stars = await getStars(env.RATINGS);
+    if (stars.length === 0) {
+      return slackResponse(
+        "No starred posts yet. Star outputs in #img-junkyard to build the Hall of Fame!",
+      );
+    }
+    const sorted = [...stars].sort((a, b) => b.star_count - a.star_count);
+    const lines = [":star: *Hall of Fame*", ""];
+    for (const star of sorted.slice(0, 10)) {
+      lines.push(
+        `:star: *${star.star_count}* -- \`${star.recipe}\` (${star.starred_date})`,
+      );
+    }
+    return slackResponse(lines.join("\n"));
   }
 
   // Random recipe (no args or explicit "random")

@@ -6,7 +6,7 @@ import {
   getRecipe,
   RECIPES,
 } from "./recipes";
-import { parseSlashCommand, fetchWorkflowStatus } from "./index";
+import { parseSlashCommand, fetchWorkflowRuns } from "./index";
 
 // ---------------------------------------------------------------------------
 // isValidRecipe
