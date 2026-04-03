@@ -1,7 +1,7 @@
 import type { Env } from "./types";
 import { vote, toggleStar, toggleFavorite, getRatings, getUserVotes, getFavorites, getStars } from "./kv";
-import { dispatchWorkflow } from "./github";
-import { buildBestView, buildPinnedView, buildHelpView } from "./modal";
+import { dispatchWorkflow, fetchWorkflowRuns } from "./github";
+import { buildBestView, buildPinnedView, buildHelpView, buildStatusView } from "./modal";
 
 
 // ---------------------------------------------------------------------------
@@ -354,6 +354,14 @@ export async function handleInteraction(
             }
             break;
           }
+          case "modal_open_status": {
+            if (payload.trigger_id) {
+              const runs = await fetchWorkflowRuns(env);
+              const view = buildStatusView(runs);
+              await pushView(env, payload.trigger_id, view);
+            }
+            break;
+          }
           case "run_pinned": {
             const slug = action.value;
             const work = (async () => {
@@ -362,7 +370,7 @@ export async function handleInteraction(
               const channelId = payload.view?.private_metadata || "";
               if (channelId) {
                 const msg = ok
-                  ? `:art: Firing up *${slug}*... results in #img-junkyard in ~2-5 min.`
+                  ? `:art: Firing up *${slug}*... results in #img-junkyard in ~2-5 min.\nUse \`/sparagmos status\` to check progress.`
                   : `:warning: Failed to dispatch workflow.`;
                 await fetch("https://slack.com/api/chat.postEphemeral", {
                   method: "POST",
@@ -421,7 +429,7 @@ export async function handleInteraction(
 
           if (channelId) {
             const msg = ok
-              ? `:art: Firing up *${recipeName}*... results in #img-junkyard in ~2-5 min.`
+              ? `:art: Firing up *${recipeName}*... results in #img-junkyard in ~2-5 min.\nUse \`/sparagmos status\` to check progress.`
               : `:warning: Failed to dispatch workflow.`;
             await fetch("https://slack.com/api/chat.postEphemeral", {
               method: "POST",

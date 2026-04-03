@@ -4,9 +4,11 @@ import {
   buildBestView,
   buildPinnedView,
   buildHelpView,
+  buildStatusView,
   buildModalView,
 } from "./modal";
 import type { StarData } from "./kv";
+import type { WorkflowRun } from "./types";
 import { RECIPES } from "./recipes";
 
 // ---------------------------------------------------------------------------
@@ -161,7 +163,7 @@ describe("buildHelpView", () => {
     expect(headers).toContain("Quick Start");
     expect(headers).toContain("Commands");
     expect(headers).toContain("The Modal");
-    expect(headers).toContain("Rating & Voting");
+    expect(headers).toContain("Rating and Voting");
     expect(headers).toContain("Tips");
   });
 
@@ -191,8 +193,16 @@ describe("buildHelpView", () => {
 // buildModalView (footer buttons)
 // ---------------------------------------------------------------------------
 
-describe("buildModalView footer", () => {
-  it("contains footer action buttons", () => {
+describe("buildModalView", () => {
+  it("has a description section at the top", () => {
+    const view = buildModalView("C123") as any;
+    const firstBlock = view.blocks[0];
+    expect(firstBlock.type).toBe("section");
+    expect(firstBlock.text.text).toContain("Destroy");
+    expect(firstBlock.text.text).toContain("#img-junkyard");
+  });
+
+  it("contains footer action buttons including status", () => {
     const view = buildModalView("C123") as any;
     const footerActions = view.blocks.find(
       (b: any) => b.block_id === "modal_footer_actions",
@@ -203,6 +213,43 @@ describe("buildModalView footer", () => {
     const actionIds = footerActions.elements.map((e: any) => e.action_id);
     expect(actionIds).toContain("modal_open_best");
     expect(actionIds).toContain("modal_open_pinned");
+    expect(actionIds).toContain("modal_open_status");
     expect(actionIds).toContain("modal_open_help");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildStatusView
+// ---------------------------------------------------------------------------
+
+describe("buildStatusView", () => {
+  it("returns a modal with no submit", () => {
+    const view = buildStatusView([]) as any;
+    expect(view.type).toBe("modal");
+    expect(view.callback_id).toBe("sparagmos_status");
+    expect(view.submit).toBeUndefined();
+    expect(view.close).toBeDefined();
+  });
+
+  it("shows empty state when no runs", () => {
+    const view = buildStatusView([]) as any;
+    const section = view.blocks.find((b: any) => b.type === "section");
+    expect(section.text.text).toContain("No recent runs");
+  });
+
+  it("shows runs when provided", () => {
+    const runs: WorkflowRun[] = [{
+      status: "completed",
+      conclusion: "success",
+      created_at: "2026-04-03T10:00:00Z",
+      updated_at: "2026-04-03T10:03:00Z",
+      html_url: "https://github.com/test/run/1",
+      run_started_at: "2026-04-03T10:00:00Z",
+      event: "workflow_dispatch",
+    }];
+    const view = buildStatusView(runs) as any;
+    const header = view.blocks.find((b: any) => b.type === "header");
+    expect(header).toBeDefined();
+    expect(header.text.text).toContain("Recent Runs");
   });
 });

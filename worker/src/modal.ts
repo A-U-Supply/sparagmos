@@ -1,6 +1,8 @@
 import { RECIPES, getRecipe } from "./recipes";
 import type { Recipe } from "./recipes";
 import type { StarData } from "./kv";
+import type { WorkflowRun } from "./types";
+import { buildStatusBlocks } from "./blocks";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -259,7 +261,7 @@ export function buildHelpView(): object {
   // Rating & Voting
   blocks.push({
     type: "header",
-    text: { type: "plain_text", text: "Rating & Voting", emoji: true },
+    text: { type: "plain_text", text: "Rating and Voting", emoji: true },
   });
   blocks.push({
     type: "section",
@@ -361,6 +363,24 @@ export function buildHelpView(): object {
   };
 }
 
+/** Build the Status modal showing recent workflow runs. */
+export function buildStatusView(runs: WorkflowRun[]): object {
+  const blocks: object[] = runs.length > 0
+    ? buildStatusBlocks(runs)
+    : [{
+        type: "section",
+        text: { type: "mrkdwn", text: "No recent runs found." },
+      }];
+
+  return {
+    type: "modal",
+    callback_id: "sparagmos_status",
+    title: { type: "plain_text", text: "Status" },
+    close: { type: "plain_text", text: "Back" },
+    blocks,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Main modal view builder
 // ---------------------------------------------------------------------------
@@ -375,6 +395,15 @@ export function buildModalView(channelId: string = ""): object {
     submit: { type: "plain_text", text: "Destroy" },
     close: { type: "plain_text", text: "Cancel" },
     blocks: [
+      // Description
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "Pick a recipe, tweak the filters, and hit *Destroy* to feed images from #image-gen through glitch/collage/corruption effects. Results land in #img-junkyard in ~2\u20135 min.",
+        },
+      },
+      { type: "divider" },
       // Recipe select (static with built-in Slack typeahead filtering)
       {
         type: "input",
@@ -587,6 +616,11 @@ export function buildModalView(channelId: string = ""): object {
             type: "button",
             text: { type: "plain_text", text: "\ud83d\udccc My Pinned Recipes", emoji: true },
             action_id: "modal_open_pinned",
+          },
+          {
+            type: "button",
+            text: { type: "plain_text", text: "\ud83d\udce1 Status", emoji: true },
+            action_id: "modal_open_status",
           },
           {
             type: "button",

@@ -168,7 +168,7 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
           ? ` with ${urls.length} provided image(s)`
           : "";
       return slackResponse(
-        `:game_die: Firing up a random recipe${urlNote}... results in #img-junkyard in ~2-5 min.`,
+        `:game_die: Firing up a random recipe${urlNote}... results in #img-junkyard in ~2-5 min.\nUse \`/sparagmos status\` to check progress.`,
       );
     }
     return slackResponse(
@@ -193,7 +193,7 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
           ? ` with ${urls.length} provided image(s)`
           : "";
       return slackResponse(
-        `:art: Firing up *${command}*${urlNote}... results in #img-junkyard in ~2-5 min.`,
+        `:art: Firing up *${command}*${urlNote}... results in #img-junkyard in ~2-5 min.\nUse \`/sparagmos status\` to check progress.`,
       );
     }
     return slackResponse(
