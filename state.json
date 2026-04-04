@@ -2223,33 +2223,36 @@
     },
     {
       "source_file_ids": [
-        "F085W8Z2MQF",
-        "F0AL15QRJEQ",
-        "F09LWMR083B"
+        "F06UJUEQ2RF",
+        "F04HVK6AMR7",
+        "F083Y9ZT1N2",
+        "F05KA6R0RNX"
       ],
       "source_dates": [
-        "2024-12-23",
-        "2026-03-11",
-        "2025-10-14"
+        "2024-04-13",
+        "2023-01-04",
+        "2024-12-08",
+        "2023-07-28"
       ],
       "source_users": [
-        "U03TD7FSUAE",
-        "U03TD7FSUAE",
-        "U03TD7FSUAE"
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL"
       ],
-      "recipe": "holographic-interference",
+      "recipe": "dream-mask-dream",
       "effects": [
-        "spectral",
-        "spectral",
-        "channel_shift",
-        "blend",
-        "blend",
-        "channel_shift",
-        "spectral",
+        "deepdream",
+        "mask_composite",
+        "deepdream",
+        "mask_composite",
+        "deepdream",
+        "mask_composite",
+        "mask_composite",
         "jpeg_destroy"
       ],
       "processed_date": "2026-04-04",
-      "posted_ts": "1775278215.939559"
+      "posted_ts": "1775278755.952679"
     }
   ]
 }
