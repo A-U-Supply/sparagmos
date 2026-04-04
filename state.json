@@ -2223,36 +2223,68 @@
     },
     {
       "source_file_ids": [
-        "F06UJUEQ2RF",
-        "F04HVK6AMR7",
-        "F083Y9ZT1N2",
-        "F05KA6R0RNX"
+        "F085W8Z2MQF",
+        "F0AL15QRJEQ",
+        "F09LWMR083B"
       ],
       "source_dates": [
-        "2024-04-13",
-        "2023-01-04",
-        "2024-12-08",
-        "2023-07-28"
+        "2024-12-23",
+        "2026-03-11",
+        "2025-10-14"
       ],
       "source_users": [
-        "U03TD4SUDKL",
-        "U03TD4SUDKL",
-        "U03TFJBRK2Q",
-        "U03TD4SUDKL"
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
       ],
-      "recipe": "dream-mask-dream",
+      "recipe": "holographic-interference",
       "effects": [
-        "deepdream",
-        "mask_composite",
-        "deepdream",
-        "mask_composite",
-        "deepdream",
-        "mask_composite",
-        "mask_composite",
+        "spectral",
+        "spectral",
+        "channel_shift",
+        "blend",
+        "blend",
+        "channel_shift",
+        "spectral",
         "jpeg_destroy"
       ],
       "processed_date": "2026-04-04",
-      "posted_ts": "1775278755.952679"
+      "posted_ts": "1775278215.939559"
+    },
+    {
+      "source_file_ids": [
+        "F073RATMJ0L",
+        "F0AP8EB3YLT",
+        "F0814SU6EKC",
+        "F08B5N05LFQ"
+      ],
+      "source_dates": [
+        "2024-05-16",
+        "2026-03-28",
+        "2024-11-15",
+        "2025-02-02"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "contrast-surgery",
+      "effects": [
+        "channel_shift",
+        "spectral",
+        "pca_decompose",
+        "pixel_sort",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "blend",
+        "spectral",
+        "byte_corrupt"
+      ],
+      "processed_date": "2026-04-04",
+      "posted_ts": "1775278915.863629"
     }
   ]
 }
