@@ -97,10 +97,12 @@ jobs:
             echo "No state changes."
           else
             for i in 1 2 3 4 5; do
-              # Reset to remote tip and recommit our state.json on top
-              # This avoids rebase conflicts since state.json is machine-generated
+              # Reset to remote tip and re-stage only state files on top
+              # Mixed reset (default) ensures only explicitly added files are committed,
+              # preventing accidental reverts of changes merged while this job ran
               git fetch origin main
-              git reset --soft origin/main
+              git reset origin/main
+              git add state.json ratings.json stars.json
               git commit -m "chore: update state ($(date -u +%Y-%m-%d)) [skip ci]"
               git push && break
               echo "Push failed (attempt $i), retrying..."
