@@ -1862,6 +1862,47 @@
       ],
       "processed_date": "2026-04-04",
       "posted_ts": "1775260874.120049"
+    },
+    {
+      "source_file_ids": [
+        "F08VDUK8U49",
+        "F03TDQQRNJ2",
+        "F08TVSTN5SR",
+        "F080JR0900P",
+        "F09KB5WAALA"
+      ],
+      "source_dates": [
+        "2025-06-02",
+        "2022-08-14",
+        "2025-05-26",
+        "2024-11-15",
+        "2025-10-08"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TFJBRK2Q"
+      ],
+      "recipe": "edge-weave",
+      "effects": [
+        "pixel_sort",
+        "crt_vhs",
+        "dither",
+        "spectral",
+        "channel_shift",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "collage",
+        "mask_composite",
+        "spectral",
+        "channel_shift",
+        "byte_corrupt"
+      ],
+      "processed_date": "2026-04-04",
+      "posted_ts": ""
     }
   ]
 }
