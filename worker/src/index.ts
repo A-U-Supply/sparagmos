@@ -88,7 +88,9 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
     const triggerId = params.get("trigger_id");
     if (triggerId) {
       ctx.waitUntil(openViewModal(env, triggerId, buildHelpView()));
-      return slackResponse("Opening help...");
+      return new Response(JSON.stringify({ response_type: "ephemeral" }), {
+        headers: { "Content-Type": "application/json" },
+      });
     }
     // Fallback to text if no trigger_id
     return slackResponse(buildHelpText());
@@ -124,7 +126,9 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
         const stars = await getStars(env.RATINGS);
         await openViewModal(env, triggerId, buildBestView(stars, env.SLACK_WORKSPACE));
       })());
-      return slackResponse("Opening Hall of Fame...");
+      return new Response(JSON.stringify({ response_type: "ephemeral" }), {
+        headers: { "Content-Type": "application/json" },
+      });
     }
     // Fallback to text if no trigger_id
     const stars = await getStars(env.RATINGS);
@@ -150,27 +154,9 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
     if (triggerId) {
       ctx.waitUntil(openModal(env, triggerId, channelId));
     }
-    const msg = ":art: Opening Sparagmos... Use `/sparagmos status` to check recent runs.";
-    return new Response(
-      JSON.stringify({
-        response_type: "ephemeral",
-        text: msg,
-        blocks: [
-          { type: "section", text: { type: "mrkdwn", text: msg } },
-          {
-            type: "actions",
-            elements: [
-              {
-                type: "button",
-                text: { type: "plain_text", text: "Check Status" },
-                action_id: "modal_open_status",
-              },
-            ],
-          },
-        ],
-      }),
-      { headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ response_type: "ephemeral" }), {
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   // Explicit "random" or bare URLs still dispatch directly
