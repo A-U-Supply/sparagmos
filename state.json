@@ -2137,6 +2137,33 @@
       ],
       "processed_date": "2026-04-04",
       "posted_ts": "1775266379.780149"
+    },
+    {
+      "source_file_ids": [
+        "F082L2J774N",
+        "F07U0AMLAV8",
+        "F07V9KL4B8Q"
+      ],
+      "source_dates": [
+        "2024-11-27",
+        "2024-10-29",
+        "2024-11-02"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "mask-and-glitch",
+      "effects": [
+        "mask_composite",
+        "crt_vhs",
+        "mask_composite",
+        "byte_corrupt",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-04",
+      "posted_ts": "1775266659.098299"
     }
   ]
 }
