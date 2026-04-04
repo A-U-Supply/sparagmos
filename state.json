@@ -2000,39 +2000,41 @@
     },
     {
       "source_file_ids": [
-        "F09TPAPPLSK",
-        "F085RQVFRU6",
-        "F0472AQ315Y",
-        "F0ALYT809LZ"
+        "F096LG92ZA5",
+        "F094TLQED2S",
+        "F09VDNW6GTS",
+        "F07FXHZ9GJ2",
+        "F08E1C2BV96"
       ],
       "source_dates": [
-        "2025-11-20",
-        "2024-12-20",
-        "2022-10-18",
-        "2026-03-14"
+        "2025-07-17",
+        "2025-07-08",
+        "2025-11-21",
+        "2024-08-08",
+        "2025-02-14"
       ],
       "source_users": [
+        "U03TFJBRK2Q",
         "U03TD7FSUAE",
-        "U03TD4SUDKL",
-        "U03TD4SUDKL",
-        "U03TD7FSUAE"
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TA650DEZ"
       ],
-      "recipe": "interference-mask",
+      "recipe": "dream-fragment-storm",
       "effects": [
-        "channel_shift",
-        "spectral",
-        "pca_decompose",
-        "dither",
-        "blend",
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "fragment",
+        "deepdream",
         "mask_composite",
         "collage",
         "mask_composite",
-        "pixel_sort",
-        "crt_vhs",
-        "byte_corrupt"
+        "jpeg_destroy",
+        "jpeg_destroy"
       ],
       "processed_date": "2026-04-04",
-      "posted_ts": "1775263829.921039"
+      "posted_ts": "1775264071.695859"
     }
   ]
 }
