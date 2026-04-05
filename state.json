@@ -2511,16 +2511,12 @@
         "url",
         "url"
       ],
-      "recipe": "sorted-mask",
+      "recipe": "ancients-stencil",
       "effects": [
-        "pixel_sort",
-        "mask_composite",
-        "collage",
-        "mask_composite",
-        "jpeg_destroy"
+        "ancient_stencil"
       ],
       "processed_date": "2026-04-05",
-      "posted_ts": "1775406240.233609"
+      "posted_ts": "1775406256.969139"
     }
   ]
 }
