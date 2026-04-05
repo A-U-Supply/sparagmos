@@ -1,6 +1,7 @@
 import type { Env } from "./types";
 import { vote, toggleStar, toggleFavorite, getRatings, getUserVotes, getFavorites, getStars } from "./kv";
-import { dispatchWorkflow, fetchWorkflowRuns } from "./github";
+import { dispatchWorkflow, fetchWorkflowRuns, fetchActionsUsage } from "./github";
+import { buildUsageContextShort } from "./blocks";
 import { buildModalView, buildBestView, buildPinnedView, buildHelpView, buildStatusView } from "./modal";
 
 
@@ -417,8 +418,11 @@ export async function handleInteraction(
           }
           case "modal_open_status": {
             if (payload.trigger_id) {
-              const runs = await fetchWorkflowRuns(env);
-              const view = buildStatusView(runs);
+              const [runs, usage] = await Promise.all([
+                fetchWorkflowRuns(env),
+                fetchActionsUsage(env),
+              ]);
+              const view = buildStatusView(runs, usage);
               // Use views.open from message buttons, views.push from modal buttons
               if (payload.view) {
                 await pushView(env, payload.trigger_id, view);
@@ -444,15 +448,20 @@ export async function handleInteraction(
           case "run_pinned": {
             const slug = action.value;
             const work = (async () => {
-              const ok = await dispatchWorkflow(env, slug);
+              const [ok, usage] = await Promise.all([
+                dispatchWorkflow(env, slug),
+                fetchActionsUsage(env),
+              ]);
               // Post ephemeral confirmation if we have channel context
               const channelId = payload.view?.private_metadata || "";
               if (channelId) {
                 const msg = ok
                   ? `:art: Firing up *${slug}*... results in #img-junkyard in ~2-5 min.`
                   : `:warning: Failed to dispatch workflow.`;
+                const blocks = ok ? confirmationBlocks(msg) : undefined;
+                if (blocks && usage) blocks.push(buildUsageContextShort(usage));
                 const body: Record<string, unknown> = { channel: channelId, user: payload.user.id, text: msg };
-                if (ok) body.blocks = confirmationBlocks(msg);
+                if (blocks) body.blocks = blocks;
                 await fetch("https://slack.com/api/chat.postEphemeral", {
                   method: "POST",
                   headers: {
@@ -505,19 +514,24 @@ export async function handleInteraction(
 
         // Dispatch and confirm in background — modal must respond immediately
         const work = (async () => {
-          const ok = await dispatchWorkflow(env, resolvedRecipe, urls, {
-            poster: poster ?? undefined,
-            age: age !== "any" ? age : undefined,
-            freshness: freshness !== "none" ? freshness : undefined,
-            rating: rating || undefined,
-          });
+          const [ok, usage] = await Promise.all([
+            dispatchWorkflow(env, resolvedRecipe, urls, {
+              poster: poster ?? undefined,
+              age: age !== "any" ? age : undefined,
+              freshness: freshness !== "none" ? freshness : undefined,
+              rating: rating || undefined,
+            }),
+            fetchActionsUsage(env),
+          ]);
 
           if (channelId) {
             const msg = ok
               ? `:art: Firing up *${recipeName}*... results in #img-junkyard in ~2-5 min.`
               : `:warning: Failed to dispatch workflow.`;
+            const blocks = ok ? confirmationBlocks(msg) : undefined;
+            if (blocks && usage) blocks.push(buildUsageContextShort(usage));
             const body: Record<string, unknown> = { channel: channelId, user: userId, text: msg };
-            if (ok) body.blocks = confirmationBlocks(msg);
+            if (blocks) body.blocks = blocks;
             await fetch("https://slack.com/api/chat.postEphemeral", {
               method: "POST",
               headers: {

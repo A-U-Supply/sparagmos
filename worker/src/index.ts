@@ -7,7 +7,7 @@ import {
 } from "./recipes";
 import type { Env } from "./types";
 import { verifySlackSignature, parseSlashCommand, slackResponse } from "./slack";
-import { dispatchWorkflow, fetchWorkflowRuns } from "./github";
+import { dispatchWorkflow, fetchWorkflowRuns, fetchActionsUsage } from "./github";
 import { handleInteraction } from "./interactions";
 import { getRatings, getStars } from "./kv";
 import { buildStatusBlocks } from "./blocks";
@@ -103,11 +103,14 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
 
   // Status (rich Block Kit)
   if (command === "status") {
-    const runs = await fetchWorkflowRuns(env);
+    const [runs, usage] = await Promise.all([
+      fetchWorkflowRuns(env),
+      fetchActionsUsage(env),
+    ]);
     if (runs.length === 0) {
       return slackResponse("No recent runs found.");
     }
-    const blocks = buildStatusBlocks(runs);
+    const blocks = buildStatusBlocks(runs, usage);
     return new Response(
       JSON.stringify({
         response_type: "ephemeral",

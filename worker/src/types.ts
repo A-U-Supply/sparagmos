@@ -13,6 +13,24 @@ export interface ParsedCommand {
   urls: string[];
 }
 
+/** A single line item from the GitHub billing usage API. */
+export interface UsageItem {
+  date: string;
+  product: string;
+  sku: string;
+  quantity: number;
+  unitType: string;
+  repositoryName: string;
+}
+
+/** Aggregated Actions minutes usage for the current billing cycle. */
+export interface ActionsUsage {
+  orgMinutes: number;
+  sparagmosMinutes: number;
+  includedMinutes: number;
+  month: string;
+}
+
 /** A single GitHub Actions workflow run. */
 export interface WorkflowRun {
   status: string;

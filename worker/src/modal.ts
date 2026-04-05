@@ -1,7 +1,7 @@
 import { RECIPES, getRecipe } from "./recipes";
 import type { Recipe } from "./recipes";
 import type { RatingData, StarData } from "./kv";
-import type { WorkflowRun } from "./types";
+import type { ActionsUsage, WorkflowRun } from "./types";
 import { buildStatusBlocks } from "./blocks";
 
 // ---------------------------------------------------------------------------
@@ -413,9 +413,9 @@ export function buildHelpView(): object {
 }
 
 /** Build the Status modal showing recent workflow runs. */
-export function buildStatusView(runs: WorkflowRun[]): object {
+export function buildStatusView(runs: WorkflowRun[], usage?: ActionsUsage | null): object {
   const blocks: object[] = runs.length > 0
-    ? buildStatusBlocks(runs)
+    ? buildStatusBlocks(runs, usage)
     : [{
         type: "section",
         text: { type: "mrkdwn", text: "No recent runs found." },
