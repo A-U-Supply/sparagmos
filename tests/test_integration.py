@@ -27,7 +27,7 @@ def _get_pure_python_recipes():
         return []
 
     # These recipes use subprocess effects that may not be installed
-    subprocess_recipes = {"analog-burial", "turtle-oracle", "ocr-feedback-loop"}
+    subprocess_recipes = {"analog-burial", "turtle-oracle", "ocr-feedback-loop", "feedback-loop", "tectonic-overlap"}
     return [
         f for f in sorted(recipes_dir.glob("*.yaml"))
         if f.stem not in subprocess_recipes
@@ -42,12 +42,25 @@ def _get_pure_python_recipes():
 def test_recipe_produces_valid_output(recipe_file, test_image_rgb, tmp_path):
     """Run each recipe end-to-end on a test image."""
     recipe = load_recipe(recipe_file)
-    result = run_pipeline(
-        image=test_image_rgb,
-        recipe=recipe,
-        seed=42,
-        temp_dir=tmp_path,
-    )
+    num_inputs = recipe.inputs or 1
+    if num_inputs > 1:
+        images = {
+            name: test_image_rgb.copy()
+            for name in IMAGE_NAMES[:num_inputs]
+        }
+        result = run_pipeline(
+            images=images,
+            recipe=recipe,
+            seed=42,
+            temp_dir=tmp_path,
+        )
+    else:
+        result = run_pipeline(
+            image=test_image_rgb,
+            recipe=recipe,
+            seed=42,
+            temp_dir=tmp_path,
+        )
     assert isinstance(result.image, Image.Image)
     assert result.image.size[0] > 0
     assert result.image.size[1] > 0

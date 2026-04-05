@@ -189,19 +189,61 @@ def test_post_result_uploads_with_main_comment_only(tmp_path):
     assert "http" not in comment
 
 
-def test_post_result_matches_file_id_in_history(tmp_path):
-    """Thread reply goes to the message matching our file ID, not just the latest."""
+def test_post_result_finds_ts_via_files_info(tmp_path):
+    """Thread reply uses files.info shares to find posted_ts (primary path)."""
     client = MagicMock()
     client.files_upload_v2.return_value = {
         "ok": True,
         "files": [{"id": "F_OURS"}],
     }
-    # Channel has other messages — ours is second, not first
+    # files.info returns the share with ts directly
+    client.files_info.return_value = {
+        "file": {
+            "shares": {
+                "public": {
+                    "C456": [{"ts": "888.000"}],
+                },
+            },
+        },
+    }
+    client.users_info.return_value = {
+        "user": {"profile": {"display_name": "brendan", "real_name": "Brendan"}}
+    }
+
+    img = Image.new("RGB", (64, 64))
+    result = PipelineResult(
+        image=img,
+        recipe_name="Test Recipe",
+        steps=[{"effect": "invert", "image": "a"}],
+    )
+    sources = [{"user": "U123", "date": "2026-01-15", "permalink": "https://link1"}]
+
+    post_result(client, "C456", result, sources, "image-gen", tmp_path)
+
+    # files.info was called to find the posted message
+    client.files_info.assert_called_with(file="F_OURS")
+
+    # Thread reply goes to the ts from files.info shares
+    client.chat_postMessage.assert_called_once()
+    reply_kwargs = client.chat_postMessage.call_args[1]
+    assert reply_kwargs["thread_ts"] == "888.000"
+    assert "brendan" in reply_kwargs["text"]
+    assert "https://link1" in reply_kwargs["text"]
+
+
+def test_post_result_falls_back_to_history(tmp_path):
+    """Falls back to conversations.history when files.info has no shares."""
+    client = MagicMock()
+    client.files_upload_v2.return_value = {
+        "ok": True,
+        "files": [{"id": "F_OURS"}],
+    }
+    # files.info returns no shares — force fallback to history
+    client.files_info.return_value = {"file": {"shares": {}}}
     client.conversations_history.return_value = {
         "messages": [
             {"ts": "999.000", "text": "someone else's message"},
             {"ts": "888.000", "files": [{"id": "F_OURS"}]},
-            {"ts": "777.000", "files": [{"id": "F_OLD"}]},
         ],
     }
     client.users_info.return_value = {
@@ -218,15 +260,13 @@ def test_post_result_matches_file_id_in_history(tmp_path):
 
     post_result(client, "C456", result, sources, "image-gen", tmp_path)
 
-    # History searched with limit=5
+    # Fell back to history scan
     client.conversations_history.assert_called_with(channel="C456", limit=10)
 
-    # Thread reply goes to OUR message (888.000), not the latest (999.000)
+    # Thread reply still finds the right message
     client.chat_postMessage.assert_called_once()
     reply_kwargs = client.chat_postMessage.call_args[1]
     assert reply_kwargs["thread_ts"] == "888.000"
-    assert "brendan" in reply_kwargs["text"]
-    assert "https://link1" in reply_kwargs["text"]
 
 
 def test_post_result_no_thread_without_file_id(tmp_path):
@@ -247,6 +287,7 @@ def test_post_result_no_thread_without_file_id(tmp_path):
 
     post_result(client, "C456", result, sources, "image-gen", tmp_path)
 
+    client.files_info.assert_not_called()
     client.conversations_history.assert_not_called()
     client.chat_postMessage.assert_not_called()
 

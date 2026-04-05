@@ -271,6 +271,14 @@ def post_result(
                 file_id,
             )
 
+        if not posted_ts:
+            logger.error(
+                "Could not find uploaded message after %d attempts (file_id=%s), "
+                "skipping thread reply",
+                max_attempts,
+                file_id,
+            )
+
     # Post source attribution + voting buttons as a thread reply
     if posted_ts:
         thread_text = format_thread_reply(resolved_sources, source_channel_name)
@@ -284,12 +292,7 @@ def post_result(
             )
         except Exception:
             logger.warning("Failed to post thread reply")
-    else:
-        logger.error(
-            "Could not find uploaded message after %d attempts (file_id=%s), "
-            "skipping thread reply",
-            max_attempts,
-            file_id,
-        )
+    elif not file_id:
+        logger.warning("No file ID from upload response, skipping thread reply")
 
     return posted_ts
