@@ -2460,24 +2460,36 @@
       "source_file_ids": [
         "url:0072e7f16744",
         "url:d9dbba21770b",
-        "url:0b9dcffbcc07"
+        "url:0b9dcffbcc07",
+        "F09H11A4P2L"
       ],
       "source_dates": [
         "2026-04-05",
         "2026-04-05",
-        "2026-04-05"
+        "2026-04-05",
+        "2025-09-19"
       ],
       "source_users": [
         "url",
         "url",
-        "url"
+        "url",
+        "U03TD4SUDKL"
       ],
-      "recipe": "ancients-stencil",
+      "recipe": "text-ghost",
       "effects": [
-        "ancient_stencil"
+        "pca_decompose",
+        "channel_shift",
+        "spectral",
+        "dither",
+        "mask_composite",
+        "blend",
+        "mask_composite",
+        "mask_composite",
+        "crt_vhs",
+        "jpeg_destroy"
       ],
       "processed_date": "2026-04-05",
-      "posted_ts": "1775405610.697289"
+      "posted_ts": "1775405634.345779"
     }
   ]
 }
