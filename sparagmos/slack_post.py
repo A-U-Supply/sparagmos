@@ -219,13 +219,35 @@ def post_result(
             file_obj = files_list[0]
     file_id = file_obj.get("id", "")
 
-    # Find the message containing our uploaded file by matching file ID.
-    # The file takes 1-3s to appear in channel history after upload.
+    # Find the message containing our uploaded file.  Slack's eventual
+    # consistency means neither files.info nor conversations.history
+    # reflects the share immediately — retry aggressively.
     posted_ts = ""
     if file_id:
         import time
-        for attempt in range(4):
-            time.sleep(1 if attempt == 0 else 2)
+
+        max_attempts = 50
+        for attempt in range(max_attempts):
+            # Exponential backoff: 1, 2, 4, 8 … capped at 10s
+            time.sleep(min(2 ** attempt, 10))
+
+            # Primary: files.info → shares gives us ts directly
+            try:
+                info = client.files_info(file=file_id)
+                shares = info.get("file", {}).get("shares", {})
+                for visibility in ("public", "private"):
+                    channel_shares = shares.get(visibility, {}).get(channel_id, [])
+                    if channel_shares:
+                        posted_ts = channel_shares[0].get("ts", "")
+                        break
+            except Exception:
+                pass
+
+            if posted_ts:
+                logger.info("Found posted_ts via files.info on attempt %d", attempt + 1)
+                break
+
+            # Fallback: scan recent channel history for our file ID
             try:
                 history = client.conversations_history(channel=channel_id, limit=10)
                 for msg in history.get("messages", []):
@@ -234,8 +256,28 @@ def post_result(
                         break
             except Exception:
                 pass
+
             if posted_ts:
+                logger.info(
+                    "Found posted_ts via conversations.history on attempt %d",
+                    attempt + 1,
+                )
                 break
+
+            logger.debug(
+                "Attempt %d/%d: file %s not yet visible in channel",
+                attempt + 1,
+                max_attempts,
+                file_id,
+            )
+
+        if not posted_ts:
+            logger.error(
+                "Could not find uploaded message after %d attempts (file_id=%s), "
+                "skipping thread reply",
+                max_attempts,
+                file_id,
+            )
 
     # Post source attribution + voting buttons as a thread reply
     if posted_ts:
@@ -250,7 +292,7 @@ def post_result(
             )
         except Exception:
             logger.warning("Failed to post thread reply")
-    else:
-        logger.warning("Could not find uploaded message, skipping thread reply")
+    elif not file_id:
+        logger.warning("No file ID from upload response, skipping thread reply")
 
     return posted_ts
