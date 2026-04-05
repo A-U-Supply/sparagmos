@@ -167,7 +167,10 @@ export async function fetchActionsUsage(env: Env): Promise<ActionsUsage | null> 
       },
     );
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.error(`GitHub billing API failed: ${response.status} ${response.statusText}`);
+      return null;
+    }
 
     const data = (await response.json()) as { usageItems: UsageItem[] };
     const items = (data.usageItems ?? []).filter(

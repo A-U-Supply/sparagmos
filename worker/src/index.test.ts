@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   isValidRecipe,
   formatRecipeList,
@@ -6,7 +6,8 @@ import {
   getRecipe,
   RECIPES,
 } from "./recipes";
-import { parseSlashCommand, fetchWorkflowRuns } from "./index";
+import { parseSlashCommand, fetchWorkflowRuns, handleSlashCommand } from "./index";
+import type { Env } from "./types";
 
 // ---------------------------------------------------------------------------
 // isValidRecipe
@@ -221,5 +222,150 @@ describe("parseSlashCommand", () => {
     const result = parseSlashCommand("  acid-wash   https://a.com/1.png   https://b.com/2.png  ");
     expect(result.command).toBe("acid-wash");
     expect(result.urls).toHaveLength(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// handleSlashCommand — regression tests for invalid_command_response
+// ---------------------------------------------------------------------------
+
+/**
+ * Slack rejects slash command responses that have response_type but no text
+ * field, returning "invalid_command_response" to the user. These tests ensure
+ * every command path returns either:
+ *   - An empty body (silent ack, used when a modal is the response), OR
+ *   - JSON with a `text` field
+ *
+ * This bug has been re-introduced multiple times by CI state commits
+ * reverting fixes. These tests prevent that from ever shipping again.
+ */
+describe("handleSlashCommand — no invalid_command_response", () => {
+  const mockKV = {
+    get: vi.fn().mockResolvedValue(null),
+    put: vi.fn().mockResolvedValue(undefined),
+    list: vi.fn().mockResolvedValue({ keys: [] }),
+    delete: vi.fn().mockResolvedValue(undefined),
+    getWithMetadata: vi.fn().mockResolvedValue({ value: null, metadata: null }),
+  } as unknown as KVNamespace;
+
+  const mockEnv: Env = {
+    SLACK_SIGNING_SECRET: "test-secret",
+    GITHUB_TOKEN: "test-gh-token",
+    SLACK_BOT_TOKEN: "test-slack-token",
+    SLACK_WORKSPACE: "test-workspace",
+    RATINGS: mockKV,
+  };
+
+  const mockCtx: ExecutionContext = {
+    waitUntil: vi.fn(),
+    passThroughOnException: vi.fn(),
+  };
+
+  let originalFetch: typeof globalThis.fetch;
+
+  beforeEach(() => {
+    originalFetch = globalThis.fetch;
+    // Mock all external HTTP calls (Slack API, GitHub API)
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (typeof url === "string" && url.includes("views.open")) {
+        return Promise.resolve(new Response(JSON.stringify({ ok: true })));
+      }
+      if (typeof url === "string" && url.includes("dispatches")) {
+        return Promise.resolve(new Response("", { status: 204 }));
+      }
+      if (typeof url === "string" && url.includes("/runs")) {
+        return Promise.resolve(
+          new Response(JSON.stringify({ workflow_runs: [] })),
+        );
+      }
+      if (typeof url === "string" && url.includes("billing")) {
+        return Promise.resolve(
+          new Response(JSON.stringify({
+            usageItems: [{
+              date: "2026-04-05",
+              product: "actions",
+              sku: "actions",
+              quantity: 42,
+              unitType: "Minutes",
+              repositoryName: "sparagmos",
+            }],
+          })),
+        );
+      }
+      return Promise.resolve(new Response("", { status: 200 }));
+    });
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    vi.restoreAllMocks();
+  });
+
+  /** Build a URL-encoded slash command body like Slack sends. */
+  function slashBody(text: string): string {
+    const params = new URLSearchParams();
+    params.set("text", text);
+    params.set("trigger_id", "test-trigger-123");
+    params.set("channel_id", "C_TEST");
+    params.set("user_id", "U_TEST");
+    return params.toString();
+  }
+
+  /**
+   * Assert a Response is a valid Slack slash command response:
+   * either empty body OR JSON with a `text` field.
+   */
+  async function assertValidSlackResponse(response: Response, label: string) {
+    const body = await response.text();
+    if (body === "") {
+      // Empty 200 is always valid (silent ack)
+      expect(response.status).toBe(200);
+      return;
+    }
+    // If there's a body, it must be JSON with a `text` field
+    const parsed = JSON.parse(body);
+    expect(parsed, `${label}: response JSON must have a 'text' field`).toHaveProperty("text");
+    expect(typeof parsed.text, `${label}: 'text' must be a string`).toBe("string");
+    expect(parsed.text.length, `${label}: 'text' must not be empty`).toBeGreaterThan(0);
+  }
+
+  it("bare /sparagmos (opens modal) returns valid response", async () => {
+    const response = await handleSlashCommand(slashBody(""), mockEnv, mockCtx);
+    await assertValidSlackResponse(response, "/sparagmos");
+  });
+
+  it("/sparagmos help (opens modal) returns valid response", async () => {
+    const response = await handleSlashCommand(slashBody("help"), mockEnv, mockCtx);
+    await assertValidSlackResponse(response, "/sparagmos help");
+  });
+
+  it("/sparagmos best (opens modal) returns valid response", async () => {
+    const response = await handleSlashCommand(slashBody("best"), mockEnv, mockCtx);
+    await assertValidSlackResponse(response, "/sparagmos best");
+  });
+
+  it("/sparagmos list returns valid response", async () => {
+    const response = await handleSlashCommand(slashBody("list"), mockEnv, mockCtx);
+    await assertValidSlackResponse(response, "/sparagmos list");
+  });
+
+  it("/sparagmos status returns valid response", async () => {
+    const response = await handleSlashCommand(slashBody("status"), mockEnv, mockCtx);
+    await assertValidSlackResponse(response, "/sparagmos status");
+  });
+
+  it("/sparagmos random returns valid response", async () => {
+    const response = await handleSlashCommand(slashBody("random"), mockEnv, mockCtx);
+    await assertValidSlackResponse(response, "/sparagmos random");
+  });
+
+  it("/sparagmos <valid-recipe> returns valid response", async () => {
+    const response = await handleSlashCommand(slashBody("acid-wash"), mockEnv, mockCtx);
+    await assertValidSlackResponse(response, "/sparagmos acid-wash");
+  });
+
+  it("/sparagmos <invalid-recipe> returns valid response", async () => {
+    const response = await handleSlashCommand(slashBody("not-a-recipe"), mockEnv, mockCtx);
+    await assertValidSlackResponse(response, "/sparagmos not-a-recipe");
   });
 });

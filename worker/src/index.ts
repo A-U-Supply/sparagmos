@@ -10,7 +10,7 @@ import { verifySlackSignature, parseSlashCommand, slackResponse } from "./slack"
 import { dispatchWorkflow, fetchWorkflowRuns, fetchActionsUsage } from "./github";
 import { handleInteraction } from "./interactions";
 import { getRatings, getStars } from "./kv";
-import { buildStatusBlocks } from "./blocks";
+import { buildStatusBlocks, buildUsageContextShort } from "./blocks";
 import { buildModalView, buildBestView, buildHelpView } from "./modal";
 
 // Re-export types and functions that tests (and consumers) depend on
@@ -78,7 +78,7 @@ function buildHelpText(): string {
 // ---------------------------------------------------------------------------
 
 /** Handle the parsed slash command body. */
-async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext): Promise<Response> {
+export async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext): Promise<Response> {
   const params = new URLSearchParams(body);
   const rawText = (params.get("text") ?? "").trim();
   const { command, urls } = parseSlashCommand(rawText);
@@ -88,9 +88,7 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
     const triggerId = params.get("trigger_id");
     if (triggerId) {
       ctx.waitUntil(openViewModal(env, triggerId, buildHelpView()));
-      return new Response(JSON.stringify({ response_type: "ephemeral" }), {
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response("", { status: 200 });
     }
     // Fallback to text if no trigger_id
     return slackResponse(buildHelpText());
@@ -129,9 +127,7 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
         const stars = await getStars(env.RATINGS);
         await openViewModal(env, triggerId, buildBestView(stars, env.SLACK_WORKSPACE));
       })());
-      return new Response(JSON.stringify({ response_type: "ephemeral" }), {
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response("", { status: 200 });
     }
     // Fallback to text if no trigger_id
     const stars = await getStars(env.RATINGS);
@@ -157,37 +153,40 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
     if (triggerId) {
       ctx.waitUntil(openModal(env, triggerId, channelId));
     }
-    return new Response(JSON.stringify({ response_type: "ephemeral" }), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response("", { status: 200 });
   }
 
   // Explicit "random" or bare URLs still dispatch directly
   if (!command || command === "random") {
-    const dispatched = await dispatchWorkflow(env, "", urls);
+    const [dispatched, usage] = await Promise.all([
+      dispatchWorkflow(env, "", urls),
+      fetchActionsUsage(env),
+    ]);
     if (dispatched) {
       const urlNote =
         urls.length > 0
           ? ` with ${urls.length} provided image(s)`
           : "";
       const msg = `:game_die: Firing up a random recipe${urlNote}... results in #img-junkyard in ~2-5 min.`;
+      const blocks: object[] = [
+        { type: "section", text: { type: "mrkdwn", text: msg } },
+        {
+          type: "actions",
+          elements: [
+            {
+              type: "button",
+              text: { type: "plain_text", text: "Check Status" },
+              action_id: "modal_open_status",
+            },
+          ],
+        },
+      ];
+      if (usage) blocks.push(buildUsageContextShort(usage));
       return new Response(
         JSON.stringify({
           response_type: "ephemeral",
           text: msg,
-          blocks: [
-            { type: "section", text: { type: "mrkdwn", text: msg } },
-            {
-              type: "actions",
-              elements: [
-                {
-                  type: "button",
-                  text: { type: "plain_text", text: "Check Status" },
-                  action_id: "modal_open_status",
-                },
-              ],
-            },
-          ],
+          blocks,
         }),
         { headers: { "Content-Type": "application/json" } },
       );
@@ -201,7 +200,10 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
   if (isValidRecipe(command)) {
     const recipe = getRecipe(command)!;
 
-    const dispatched = await dispatchWorkflow(env, command, urls);
+    const [dispatched, usage] = await Promise.all([
+      dispatchWorkflow(env, command, urls),
+      fetchActionsUsage(env),
+    ]);
     if (dispatched) {
       const urlNote =
         urls.length > 0
@@ -210,23 +212,25 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
             : ` with ${urls.length} provided image(s)`
           : "";
       const msg = `:art: Firing up *${command}*${urlNote}... results in #img-junkyard in ~2-5 min.`;
+      const blocks: object[] = [
+        { type: "section", text: { type: "mrkdwn", text: msg } },
+        {
+          type: "actions",
+          elements: [
+            {
+              type: "button",
+              text: { type: "plain_text", text: "Check Status" },
+              action_id: "modal_open_status",
+            },
+          ],
+        },
+      ];
+      if (usage) blocks.push(buildUsageContextShort(usage));
       return new Response(
         JSON.stringify({
           response_type: "ephemeral",
           text: msg,
-          blocks: [
-            { type: "section", text: { type: "mrkdwn", text: msg } },
-            {
-              type: "actions",
-              elements: [
-                {
-                  type: "button",
-                  text: { type: "plain_text", text: "Check Status" },
-                  action_id: "modal_open_status",
-                },
-              ],
-            },
-          ],
+          blocks,
         }),
         { headers: { "Content-Type": "application/json" } },
       );
