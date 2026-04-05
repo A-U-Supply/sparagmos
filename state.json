@@ -2420,6 +2420,41 @@
       ],
       "processed_date": "2026-04-05",
       "posted_ts": "1775392477.933939"
+    },
+    {
+      "source_file_ids": [
+        "url:44e7759ae34d",
+        "url:0072e7f16744",
+        "url:d9dbba21770b",
+        "url:0b9dcffbcc07"
+      ],
+      "source_dates": [
+        "2026-04-05",
+        "2026-04-05",
+        "2026-04-05",
+        "2026-04-05"
+      ],
+      "source_users": [
+        "url",
+        "url",
+        "url",
+        "url"
+      ],
+      "recipe": "double-masked-collage",
+      "effects": [
+        "channel_shift",
+        "spectral",
+        "pca_decompose",
+        "dither",
+        "fragment",
+        "mask_composite",
+        "collage",
+        "mask_composite",
+        "byte_corrupt",
+        "crt_vhs"
+      ],
+      "processed_date": "2026-04-05",
+      "posted_ts": "1775405453.561369"
     }
   ]
 }
