@@ -8,7 +8,8 @@ import {
   buildModalView,
 } from "./modal";
 import type { StarData } from "./kv";
-import type { WorkflowRun } from "./types";
+import type { ActionsUsage, WorkflowRun } from "./types";
+import { buildUsageContext, buildUsageContextShort } from "./blocks";
 import { RECIPES } from "./recipes";
 
 // ---------------------------------------------------------------------------
@@ -262,5 +263,109 @@ describe("buildStatusView", () => {
     const header = view.blocks.find((b: any) => b.type === "header");
     expect(header).toBeDefined();
     expect(header.text.text).toContain("Recent Runs");
+  });
+
+  it("includes usage context when provided", () => {
+    const runs: WorkflowRun[] = [{
+      status: "completed",
+      conclusion: "success",
+      created_at: "2026-04-03T10:00:00Z",
+      updated_at: "2026-04-03T10:03:00Z",
+      html_url: "https://github.com/test/run/1",
+      run_started_at: "2026-04-03T10:00:00Z",
+      event: "workflow_dispatch",
+    }];
+    const usage: ActionsUsage = {
+      orgMinutes: 1844,
+      sparagmosMinutes: 1422,
+      includedMinutes: 2000,
+      month: "April",
+    };
+    const view = buildStatusView(runs, usage) as any;
+    const contexts = view.blocks.filter((b: any) => b.type === "context");
+    const usageBlock = contexts.find((b: any) =>
+      b.elements.some((e: any) => e.text.includes("org-wide")),
+    );
+    expect(usageBlock).toBeDefined();
+    expect(usageBlock.elements[0].text).toContain("1,844");
+    expect(usageBlock.elements[0].text).toContain("1,422");
+    expect(usageBlock.elements[0].text).toContain("2,000");
+  });
+
+  it("omits usage context when null", () => {
+    const runs: WorkflowRun[] = [{
+      status: "completed",
+      conclusion: "success",
+      created_at: "2026-04-03T10:00:00Z",
+      updated_at: "2026-04-03T10:03:00Z",
+      html_url: "https://github.com/test/run/1",
+      run_started_at: "2026-04-03T10:00:00Z",
+      event: "workflow_dispatch",
+    }];
+    const view = buildStatusView(runs, null) as any;
+    const contexts = view.blocks.filter((b: any) => b.type === "context");
+    const usageBlock = contexts.find((b: any) =>
+      b.elements.some((e: any) => e.text.includes("org-wide")),
+    );
+    expect(usageBlock).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildUsageContext / buildUsageContextShort
+// ---------------------------------------------------------------------------
+
+describe("buildUsageContext", () => {
+  it("shows bar_chart emoji for normal usage", () => {
+    const usage: ActionsUsage = {
+      orgMinutes: 500,
+      sparagmosMinutes: 200,
+      includedMinutes: 2000,
+      month: "April",
+    };
+    const block = buildUsageContext(usage) as any;
+    expect(block.type).toBe("context");
+    expect(block.elements[0].text).toContain(":bar_chart:");
+    expect(block.elements[0].text).toContain("500");
+    expect(block.elements[0].text).toContain("200");
+    expect(block.elements[0].text).toContain("April");
+  });
+
+  it("shows warning emoji when usage exceeds 80%", () => {
+    const usage: ActionsUsage = {
+      orgMinutes: 1700,
+      sparagmosMinutes: 1000,
+      includedMinutes: 2000,
+      month: "March",
+    };
+    const block = buildUsageContext(usage) as any;
+    expect(block.elements[0].text).toContain(":warning:");
+  });
+});
+
+describe("buildUsageContextShort", () => {
+  it("shows compact format with used / included", () => {
+    const usage: ActionsUsage = {
+      orgMinutes: 1844,
+      sparagmosMinutes: 1422,
+      includedMinutes: 2000,
+      month: "April",
+    };
+    const block = buildUsageContextShort(usage) as any;
+    expect(block.type).toBe("context");
+    expect(block.elements[0].text).toContain("1,844");
+    expect(block.elements[0].text).toContain("2,000");
+    expect(block.elements[0].text).toContain("this month");
+  });
+
+  it("shows warning emoji when usage exceeds 80%", () => {
+    const usage: ActionsUsage = {
+      orgMinutes: 1900,
+      sparagmosMinutes: 0,
+      includedMinutes: 2000,
+      month: "April",
+    };
+    const block = buildUsageContextShort(usage) as any;
+    expect(block.elements[0].text).toContain(":warning:");
   });
 });

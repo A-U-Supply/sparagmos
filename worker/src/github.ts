@@ -1,4 +1,4 @@
-import type { Env, WorkflowRun } from "./types";
+import type { ActionsUsage, Env, UsageItem, WorkflowRun } from "./types";
 
 // ---------------------------------------------------------------------------
 // Workflow dispatch
@@ -131,4 +131,65 @@ export async function fetchWorkflowStatus(env: Env): Promise<string> {
   }
 
   return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Billing / usage
+// ---------------------------------------------------------------------------
+
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+/** Free-plan included minutes per month. */
+const INCLUDED_MINUTES = 2000;
+
+/**
+ * Fetch GitHub Actions usage for the current billing month.
+ * Returns aggregated minutes or null on any failure.
+ */
+export async function fetchActionsUsage(env: Env): Promise<ActionsUsage | null> {
+  try {
+    const now = new Date();
+    const year = now.getUTCFullYear();
+    const month = now.getUTCMonth() + 1; // 1-indexed
+
+    const response = await fetch(
+      `https://api.github.com/orgs/A-U-Supply/settings/billing/usage?year=${year}&month=${month}`,
+      {
+        headers: {
+          Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+          Accept: "application/vnd.github+json",
+          "User-Agent": "sparagmos-slash-command/1.0",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      },
+    );
+
+    if (!response.ok) return null;
+
+    const data = (await response.json()) as { usageItems: UsageItem[] };
+    const items = (data.usageItems ?? []).filter(
+      (i) => i.product === "actions" && i.unitType === "Minutes",
+    );
+
+    let orgMinutes = 0;
+    let sparagmosMinutes = 0;
+    for (const item of items) {
+      orgMinutes += item.quantity;
+      if (item.repositoryName === "sparagmos") {
+        sparagmosMinutes += item.quantity;
+      }
+    }
+
+    return {
+      orgMinutes: Math.round(orgMinutes),
+      sparagmosMinutes: Math.round(sparagmosMinutes),
+      includedMinutes: INCLUDED_MINUTES,
+      month: MONTH_NAMES[month - 1],
+    };
+  } catch {
+    return null;
+  }
 }

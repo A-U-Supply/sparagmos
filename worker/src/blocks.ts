@@ -1,4 +1,4 @@
-import type { WorkflowRun } from "./types";
+import type { ActionsUsage, WorkflowRun } from "./types";
 import { formatDuration } from "./github";
 
 // ---------------------------------------------------------------------------
@@ -11,7 +11,7 @@ import { formatDuration } from "./github";
  * Shows a header, per-run sections with status/timing/action buttons,
  * and a footer with summary stats.
  */
-export function buildStatusBlocks(runs: WorkflowRun[]): object[] {
+export function buildStatusBlocks(runs: WorkflowRun[], usage?: ActionsUsage | null): object[] {
   const blocks: object[] = [];
 
   // Header
@@ -114,5 +114,34 @@ export function buildStatusBlocks(runs: WorkflowRun[]): object[] {
     });
   }
 
+  if (usage) {
+    blocks.push({ type: "divider" });
+    blocks.push(buildUsageContext(usage));
+  }
+
   return blocks;
+}
+
+/** Build a context block showing detailed Actions usage (for status modal). */
+export function buildUsageContext(usage: ActionsUsage): object {
+  const emoji = usage.orgMinutes > usage.includedMinutes * 0.8
+    ? ":warning:"
+    : ":bar_chart:";
+  const text = `${emoji} ${usage.month}: ${usage.orgMinutes.toLocaleString()} min org-wide · ${usage.sparagmosMinutes.toLocaleString()} sparagmos · ${usage.includedMinutes.toLocaleString()} included`;
+  return {
+    type: "context",
+    elements: [{ type: "mrkdwn", text }],
+  };
+}
+
+/** Build a short context block showing Actions usage (for post-submission). */
+export function buildUsageContextShort(usage: ActionsUsage): object {
+  const emoji = usage.orgMinutes > usage.includedMinutes * 0.8
+    ? ":warning:"
+    : ":bar_chart:";
+  const text = `${emoji} ${usage.orgMinutes.toLocaleString()} / ${usage.includedMinutes.toLocaleString()} min used this month`;
+  return {
+    type: "context",
+    elements: [{ type: "mrkdwn", text }],
+  };
 }
