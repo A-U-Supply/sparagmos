@@ -216,6 +216,17 @@ describe("buildModalView", () => {
     expect(actionIds).toContain("modal_open_status");
     expect(actionIds).toContain("modal_open_help");
   });
+
+  it("has a hint on the image URLs block about input counts", () => {
+    const view = buildModalView("C123") as any;
+    const urlsBlock = view.blocks.find(
+      (b: any) => b.block_id === "urls_block",
+    );
+    expect(urlsBlock).toBeDefined();
+    expect(urlsBlock.hint).toBeDefined();
+    expect(urlsBlock.hint.text).toContain("Extra URLs");
+    expect(urlsBlock.hint.text).toContain("#image-gen");
+  });
 });
 
 // ---------------------------------------------------------------------------

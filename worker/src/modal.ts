@@ -517,13 +517,17 @@ export function buildModalView(
         block_id: "urls_block",
         optional: true,
         label: { type: "plain_text", text: "Image URLs" },
+        hint: {
+          type: "plain_text",
+          text: "Extra URLs are dropped if they exceed the recipe's input count. Fewer URLs are filled from #image-gen.",
+        },
         element: {
           type: "plain_text_input",
           action_id: "image_urls",
           multiline: true,
           placeholder: {
             type: "plain_text",
-            text: "Paste URLs, one per line (optional)",
+            text: "Paste URLs, one per line or separated by spaces (optional)",
           },
         },
       },
