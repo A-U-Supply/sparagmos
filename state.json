@@ -2494,6 +2494,33 @@
       ],
       "processed_date": "2026-04-05",
       "posted_ts": ""
+    },
+    {
+      "source_file_ids": [
+        "url:93259d96533d",
+        "url:28667725162d",
+        "url:9fc082f14d7b"
+      ],
+      "source_dates": [
+        "2026-04-05",
+        "2026-04-05",
+        "2026-04-05"
+      ],
+      "source_users": [
+        "url",
+        "url",
+        "url"
+      ],
+      "recipe": "sorted-mask",
+      "effects": [
+        "pixel_sort",
+        "mask_composite",
+        "collage",
+        "mask_composite",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-05",
+      "posted_ts": "1775406240.233609"
     }
   ]
 }
