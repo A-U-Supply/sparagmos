@@ -196,19 +196,15 @@ async function handleSlashCommand(body: string, env: Env, ctx: ExecutionContext)
 
   // Specific recipe
   if (isValidRecipe(command)) {
-    // Validate URL count against recipe input count
     const recipe = getRecipe(command)!;
-    if (urls.length > recipe.inputs) {
-      return slackResponse(
-        `:x: Recipe \`${command}\` accepts ${recipe.inputs} input(s), but you provided ${urls.length} URLs.`,
-      );
-    }
 
     const dispatched = await dispatchWorkflow(env, command, urls);
     if (dispatched) {
       const urlNote =
         urls.length > 0
-          ? ` with ${urls.length} provided image(s)`
+          ? urls.length > recipe.inputs
+            ? ` with ${urls.length} image(s) (recipe uses ${recipe.inputs})`
+            : ` with ${urls.length} provided image(s)`
           : "";
       const msg = `:art: Firing up *${command}*${urlNote}... results in #img-junkyard in ~2-5 min.`;
       return new Response(

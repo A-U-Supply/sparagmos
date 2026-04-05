@@ -483,9 +483,9 @@ export async function handleInteraction(
           vals.recipe_block?.recipe_select?.selected_option?.value ?? null;
         const rawUrls: string = vals.urls_block?.image_urls?.value ?? "";
         const urls = rawUrls
-          .split("\n")
+          .split(/[\s,]+/)
           .map((u: string) => u.trim())
-          .filter(Boolean);
+          .filter((u: string) => /^https?:\/\//i.test(u));
         const poster =
           vals.poster_block?.poster_filter?.selected_user ?? null;
         const age =

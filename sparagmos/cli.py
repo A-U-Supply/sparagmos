@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import random
+import re
 import sys
 import tempfile
 from datetime import datetime, timezone
@@ -289,6 +290,20 @@ def main(argv: list[str] | None = None) -> None:
                 )
                 sys.exit(1)
             eligible = list(matching.keys())
+        elif args.image_urls is not None:
+            # Prefer recipes that can use all provided URLs (remaining
+            # slots are filled from Slack).  Fall back to all recipes if
+            # no recipe accepts that many inputs — the CLI will truncate.
+            url_count = len([u for u in re.split(r'[\s,]+', args.image_urls) if u.strip()])
+            matching = {k: v for k, v in recipes.items() if v.inputs >= url_count}
+            if matching:
+                eligible = list(matching.keys())
+            else:
+                logger.warning(
+                    "No recipes accept %d+ input(s); will truncate URLs to fit",
+                    url_count,
+                )
+                eligible = list(recipes.keys())
         else:
             eligible = list(recipes.keys())
         # Apply rating filter before weighted pick
@@ -327,14 +342,14 @@ def main(argv: list[str] | None = None) -> None:
 
         client = WebClient(token=token)
         state = State(repo_root / "state.json")
-        urls = [u.strip() for u in args.image_urls.split(",") if u.strip()]
+        urls = [u.strip() for u in re.split(r'[\s,]+', args.image_urls) if u.strip()]
 
         if len(urls) > recipe.inputs:
-            logger.error(
-                "Recipe '%s' expects %d input(s) but %d URL(s) provided",
-                recipe_slug, recipe.inputs, len(urls),
+            logger.warning(
+                "Recipe '%s' expects %d input(s) but %d URL(s) provided; using first %d",
+                recipe_slug, recipe.inputs, len(urls), recipe.inputs,
             )
-            sys.exit(1)
+            urls = urls[:recipe.inputs]
 
         source_images = []
         source_metadata_list = []
