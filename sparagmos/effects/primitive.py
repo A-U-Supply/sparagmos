@@ -47,6 +47,10 @@ class PrimitiveEffect(SubprocessEffect):
         self.run_command(cmd, context)
         result_image = self.load_temp_image(output_path)
 
+        # primitive may output at a different size — resize to match input
+        if result_image.size != image.size:
+            result_image = result_image.resize(image.size, Image.LANCZOS)
+
         return EffectResult(
             image=result_image,
             metadata={
