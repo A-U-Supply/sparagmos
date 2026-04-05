@@ -2349,6 +2349,46 @@
       ],
       "processed_date": "2026-04-05",
       "posted_ts": ""
+    },
+    {
+      "source_file_ids": [
+        "url:0d47b468c3a2",
+        "url:cecd07e4d1f7",
+        "url:0feea0b1cff8",
+        "F077KGCQUCF",
+        "F0820NJKUGM"
+      ],
+      "source_dates": [
+        "2026-04-05",
+        "2026-04-05",
+        "2026-04-05",
+        "2024-06-13",
+        "2024-11-22"
+      ],
+      "source_users": [
+        "url",
+        "url",
+        "url",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "masked-tapestry",
+      "effects": [
+        "pixel_sort",
+        "crt_vhs",
+        "dither",
+        "pca_decompose",
+        "channel_shift",
+        "collage",
+        "mask_composite",
+        "fragment",
+        "mask_composite",
+        "channel_shift",
+        "sonify",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-05",
+      "posted_ts": "1775352921.831699"
     }
   ]
 }
