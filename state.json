@@ -2511,12 +2511,19 @@
         "url",
         "url"
       ],
-      "recipe": "ancients-stencil",
+      "recipe": "fossil-record",
       "effects": [
-        "ancient_stencil"
+        "pca_decompose",
+        "pca_decompose",
+        "pca_decompose",
+        "blend",
+        "blend",
+        "dither",
+        "channel_shift",
+        "jpeg_destroy"
       ],
       "processed_date": "2026-04-05",
-      "posted_ts": "1775406256.969139"
+      "posted_ts": ""
     }
   ]
 }
