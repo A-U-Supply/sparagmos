@@ -2666,6 +2666,42 @@
       ],
       "processed_date": "2026-04-06",
       "posted_ts": "1775479580.427929"
+    },
+    {
+      "source_file_ids": [
+        "F0403852B36",
+        "F081N4L2GF2",
+        "F073K96SHQS",
+        "F06BH58P7K4"
+      ],
+      "source_dates": [
+        "2022-08-27",
+        "2024-11-15",
+        "2024-05-15",
+        "2023-12-25"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "spectral-mask",
+      "effects": [
+        "spectral",
+        "spectral",
+        "spectral",
+        "spectral",
+        "mask_composite",
+        "mask_composite",
+        "blend",
+        "mask_composite",
+        "dither",
+        "channel_shift",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-07",
+      "posted_ts": "1775566610.425859"
     }
   ]
 }
