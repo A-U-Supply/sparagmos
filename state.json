@@ -2788,6 +2788,29 @@
       ],
       "processed_date": "2026-04-08",
       "posted_ts": "1775681769.419739"
+    },
+    {
+      "source_file_ids": [
+        "F0776A5THK3",
+        "F07CJHA0ZC0",
+        "F08BWKD2ZT2"
+      ],
+      "source_dates": [
+        "2024-06-06",
+        "2024-07-10",
+        "2025-01-31"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "ancients-displacement",
+      "effects": [
+        "ancient_displacement"
+      ],
+      "processed_date": "2026-04-08",
+      "posted_ts": "1775682749.146139"
     }
   ]
 }
