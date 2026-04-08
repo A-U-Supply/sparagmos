@@ -439,6 +439,7 @@ export function buildModalView(
   channelId: string = "",
   ratings: Record<string, RatingData> = {},
   ratingFilters: string[] = [],
+  chainEnabled: boolean = false,
 ): object {
   const RANDOM_OPTION = { text: { type: "plain_text", text: "\ud83c\udfb2 Random" }, value: "random" };
   const filteredCount = countFilteredRecipes(ratings, ratingFilters);
@@ -506,6 +507,56 @@ export function buildModalView(
           option_groups: buildRecipeOptionGroups(ratings, ratingFilters),
         },
       },
+      // ── Chain toggle ──
+      {
+        type: "actions",
+        block_id: "chain_block",
+        elements: [
+          {
+            type: "checkboxes",
+            action_id: "chain_toggle",
+            options: [
+              {
+                text: { type: "mrkdwn", text: "*:link: Chain recipes*" },
+                description: { type: "plain_text", text: "Output of each recipe feeds into the next" },
+                value: "chain_enabled",
+              },
+            ],
+            ...(chainEnabled
+              ? { initial_options: [{ text: { type: "mrkdwn", text: "*:link: Chain recipes*" }, description: { type: "plain_text", text: "Output of each recipe feeds into the next" }, value: "chain_enabled" }] }
+              : {}),
+          },
+        ],
+      },
+      // ── Chain selectors (shown when toggle is checked) ──
+      ...(chainEnabled
+        ? [
+            {
+              type: "input",
+              block_id: "chain_1_block",
+              optional: true,
+              label: { type: "plain_text", text: "Then\u2026" },
+              element: {
+                type: "static_select",
+                action_id: "chain_1_select",
+                placeholder: { type: "plain_text", text: "Search recipes\u2026" },
+                option_groups: buildRecipeOptionGroups(ratings, ratingFilters),
+              },
+            },
+            {
+              type: "input",
+              block_id: "chain_2_block",
+              optional: true,
+              label: { type: "plain_text", text: "Then\u2026" },
+              element: {
+                type: "static_select",
+                action_id: "chain_2_select",
+                placeholder: { type: "plain_text", text: "Search recipes\u2026" },
+                option_groups: buildRecipeOptionGroups(ratings, ratingFilters),
+              },
+            },
+          ]
+        : []),
       // ── Images section ──
       {
         type: "section",

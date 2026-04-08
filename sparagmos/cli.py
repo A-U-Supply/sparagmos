@@ -31,6 +31,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Recipe name to use (default: random)",
     )
     parser.add_argument(
+        "--chain",
+        help="Comma-separated recipe chain (output of each feeds into next)",
+    )
+    parser.add_argument(
         "--input",
         nargs="+",
         help="Local image file(s) to process (skips Slack scraping)",
@@ -97,6 +101,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Filter recipes by rating before selection (comma-separated: top,positive,unrated,underdogs)",
     )
     return parser
+
+
+def _sample_inputs(
+    pool: list[Image.Image], n: int, rng: random.Random
+) -> list[Image.Image]:
+    """Sample *n* images from *pool*, recycling if pool is smaller."""
+    if len(pool) >= n:
+        return rng.sample(pool, n)
+    # Pool smaller than needed — sample with replacement
+    return [rng.choice(pool) for _ in range(n)]
 
 
 def _find_repo_root() -> Path:
@@ -251,6 +265,11 @@ def main(argv: list[str] | None = None) -> None:
     # --- Main pipeline ---
     seed = args.seed if args.seed is not None else random.randint(0, 2**31)
 
+    # Validate mutual exclusion
+    if args.chain and args.recipe:
+        logger.error("--chain and --recipe are mutually exclusive")
+        sys.exit(1)
+
     # Load recipes
     if not recipes_dir.is_dir():
         logger.error("Recipes directory not found: %s", recipes_dir)
@@ -259,6 +278,21 @@ def main(argv: list[str] | None = None) -> None:
     if not recipes:
         logger.error("No recipes found in %s", recipes_dir)
         sys.exit(1)
+
+    # Parse chain if provided — first slug becomes the "recipe" for image loading
+    chain_slugs: list[str] | None = None
+    if args.chain:
+        chain_slugs = [s.strip() for s in re.split(r'[\s,]+', args.chain) if s.strip()]
+        if len(chain_slugs) < 2:
+            logger.error("--chain requires at least 2 recipe slugs")
+            sys.exit(1)
+        for slug in chain_slugs:
+            if slug not in recipes:
+                logger.error("Unknown recipe in chain: %s", slug)
+                sys.exit(1)
+        # Use first recipe in chain for image loading / recipe selection
+        args.recipe = chain_slugs[0]
+        logger.info("Chain: %s", " → ".join(chain_slugs))
 
     # Pick recipe
     if args.recipe:
@@ -509,6 +543,55 @@ def main(argv: list[str] | None = None) -> None:
             vision=vision_data,
             source_metadata=source_metadata,
         )
+
+        # --- Chain continuation (if --chain provided) ---
+        if chain_slugs and len(chain_slugs) > 1:
+            pool: list[Image.Image] = list(result.images) if result.images else [result.image]
+            chain_rng = random.Random(seed)
+
+            for ci in range(1, len(chain_slugs)):
+                chain_rec = recipes[chain_slugs[ci]]
+                chain_seed = seed + ci
+                needed = chain_rec.inputs or 1
+
+                # Re-run previous recipe if pool is too small
+                if len(pool) < needed:
+                    prev_rec = recipes[chain_slugs[ci - 1]]
+                    for rerun in range(5):
+                        if len(pool) >= needed:
+                            break
+                        logger.info(
+                            "Pool has %d images, %s needs %d — re-running %s",
+                            len(pool), chain_slugs[ci], needed, chain_slugs[ci - 1],
+                        )
+                        rerun_imgs = _sample_inputs(pool, prev_rec.inputs or 1, chain_rng)
+                        if prev_rec.inputs == 1:
+                            rkw = {"image": rerun_imgs[0]}
+                        else:
+                            rkw = {"images": dict(zip(IMAGE_NAMES, rerun_imgs))}
+                        rr = run_pipeline(
+                            **rkw, recipe=prev_rec, seed=chain_seed + 100 + rerun,
+                            temp_dir=Path(tmp), source_metadata=source_metadata,
+                        )
+                        pool.extend(rr.images if rr.images else [rr.image])
+
+                step_imgs = _sample_inputs(pool, needed, chain_rng)
+                logger.info("Chain step %d/%d: %s (%d inputs from pool of %d)",
+                            ci + 1, len(chain_slugs), chain_slugs[ci], needed, len(pool))
+
+                if chain_rec.inputs == 1:
+                    ckw = {"image": step_imgs[0]}
+                else:
+                    ckw = {"images": dict(zip(IMAGE_NAMES, step_imgs))}
+
+                result = run_pipeline(
+                    **ckw, recipe=chain_rec, seed=chain_seed,
+                    temp_dir=Path(tmp), source_metadata=source_metadata,
+                )
+                pool = list(result.images) if result.images else [result.image]
+
+            # Update slug for output/state to reflect the full chain
+            recipe_slug = "+".join(chain_slugs)
 
         # Output
         if args.output:

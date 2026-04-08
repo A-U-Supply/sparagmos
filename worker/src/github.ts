@@ -13,8 +13,10 @@ export async function dispatchWorkflow(
   recipe: string,
   images: string[] = [],
   filters?: { poster?: string; age?: string; freshness?: string; rating?: string },
+  chain?: string,
 ): Promise<boolean> {
   const inputs: Record<string, string> = { recipe };
+  if (chain) inputs.chain = chain;
   if (images.length > 0) {
     inputs.images = images.join(",");
   }
