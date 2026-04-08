@@ -2742,6 +2742,29 @@
       ],
       "processed_date": "2026-04-08",
       "posted_ts": "1775652994.927939"
+    },
+    {
+      "source_file_ids": [
+        "url:8f8e7318dade",
+        "url:91a05107117f",
+        "url:bcc79304735c"
+      ],
+      "source_dates": [
+        "2026-04-08",
+        "2026-04-08",
+        "2026-04-08"
+      ],
+      "source_users": [
+        "url",
+        "url",
+        "url"
+      ],
+      "recipe": "ancients-stencil",
+      "effects": [
+        "ancient_stencil"
+      ],
+      "processed_date": "2026-04-08",
+      "posted_ts": "1775680541.758539"
     }
   ]
 }
