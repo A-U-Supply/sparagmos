@@ -1,0 +1,25 @@
+name: Ancients Bullet Hole
+description: >
+  Random circular cut-and-rotate holes punched into two images at high chaos
+  before stencil compositing. Many small holes create a riddled, perforated
+  surface. The third image provides the stencil mask merging the two
+  bullet-riddled surfaces.
+
+inputs: 3
+
+steps:
+  - type: ancient_bullethole
+    image: a
+    params:
+      chaos: [0.5, 0.9]
+
+  - type: ancient_bullethole
+    image: b
+    params:
+      chaos: [0.5, 0.9]
+
+  - type: ancient_stencil
+    images: [c, a, b]
+    into: canvas
+    params:
+      output: random

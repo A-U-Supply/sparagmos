@@ -1,0 +1,25 @@
+name: Ancients Kaleidoscope
+description: >
+  N-fold radial symmetry applied to bullseye ring structure on two images
+  before stencil compositing. Each ring gets kaleidoscope folding, creating
+  mandala patterns. The third image provides the stencil mask merging the
+  two kaleidoscoped surfaces.
+
+inputs: 3
+
+steps:
+  - type: ancient_kaleidoscope
+    image: a
+    params:
+      folds: [4, 10]
+
+  - type: ancient_kaleidoscope
+    image: b
+    params:
+      folds: [4, 10]
+
+  - type: ancient_stencil
+    images: [c, a, b]
+    into: canvas
+    params:
+      output: random

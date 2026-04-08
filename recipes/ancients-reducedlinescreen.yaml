@@ -1,0 +1,17 @@
+name: Ancients Reduced Line Screen
+description: >
+  Adaptive-frequency horizontal line screen stencil. Line frequency
+  shifts — finer in edge/text regions detected by Laplacian, coarser
+  in flat areas. Phase integrates continuously so transitions are seamless.
+  Used as a binary mask to composite two fill images.
+
+inputs: 3
+
+steps:
+  - type: ancient_reducedlinescreen
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: [24, 45]
+      freq_fine: [8, 16]
+      output: all

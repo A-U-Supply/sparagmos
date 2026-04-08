@@ -1,0 +1,21 @@
+name: Ancients Bullseye
+description: >
+  Concentric circle cut-and-rotate applied to two images before stencil
+  compositing. Each image gets its own bullseye pattern — rings extracted,
+  independently rotated, and reassembled — then the third image acts as
+  stencil mask merging the two bullseye-destroyed surfaces.
+
+inputs: 3
+
+steps:
+  - type: ancient_bullseye
+    image: a
+
+  - type: ancient_bullseye
+    image: b
+
+  - type: ancient_stencil
+    images: [c, a, b]
+    into: canvas
+    params:
+      output: random

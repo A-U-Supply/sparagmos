@@ -1,0 +1,15 @@
+name: Ancients Quad
+description: >
+  Three-level stencil compositing. The stencil image is split into three
+  brightness bands by percentile thresholding (black/grey/white), and each
+  zone is filled with a different source image. With 4 inputs this produces
+  24 variations from all stencil/fill permutations.
+
+inputs: 4
+
+steps:
+  - type: ancient_quad
+    images: [a, b, c, d]
+    into: canvas
+    params:
+      output: all

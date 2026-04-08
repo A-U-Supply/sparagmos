@@ -1,0 +1,15 @@
+name: Ancients Silver
+description: >
+  Silver gelatin print treatment before stencil compositing. All three
+  images get silver halation — tonal curve with crushed blacks, highlight
+  bloom, film grain, and cool blue-grey tint — then each takes a turn as
+  Otsu stencil mask while the other two fill as silver-toned layers.
+
+inputs: 3
+
+steps:
+  - type: ancient_silver
+    images: [a, b, c]
+    into: canvas
+    params:
+      output: all

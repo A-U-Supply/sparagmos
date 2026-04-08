@@ -1,0 +1,25 @@
+name: Ancients Lathe
+description: >
+  Dozens of thin concentric ring bands, each independently rotated, applied
+  to two images before stencil compositing. Creates a sliced-wood or
+  agate-like surface with many narrow displaced rings. The third image
+  provides the stencil mask merging the two lathe-turned surfaces.
+
+inputs: 3
+
+steps:
+  - type: ancient_lathe
+    image: a
+    params:
+      rings: [25, 60]
+
+  - type: ancient_lathe
+    image: b
+    params:
+      rings: [25, 60]
+
+  - type: ancient_stencil
+    images: [c, a, b]
+    into: canvas
+    params:
+      output: random

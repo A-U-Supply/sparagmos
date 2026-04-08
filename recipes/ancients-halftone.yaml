@@ -1,0 +1,17 @@
+name: Ancients Halftone
+description: >
+  AM halftone dot screen stencil. Each image's tonal map is converted to
+  a cosine dot grid — bright areas produce dense white dots, dark areas
+  dense black dots — then used as a binary mask to composite the other
+  two images. Six variations from all permutations.
+
+inputs: 3
+
+steps:
+  - type: ancient_halftone
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: [8, 20]
+      angle: [30, 60]
+      output: all

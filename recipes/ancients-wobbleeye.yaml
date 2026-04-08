@@ -1,0 +1,25 @@
+name: Ancients Wobble Eye
+description: >
+  Off-axis concentric ring cut-and-rotate applied to two images before
+  stencil compositing. Each ring drifts from the previous center, creating
+  a misregistered, wobbling target pattern. The third image provides the
+  stencil mask merging the two wobbled surfaces.
+
+inputs: 3
+
+steps:
+  - type: ancient_wobbleeye
+    image: a
+    params:
+      rings: [4, 8]
+
+  - type: ancient_wobbleeye
+    image: b
+    params:
+      rings: [4, 8]
+
+  - type: ancient_stencil
+    images: [c, a, b]
+    into: canvas
+    params:
+      output: random

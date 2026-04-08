@@ -1,0 +1,17 @@
+name: Ancients Halation Edge
+description: >
+  Stencil compositing with organic grain at edge boundaries. The hard
+  binary mask edge is replaced with halftone noise in the transition zone,
+  creating a grainy photographic boundary where the two fill images meet.
+  Double edge bands (bright and dark) are baked into the mask before
+  compositing.
+
+inputs: 3
+
+steps:
+  - type: ancient_halationedge
+    images: [a, b, c]
+    into: canvas
+    params:
+      width: [6, 18]
+      output: all
