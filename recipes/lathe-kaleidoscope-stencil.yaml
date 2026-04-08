@@ -1,0 +1,30 @@
+name: Lathe Kaleidoscope Stencil
+description: >
+  Double geometric destruction: one image lathe-turned into agate rings,
+  another kaleidoscoped into mandala symmetry, a third wobble-eyed into
+  drifting targets. All three then Otsu-stencil composited — three
+  radically different circular destructions merged through binary masking.
+
+inputs: 3
+
+steps:
+  - type: ancient_lathe
+    image: a
+    params:
+      rings: [30, 60]
+
+  - type: ancient_kaleidoscope
+    image: b
+    params:
+      folds: [5, 10]
+
+  - type: ancient_wobbleeye
+    image: c
+    params:
+      rings: [4, 8]
+
+  - type: ancient_stencil
+    images: [a, b, c]
+    into: canvas
+    params:
+      output: random

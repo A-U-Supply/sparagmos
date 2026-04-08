@@ -1,0 +1,25 @@
+name: Halftone Curvy Screen
+description: >
+  Two-pass screen compositing: first, halftone dot screen composites two
+  images. Then the dot-screened result and a third image are composited
+  through curvy edge-following line screen. Newspaper dots meet engraved
+  contour lines — two printing technologies colliding.
+
+inputs: 3
+
+steps:
+  - type: ancient_halftone
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: [10, 18]
+      angle: [30, 60]
+      output: random
+
+  - type: ancient_curvylinescreen
+    images: [c, canvas, a]
+    into: canvas
+    params:
+      frequency: [22, 40]
+      angle: [30, 60]
+      output: random

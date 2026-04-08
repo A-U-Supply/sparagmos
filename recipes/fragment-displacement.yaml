@@ -1,0 +1,45 @@
+name: Fragment Displacement
+description: >
+  Five images: three Voronoi-fragmented into a shattered mosaic, then
+  displacement-stenciled against the remaining two. The displacement
+  field tears through the Voronoi seams, pulling fragmented cells
+  across the stencil boundary.
+
+inputs: 5
+
+steps:
+  - type: pixel_sort
+    image: a
+    params:
+      mode: brightness
+      threshold: [50, 100]
+      direction: vertical
+
+  - type: channel_shift
+    image: b
+    params:
+      shift_r: [30, 60]
+      shift_g: [-40, 40]
+      shift_b: [-60, -20]
+
+  - type: fragment
+    images: [a, b, c]
+    into: canvas
+    params:
+      mode: voronoi
+      num_cells: [40, 80]
+
+  - type: ancient_displacement
+    images: [d, canvas, e]
+    into: canvas
+    params:
+      strength: [180, 350]
+      blur: [2.5, 5.0]
+      fill_falloff: [400, 800]
+      output: random
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 16]

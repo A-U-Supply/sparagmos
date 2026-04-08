@@ -1,0 +1,42 @@
+name: Wobble Curvy Screen Dither
+description: >
+  Four images: two wobble-eyed into drifting off-axis rings, then
+  curvy-line-screened against a third. The fourth image provides an
+  edge mask over the result. Dithering reduces the surface to a
+  restricted palette — wobbling targets dissolving into engraved contours.
+
+inputs: 4
+
+steps:
+  - type: ancient_wobbleeye
+    image: a
+    params:
+      rings: [5, 9]
+
+  - type: ancient_wobbleeye
+    image: b
+    params:
+      rings: [4, 7]
+
+  - type: ancient_curvylinescreen
+    images: [c, a, b]
+    into: canvas
+    params:
+      frequency: [20, 38]
+      angle: [30, 60]
+      output: random
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 145]
+      feather: [5, 12]
+      invert: false
+
+  - type: dither
+    image: canvas
+    params:
+      method: bayer
+      palette: ega

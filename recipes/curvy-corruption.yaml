@@ -1,0 +1,34 @@
+name: Curvy Corruption
+description: >
+  Three images composited through edge-following curvy line screens, then
+  the result is byte-corrupted and CRT/VHS filtered. The curving engraved
+  lines dissolve into scan line artifacts and analog static.
+
+inputs: 3
+
+steps:
+  - type: ancient_curvylinescreen
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: [18, 35]
+      angle: [30, 60]
+      output: random
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [60, 140]
+      mode: flip
+
+  - type: crt_vhs
+    image: canvas
+    params:
+      mode: vhs
+      intensity: [0.5, 0.8]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [10, 20]

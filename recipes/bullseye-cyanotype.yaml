@@ -1,0 +1,27 @@
+name: Bullseye Cyanotype
+description: >
+  Two images bullseyed — concentric rings cut and independently rotated —
+  then all three composited through cyanotype stencil. The ring patterns
+  get prussian blue treatment, creating a blueprint of concentric
+  displaced targets.
+
+inputs: 3
+
+steps:
+  - type: ancient_bullseye
+    image: a
+
+  - type: ancient_bullseye
+    image: b
+
+  - type: ancient_cyanotype
+    images: [c, a, b]
+    into: canvas
+    params:
+      output: random
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [3, 6]
+      iterations: [6, 12]

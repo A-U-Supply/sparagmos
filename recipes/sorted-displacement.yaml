@@ -1,0 +1,39 @@
+name: Sorted Displacement
+description: >
+  Two images pixel-sorted to extreme thresholds — their surfaces sheared
+  into vertical streaks — then displacement-stenciled against a third.
+  The displacement field tears through the sorted streaks, pulling sorted
+  bands across the stencil boundary.
+
+inputs: 3
+
+steps:
+  - type: pixel_sort
+    image: a
+    params:
+      mode: brightness
+      threshold: [40, 80]
+      direction: vertical
+
+  - type: pixel_sort
+    image: b
+    params:
+      mode: hue
+      threshold: [50, 100]
+      direction: horizontal
+
+  - type: ancient_displacement
+    images: [c, a, b]
+    into: canvas
+    params:
+      strength: [150, 350]
+      blur: [2.0, 5.0]
+      fill_falloff: [400, 900]
+      output: random
+
+  - type: channel_shift
+    image: canvas
+    params:
+      shift_r: [20, 60]
+      shift_g: [-40, 40]
+      shift_b: [-60, -20]

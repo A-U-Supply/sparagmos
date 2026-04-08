@@ -1,0 +1,37 @@
+name: Six Shooter Halation Corrupt
+description: >
+  Four images: two six-shootered into scattered circular displacements,
+  halation-edge composited through the third. The organic grain boundary
+  dissolves between the scattered targets. Byte corruption finishes the
+  surface — the fourth image masks into the corrupted result.
+
+inputs: 4
+
+steps:
+  - type: ancient_sixshooter
+    image: a
+
+  - type: ancient_sixshooter
+    image: b
+
+  - type: ancient_halationedge
+    images: [c, a, b]
+    into: canvas
+    params:
+      width: [8, 18]
+      output: random
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [60, 140]
+      mode: flip
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [95, 150]
+      feather: [6, 14]
+      invert: false

@@ -1,0 +1,35 @@
+name: VHS Halation
+description: >
+  Three images CRT/VHS filtered — scan lines, color bleed, tracking
+  errors — then composited through halation edge stencil. The organic
+  grain boundary between fills amplifies the analog decay, creating
+  a damaged tape playback effect.
+
+inputs: 3
+
+steps:
+  - type: crt_vhs
+    image: a
+    params:
+      mode: vhs
+      intensity: [0.5, 0.8]
+
+  - type: crt_vhs
+    image: b
+    params:
+      mode: crt
+      intensity: [0.4, 0.7]
+
+  - type: ancient_halationedge
+    images: [c, a, b]
+    into: canvas
+    params:
+      width: [8, 20]
+      output: random
+
+  - type: channel_shift
+    image: canvas
+    params:
+      shift_r: [15, 45]
+      shift_g: [-30, 30]
+      shift_b: [-45, -15]

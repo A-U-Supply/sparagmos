@@ -1,0 +1,43 @@
+name: Bullseye Halftone Fragment
+description: >
+  Five images: two bullseyed into concentric ring targets, halftone-
+  stenciled through a third. The dot-screened bullseye surface is then
+  Voronoi-fragmented with the remaining two images — the shattered cells
+  carry pieces of dot-pattern target through the mosaic.
+
+inputs: 5
+
+steps:
+  - type: ancient_bullseye
+    image: a
+
+  - type: ancient_bullseye
+    image: b
+
+  - type: ancient_halftone
+    images: [c, a, b]
+    into: canvas
+    params:
+      frequency: [8, 16]
+      angle: [30, 60]
+      output: random
+
+  - type: fragment
+    images: [canvas, d, e]
+    into: canvas
+    params:
+      mode: voronoi
+      num_cells: [40, 80]
+
+  - type: channel_shift
+    image: canvas
+    params:
+      shift_r: [20, 50]
+      shift_g: [-35, 35]
+      shift_b: [-50, -15]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 16]

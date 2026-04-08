@@ -1,0 +1,25 @@
+name: Bullet Hole Silver
+description: >
+  Two images riddled with circular punch holes at high chaos — perforated
+  surfaces — then composited through silver gelatin stencil. The silver
+  halation and film grain fill the bullet holes with luminous metallic
+  sheen, like a shot-up darkroom print.
+
+inputs: 3
+
+steps:
+  - type: ancient_bullethole
+    image: a
+    params:
+      chaos: [0.6, 0.9]
+
+  - type: ancient_bullethole
+    image: b
+    params:
+      chaos: [0.5, 0.8]
+
+  - type: ancient_silver
+    images: [c, a, b]
+    into: canvas
+    params:
+      output: random

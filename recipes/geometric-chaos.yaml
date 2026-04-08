@@ -1,0 +1,53 @@
+name: Geometric Chaos
+description: >
+  Five images each hit with a different geometric destruction — bullseye,
+  wobbleeye, sixshooter, kaleidoscope, lathe — then all five mosaiced
+  into a grid composite and edge-masked. Every circular destruction
+  technique colliding in a single surface.
+
+inputs: 5
+
+steps:
+  - type: ancient_bullseye
+    image: a
+
+  - type: ancient_wobbleeye
+    image: b
+    params:
+      rings: [5, 9]
+
+  - type: ancient_sixshooter
+    image: c
+
+  - type: ancient_kaleidoscope
+    image: d
+    params:
+      folds: [5, 10]
+
+  - type: ancient_lathe
+    image: e
+    params:
+      rings: [25, 50]
+
+  - type: collage
+    images: [a, b, c, d, e]
+    into: canvas
+    params:
+      layout: grid
+      rotation: [0, 12]
+      scale_variance: [0.0, 0.2]
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 145]
+      feather: [5, 12]
+      invert: false
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 16]

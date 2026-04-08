@@ -1,0 +1,34 @@
+name: Cyanotype Corruption
+description: >
+  Three images composited through cyanotype stencil — prussian blue
+  toning with highlight bloom — then the composite is byte-corrupted
+  and channel-shifted. The corruption tears through the blue surface,
+  exposing raw data beneath the cyanotype emulsion.
+
+inputs: 3
+
+steps:
+  - type: ancient_cyanotype
+    images: [a, b, c]
+    into: canvas
+    params:
+      output: random
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [80, 160]
+      mode: flip
+
+  - type: channel_shift
+    image: canvas
+    params:
+      shift_r: [30, 80]
+      shift_g: [-50, 50]
+      shift_b: [-80, -30]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 4]
+      iterations: [12, 24]

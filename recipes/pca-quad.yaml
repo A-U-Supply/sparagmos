@@ -1,0 +1,46 @@
+name: PCA Quad
+description: >
+  Four images PCA-decomposed to varying depths — stripped to structural
+  ghosts — then composited through three-level stencil. The brightness
+  bands fill with different levels of abstraction, the most decomposed
+  surfaces becoming barely-there structural whispers.
+
+inputs: 4
+
+steps:
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [3, 5]
+      mode: top
+
+  - type: pca_decompose
+    image: b
+    params:
+      n_components: [5, 8]
+      mode: top
+
+  - type: pca_decompose
+    image: c
+    params:
+      n_components: [4, 7]
+      mode: top
+
+  - type: ancient_quad
+    images: [d, a, b, c]
+    into: canvas
+    params:
+      output: random
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [60, 120]
+      direction: vertical
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [50, 120]
+      mode: flip

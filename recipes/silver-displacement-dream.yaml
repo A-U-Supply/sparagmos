@@ -1,0 +1,37 @@
+name: Silver Displacement Dream
+description: >
+  Four images: one deepdreamed heavily, silver-stenciled with two others.
+  The silver-toned hallucinated surface is then displacement-warped
+  against the fourth. Metallic neural hallucinations torn at the seams.
+
+inputs: 4
+
+steps:
+  - type: deepdream
+    image: a
+    params:
+      iterations: [12, 18]
+      octave_scale: [1.3, 1.5]
+      jitter: [30, 42]
+      learning_rate: [0.012, 0.022]
+
+  - type: ancient_silver
+    images: [b, a, c]
+    into: canvas
+    params:
+      output: random
+
+  - type: ancient_displacement
+    images: [d, canvas, a]
+    into: canvas
+    params:
+      strength: [150, 280]
+      blur: [2.0, 4.5]
+      fill_falloff: [350, 700]
+      output: random
+
+  - type: dither
+    image: canvas
+    params:
+      method: atkinson
+      palette: thermal

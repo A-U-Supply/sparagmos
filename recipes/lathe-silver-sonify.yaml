@@ -1,0 +1,40 @@
+name: Lathe Silver Sonify
+description: >
+  Four images: two lathe-turned into agate ring surfaces, silver-stenciled
+  through a third. The silver-toned lathe composite is sonified — converted
+  to audio and back — adding acoustic texture across the metallic rings.
+  The fourth image's edges cut through the sonified surface.
+
+inputs: 4
+
+steps:
+  - type: ancient_lathe
+    image: a
+    params:
+      rings: [30, 55]
+
+  - type: ancient_lathe
+    image: b
+    params:
+      rings: [25, 50]
+
+  - type: ancient_silver
+    images: [c, a, b]
+    into: canvas
+    params:
+      output: random
+
+  - type: sonify
+    image: canvas
+    params:
+      effect: distortion
+      intensity: [0.3, 0.6]
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 140]
+      feather: [5, 12]
+      invert: false

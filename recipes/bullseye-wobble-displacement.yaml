@@ -1,0 +1,26 @@
+name: Bullseye Wobble Displacement
+description: >
+  Double concentric destruction: one image bullseyed into clean rings,
+  another wobble-eyed into drifting off-axis rings. The third image's
+  gradient field displacement-warps the boundary between them — stable
+  target meeting unstable target, torn apart at the seam.
+
+inputs: 3
+
+steps:
+  - type: ancient_bullseye
+    image: a
+
+  - type: ancient_wobbleeye
+    image: b
+    params:
+      rings: [5, 9]
+
+  - type: ancient_displacement
+    images: [c, a, b]
+    into: canvas
+    params:
+      strength: [150, 300]
+      blur: [2.0, 5.0]
+      fill_falloff: [400, 800]
+      output: random

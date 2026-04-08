@@ -1,0 +1,30 @@
+name: Six Shooter Line Screen
+description: >
+  Two images six-shootered — six circular regions cut, shuffled, and
+  rotated — then composited through parallel line screen stencil. The
+  scattered circular displacements show through engraved lines, creating
+  a misprinted target practice sheet.
+
+inputs: 3
+
+steps:
+  - type: ancient_sixshooter
+    image: a
+
+  - type: ancient_sixshooter
+    image: b
+
+  - type: ancient_linescreen
+    images: [c, a, b]
+    into: canvas
+    params:
+      frequency: [20, 40]
+      angle: [0, 45]
+      output: random
+
+  - type: channel_shift
+    image: canvas
+    params:
+      shift_r: [20, 50]
+      shift_g: [-35, 35]
+      shift_b: [-50, -15]

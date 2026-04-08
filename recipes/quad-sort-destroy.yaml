@@ -1,0 +1,41 @@
+name: Quad Sort Destroy
+description: >
+  Four images three-level stenciled — brightness bands filling with
+  different sources — then the composite is pixel-sorted and byte-corrupted.
+  The three-zone composite shears into sorted bands and data-glitched
+  artifacts.
+
+inputs: 4
+
+steps:
+  - type: ancient_quad
+    images: [a, b, c, d]
+    into: canvas
+    params:
+      output: random
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [40, 90]
+      direction: vertical
+
+  - type: byte_corrupt
+    image: canvas
+    params:
+      num_flips: [80, 180]
+      mode: flip
+
+  - type: channel_shift
+    image: canvas
+    params:
+      shift_r: [25, 60]
+      shift_g: [-45, 45]
+      shift_b: [-60, -20]
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [1, 4]
+      iterations: [12, 24]

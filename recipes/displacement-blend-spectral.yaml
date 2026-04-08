@@ -1,0 +1,42 @@
+name: Displacement Blend Spectral
+description: >
+  Four images: displacement-stenciled, then screen-blended with a fourth.
+  The blended surface is spectral-filtered to strip frequencies. Warped
+  stencil boundaries dissolve into frequency-space ghosts.
+
+inputs: 4
+
+steps:
+  - type: spectral
+    image: a
+    params:
+      operation: bandpass
+      amount: [0.3, 0.6]
+
+  - type: ancient_displacement
+    images: [b, a, c]
+    into: canvas
+    params:
+      strength: [150, 300]
+      blur: [2.0, 5.0]
+      fill_falloff: [400, 800]
+      output: random
+
+  - type: blend
+    images: [canvas, d]
+    into: canvas
+    params:
+      mode: screen
+      strength: [0.4, 0.7]
+
+  - type: spectral
+    image: canvas
+    params:
+      operation: bandpass
+      amount: [0.25, 0.55]
+
+  - type: dither
+    image: canvas
+    params:
+      method: atkinson
+      palette: thermal

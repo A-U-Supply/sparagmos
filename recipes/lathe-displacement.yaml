@@ -1,0 +1,28 @@
+name: Lathe Displacement
+description: >
+  Two images lathe-turned — dozens of thin concentric rings each
+  independently rotated into agate-like surfaces — then displacement-
+  stenciled against a third. The displacement field tears through the
+  ring bands, pulling lathe grooves across the boundary.
+
+inputs: 3
+
+steps:
+  - type: ancient_lathe
+    image: a
+    params:
+      rings: [30, 60]
+
+  - type: ancient_lathe
+    image: b
+    params:
+      rings: [20, 50]
+
+  - type: ancient_displacement
+    images: [c, a, b]
+    into: canvas
+    params:
+      strength: [150, 300]
+      blur: [2.0, 4.0]
+      fill_falloff: [400, 800]
+      output: random

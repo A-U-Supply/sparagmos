@@ -1,0 +1,43 @@
+name: Kaleidoscope Dream Displacement
+description: >
+  Four images: two kaleidoscoped into mandala symmetry, one deepdreamed
+  until colonized by neural hallucinations. The fourth image's gradient
+  displacement-warps the dreamed surface against a kaleidoscoped one.
+  Mandala geometry torn by neural fever.
+
+inputs: 4
+
+steps:
+  - type: ancient_kaleidoscope
+    image: a
+    params:
+      folds: [5, 10]
+
+  - type: ancient_kaleidoscope
+    image: b
+    params:
+      folds: [4, 8]
+
+  - type: deepdream
+    image: c
+    params:
+      iterations: [10, 16]
+      octave_scale: [1.3, 1.5]
+      jitter: [28, 40]
+      learning_rate: [0.010, 0.020]
+
+  - type: ancient_displacement
+    images: [d, a, c]
+    into: canvas
+    params:
+      strength: [180, 350]
+      blur: [2.5, 5.0]
+      fill_falloff: [400, 800]
+      output: random
+
+  - type: blend
+    images: [canvas, b]
+    into: canvas
+    params:
+      mode: screen
+      strength: [0.3, 0.6]

@@ -1,0 +1,37 @@
+name: Shifted Line Screen
+description: >
+  Three images channel-shifted until their color registers separate,
+  then composited through parallel line screen stencils. The misregistered
+  colors show through engraving-like lines, creating a misprinted
+  newspaper effect.
+
+inputs: 3
+
+steps:
+  - type: channel_shift
+    image: a
+    params:
+      shift_r: [40, 80]
+      shift_g: [-60, -20]
+      shift_b: [20, 60]
+
+  - type: channel_shift
+    image: b
+    params:
+      shift_r: [-50, -20]
+      shift_g: [30, 70]
+      shift_b: [-40, 40]
+
+  - type: ancient_linescreen
+    images: [c, a, b]
+    into: canvas
+    params:
+      frequency: [18, 35]
+      angle: [0, 45]
+      output: random
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [3, 6]
+      iterations: [6, 14]

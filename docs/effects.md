@@ -202,3 +202,111 @@ These effects take **multiple named images** as input. In multi-input recipes, e
 | Param | Description |
 |-------|-------------|
 | `output` | `all` (default, 6 variations) or `random` (pick 1) |
+
+### Stencil Mask Variants (3 inputs)
+
+All vendored from [A-U-Supply/collage-bot](https://github.com/A-U-Supply/collage-bot). Same permutation pattern as `ancient_stencil` but with different mask generation.
+
+**ancient_halftone** — AM halftone dot screen as stencil mask. Cosine dot grid where dot size varies with tone.
+
+| Param | Description |
+|-------|-------------|
+| `frequency` | Dot spacing in pixels (4–60, default 14) |
+| `angle` | Screen rotation in degrees (default 45) |
+| `output` | `all` or `random` |
+
+**ancient_linescreen** — Fixed-angle parallel line screen stencil. Line width varies with tone — thick in shadows, thin in highlights.
+
+| Param | Description |
+|-------|-------------|
+| `frequency` | Line spacing in pixels (8–80, default 30) |
+| `angle` | Line angle in degrees (default 0) |
+| `output` | `all` or `random` |
+
+**ancient_curvylinescreen** — Edge-following line screen. Lines curve along image contours using gradient direction field with double-angle smoothing. Falls back to default angle in flat regions.
+
+| Param | Description |
+|-------|-------------|
+| `frequency` | Line spacing in pixels (8–80, default 30) |
+| `angle` | Fallback angle in degrees (default 45) |
+| `output` | `all` or `random` |
+
+**ancient_reducedlinescreen** — Adaptive-frequency horizontal line screen. Finer lines in edge/text regions (Laplacian-detected), coarser in flat areas. Phase integrates continuously.
+
+| Param | Description |
+|-------|-------------|
+| `frequency` | Coarse line spacing in pixels (8–80, default 30) |
+| `freq_fine` | Fine line spacing for detail regions (4–freq-1, default 12) |
+| `output` | `all` or `random` |
+
+### Tonal Treatment + Stencil (3 inputs)
+
+**ancient_cyanotype** — Prussian blue cyanotype treatment on fills before Otsu stencil compositing. Tonal curve + highlight bloom + blue LUT + paper grain.
+
+| Param | Description |
+|-------|-------------|
+| `output` | `all` or `random` |
+
+**ancient_silver** — Silver gelatin print treatment on fills before Otsu stencil compositing. Tonal curve + halation + film grain + cool blue-grey tint.
+
+| Param | Description |
+|-------|-------------|
+| `output` | `all` or `random` |
+
+### Edge / Displacement Stencil (3 inputs)
+
+**ancient_halationedge** — Stencil with organic grain at edge boundaries. The hard binary edge is replaced with halftone noise in the transition zone. Double edge bands (bright/dark) baked into mask before compositing.
+
+| Param | Description |
+|-------|-------------|
+| `width` | Edge zone width in pixels (2–40, default 10) |
+| `output` | `all` or `random` |
+
+**ancient_displacement** — Gradient-based displacement warps both the stencil boundary and fill images. The stencil boundary tears and fills stretch near the seam, fading over a configurable falloff distance.
+
+| Param | Description |
+|-------|-------------|
+| `strength` | Max displacement in pixels (20–600, default 200) |
+| `blur` | Gradient smoothing sigma (0.5–20, default 3) |
+| `fill_falloff` | Gaussian falloff distance in pixels (50–2000, default 600) |
+| `output` | `all` or `random` |
+
+### 3-Level Stencil (4 inputs)
+
+**ancient_quad** — Splits stencil image into three brightness bands by percentile thresholding (black/grey/white) and fills each zone with a different source image.
+
+| Param | Description |
+|-------|-------------|
+| `output` | `all` or `random` |
+
+### Single-Image Geometric Transforms
+
+All vendored from [A-U-Supply/collage-bot](https://github.com/A-U-Supply/collage-bot). These are single-image effects typically used as preprocessing before stencil compositing.
+
+**ancient_bullseye** — Cuts three concentric rings, rotates each independently 30–330°, pastes back. Creates a bullseye target pattern.
+
+**ancient_wobbleeye** — Like bullseye but each ring drifts from the previous center in a random direction.
+
+| Param | Description |
+|-------|-------------|
+| `rings` | Number of rings (3–15, default 5) |
+
+**ancient_sixshooter** — Six circular cut-and-rotate operations. Layout adapts to aspect ratio: grid for landscape/portrait, hexagonal for near-square. Crops shuffled between positions.
+
+**ancient_bullethole** — Random circular cut-and-rotate holes. Count and size controlled by chaos parameter.
+
+| Param | Description |
+|-------|-------------|
+| `chaos` | 0.0 = few large holes, 1.0 = many small holes (default 0.5) |
+
+**ancient_kaleidoscope** — N-fold radial symmetry applied to concentric bullseye rings. Creates mandala/kaleidoscope patterns.
+
+| Param | Description |
+|-------|-------------|
+| `folds` | Symmetry fold count (3–16, default 6) |
+
+**ancient_lathe** — Many thin concentric ring bands, each independently rotated. Creates sliced-wood/agate/lathe-turned appearance.
+
+| Param | Description |
+|-------|-------------|
+| `rings` | Number of ring bands (10–120, default 40) |
