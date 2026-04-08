@@ -1,0 +1,33 @@
+name: Spectral Silver
+description: >
+  Three images bandpass-filtered in frequency space — stripped to their
+  mid-range structure, ghostly spectral remnants — then composited through
+  silver gelatin stencil. The silver halation and film grain soften the
+  spectral ghosts into luminous, glowing print surfaces.
+
+inputs: 3
+
+steps:
+  - type: spectral
+    image: a
+    params:
+      operation: bandpass
+      amount: [0.3, 0.6]
+
+  - type: spectral
+    image: b
+    params:
+      operation: bandpass
+      amount: [0.4, 0.7]
+
+  - type: ancient_silver
+    images: [a, b, c]
+    into: canvas
+    params:
+      output: random
+
+  - type: dither
+    image: canvas
+    params:
+      method: atkinson
+      palette: thermal

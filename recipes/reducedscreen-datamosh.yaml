@@ -1,0 +1,30 @@
+name: Reduced Screen Datamosh
+description: >
+  Three images composited through adaptive-frequency line screens —
+  finer lines in detail regions, coarser in flat areas — then datamoshed.
+  The adaptive line structure melts into interframe compression artifacts,
+  lines bleeding across motion boundaries.
+
+inputs: 3
+
+steps:
+  - type: ancient_reducedlinescreen
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: [24, 40]
+      freq_fine: [8, 14]
+      output: random
+
+  - type: datamosh
+    image: canvas
+    params:
+      mode: iframe_remove
+      intensity: [0.4, 0.7]
+
+  - type: channel_shift
+    image: canvas
+    params:
+      shift_r: [15, 45]
+      shift_g: [-30, 30]
+      shift_b: [-45, -10]

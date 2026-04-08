@@ -1,0 +1,27 @@
+name: Kaleidoscope Halftone
+description: >
+  Two images kaleidoscoped into mandala patterns — radial symmetry folding
+  their surfaces into repeating wedges — then a third image's halftone dot
+  screen masks between the two mandala surfaces. Geometric symmetry meets
+  printing-press dot structure.
+
+inputs: 3
+
+steps:
+  - type: ancient_kaleidoscope
+    image: a
+    params:
+      folds: [5, 10]
+
+  - type: ancient_kaleidoscope
+    image: b
+    params:
+      folds: [4, 8]
+
+  - type: ancient_halftone
+    images: [c, a, b]
+    into: canvas
+    params:
+      frequency: [8, 18]
+      angle: [30, 60]
+      output: random

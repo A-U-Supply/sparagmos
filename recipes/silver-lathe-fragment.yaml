@@ -1,0 +1,39 @@
+name: Silver Lathe Fragment
+description: >
+  Five images: two lathe-turned into agate rings, three Voronoi-fragmented
+  into shattered cells. Silver stencil composites the lathe surfaces, then
+  the silver result is masked against the fragmented mosaic. Metallic print
+  grain meets shattered geometry.
+
+inputs: 5
+
+steps:
+  - type: ancient_lathe
+    image: a
+    params:
+      rings: [25, 50]
+
+  - type: ancient_lathe
+    image: b
+    params:
+      rings: [30, 60]
+
+  - type: ancient_silver
+    images: [c, a, b]
+    into: canvas
+    params:
+      output: random
+
+  - type: fragment
+    images: [d, e, canvas]
+    into: canvas
+    params:
+      mode: voronoi
+      num_cells: [40, 80]
+
+  - type: pixel_sort
+    image: canvas
+    params:
+      mode: brightness
+      threshold: [50, 100]
+      direction: vertical

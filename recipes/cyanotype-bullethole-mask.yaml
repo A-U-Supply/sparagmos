@@ -1,0 +1,40 @@
+name: Cyanotype Bullet Hole Mask
+description: >
+  Four images: two riddled with bullet holes, then cyanotype-stenciled.
+  The result is edge-masked against a fourth image — the bullet-punched
+  cyanotype surface cut by the fourth image's structural edges. Blue
+  perforated destruction meeting edge-carved geometry.
+
+inputs: 4
+
+steps:
+  - type: ancient_bullethole
+    image: a
+    params:
+      chaos: [0.6, 0.9]
+
+  - type: ancient_bullethole
+    image: b
+    params:
+      chaos: [0.5, 0.8]
+
+  - type: ancient_cyanotype
+    images: [c, a, b]
+    into: canvas
+    params:
+      output: random
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: edges
+      threshold: [90, 145]
+      feather: [5, 12]
+      invert: false
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [10, 20]

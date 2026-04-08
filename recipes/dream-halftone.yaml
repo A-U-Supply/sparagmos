@@ -1,0 +1,39 @@
+name: Dream Halftone
+description: >
+  Three images deepdreamed until dense with neural hallucinations, then
+  composited through AM halftone dot screens. The hallucinated surfaces
+  show through dot patterns — neural eyes and fractal architecture visible
+  only where the halftone dots allow, creating a printed fever dream.
+
+inputs: 3
+
+steps:
+  - type: deepdream
+    image: a
+    params:
+      iterations: [10, 16]
+      octave_scale: [1.3, 1.5]
+      jitter: [28, 40]
+      learning_rate: [0.010, 0.020]
+
+  - type: deepdream
+    image: b
+    params:
+      iterations: [8, 14]
+      octave_scale: [1.2, 1.4]
+      jitter: [24, 36]
+      learning_rate: [0.008, 0.018]
+
+  - type: ancient_halftone
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: [8, 16]
+      angle: [30, 60]
+      output: random
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 18]

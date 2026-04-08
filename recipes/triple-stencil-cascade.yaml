@@ -1,0 +1,39 @@
+name: Triple Stencil Cascade
+description: >
+  Five images in three stencil passes: first, Otsu stencil composites A
+  and B through C. Then halftone stencil composites the result and D
+  through C's dot screen. Finally, displacement stencil tears the double-
+  composited surface against E. Three stencil methods cascading — binary,
+  dot screen, displacement — each cutting deeper.
+
+inputs: 5
+
+steps:
+  - type: ancient_stencil
+    images: [a, b, c]
+    into: canvas
+    params:
+      output: random
+
+  - type: ancient_halftone
+    images: [c, canvas, d]
+    into: canvas
+    params:
+      frequency: [10, 18]
+      angle: [30, 60]
+      output: random
+
+  - type: ancient_displacement
+    images: [e, canvas, a]
+    into: canvas
+    params:
+      strength: [120, 280]
+      blur: [2.0, 4.0]
+      fill_falloff: [350, 700]
+      output: random
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 16]

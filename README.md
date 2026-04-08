@@ -59,6 +59,23 @@ Every day, sparagmos picks one or more random images from the #image-gen Slack c
 | `blend` | — | Pixel-level blending of two images: opacity, multiply, screen, overlay, difference | None |
 | `mask_composite` | — | Mask-based selection between two images driven by luminance, edges, or noise | None |
 | `fragment` | — | Cut images into pieces (grid, voronoi, strips, shatter) and reassemble from mixed sources | None |
+| `ancient_stencil` | — | Otsu binary stencil masking — 3 images, 6 permutations | None |
+| `ancient_collage` | — | Quadrant-mixed composites with seam inpainting — 4 images | None |
+| `ancient_halftone` | — | AM halftone dot screen as stencil mask | None |
+| `ancient_linescreen` | — | Parallel line screen stencil (engraving) | None |
+| `ancient_curvylinescreen` | — | Edge-following curvy line screen stencil | None |
+| `ancient_reducedlinescreen` | — | Adaptive-frequency line screen stencil | None |
+| `ancient_cyanotype` | — | Cyanotype (prussian blue) toned stencil | None |
+| `ancient_silver` | — | Silver gelatin halation toned stencil | None |
+| `ancient_halationedge` | — | Organic grain-edge stencil (no hard boundary) | None |
+| `ancient_displacement` | — | Gradient displacement-warped stencil | None |
+| `ancient_quad` | — | 3-level percentile stencil (4 images, 3 zones) | None |
+| `ancient_bullseye` | — | Concentric circle cut-and-rotate | None |
+| `ancient_wobbleeye` | — | Off-axis wobble ring cut-and-rotate | None |
+| `ancient_sixshooter` | — | 6-circle grid/hex cut-and-rotate | None |
+| `ancient_bullethole` | — | Random circular punch holes | None |
+| `ancient_kaleidoscope` | — | N-fold radial symmetry (mandala) | None |
+| `ancient_lathe` | — | Thin concentric ring lathe (agate look) | None |
 
 ─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
 
@@ -117,20 +134,24 @@ Recipes are YAML files in `recipes/` that define named pipelines of chained effe
 
 ### Included Recipes
 
+149 recipes across 6 categories. Core highlights:
+
 | Recipe | Inputs | Key Compositing |
 |--------|:------:|-----------------|
-| double-exposure | 2 | blend (screen + multiply) |
-| edge-ghosts | 3 | mask_composite ×2 (edges) |
-| exquisite-corpse | 3 | fragment (strips) |
-| feedback-loop | 2 | blend → fragment → blend |
-| fossil-record | 3 | blend (opacity) ×2 |
 | mosaic-dissolution | 5 | collage (mosaic) → fragment |
-| neural-chimera | 3 | fragment (voronoi) + style_transfer |
-| palimpsest | 4 | mask_composite ×3 (luminance) |
-| signal-bleed | 3 | collage (strips) |
-| spectral-merge | 2 | blend (difference) + mask_composite |
-| tectonic-overlap | 4 | fragment (shatter) + collage (scatter) |
 | voronoi-chimera | 3 | fragment (voronoi) + blend |
+| triple-stencil-cascade | 5 | stencil → halftone → displacement |
+| geometric-chaos | 5 | bullseye + wobbleeye + sixshooter + kaleidoscope + lathe → collage |
+| displacement-dream-collage | 5 | deepdream → displacement → collage |
+| silver-lathe-fragment | 5 | lathe → silver stencil → voronoi fragment |
+| kaleidoscope-dream-displacement | 4 | kaleidoscope → deepdream → displacement |
+| ancients-displacement | 3 | gradient displacement-warped stencil |
+| ancients-quad | 4 | 3-level stencil (black/grey/white zones) |
+| ancients-halftone | 3 | AM halftone dot screen stencil |
+| ancients-cyanotype | 3 | prussian blue cyanotype stencil |
+| ancients-silver | 3 | silver gelatin halation stencil |
+
+Run `python -m sparagmos --list-recipes` for the full list.
 
 ─── ·  ✦  · ──────────────────────────────── ·  ✦  · ───
 

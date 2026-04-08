@@ -1,0 +1,46 @@
+name: Halftone Collage Shift
+description: >
+  Five images: halftone-stenciled three ways, then mosaiced with the
+  remaining two into a grid composite. Channel shift tears the dot
+  patterns apart. Newspaper-print collage with misregistered ink.
+
+inputs: 5
+
+steps:
+  - type: ancient_halftone
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: [8, 16]
+      angle: [30, 60]
+      output: random
+
+  - type: collage
+    images: [canvas, d, e]
+    into: canvas
+    params:
+      layout: grid
+      rotation: [0, 15]
+      scale_variance: [0.0, 0.2]
+
+  - type: channel_shift
+    image: canvas
+    params:
+      shift_r: [30, 70]
+      shift_g: [-50, 50]
+      shift_b: [-70, -20]
+
+  - type: mask_composite
+    images: [canvas, a]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [100, 155]
+      feather: [6, 14]
+      invert: false
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 16]

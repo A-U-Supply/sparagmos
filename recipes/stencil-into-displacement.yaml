@@ -1,0 +1,30 @@
+name: Stencil Into Displacement
+description: >
+  Four images in two stages: first, Otsu stencil composites images A and
+  B using C as the mask. Then the stencil composite is displacement-warped
+  against D — the displacement field tears through the already-composited
+  surface, pulling one image's material across into the other.
+
+inputs: 4
+
+steps:
+  - type: ancient_stencil
+    images: [a, b, c]
+    into: canvas
+    params:
+      output: random
+
+  - type: ancient_displacement
+    images: [d, canvas, a]
+    into: canvas
+    params:
+      strength: [150, 300]
+      blur: [2.0, 5.0]
+      fill_falloff: [350, 700]
+      output: random
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [2, 5]
+      iterations: [8, 16]

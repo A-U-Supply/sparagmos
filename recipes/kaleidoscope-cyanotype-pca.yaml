@@ -1,0 +1,46 @@
+name: Kaleidoscope Cyanotype PCA
+description: >
+  Four images: two kaleidoscoped into mandala patterns, PCA-decomposed
+  to structural ghosts, then cyanotype-stenciled. The kaleidoscope
+  symmetry dissolves into PCA abstractions, all tinted prussian blue.
+  The fourth image provides a luminance mask over the cyanotype surface.
+
+inputs: 4
+
+steps:
+  - type: ancient_kaleidoscope
+    image: a
+    params:
+      folds: [5, 10]
+
+  - type: pca_decompose
+    image: a
+    params:
+      n_components: [4, 7]
+      mode: top
+
+  - type: ancient_kaleidoscope
+    image: b
+    params:
+      folds: [4, 8]
+
+  - type: pca_decompose
+    image: b
+    params:
+      n_components: [4, 7]
+      mode: top
+
+  - type: ancient_cyanotype
+    images: [c, a, b]
+    into: canvas
+    params:
+      output: random
+
+  - type: mask_composite
+    images: [canvas, d]
+    into: canvas
+    params:
+      mask_source: luminance
+      threshold: [95, 150]
+      feather: [6, 14]
+      invert: false

@@ -1,0 +1,26 @@
+name: Wobble Halation
+description: >
+  Two images wobble-eyed — off-axis concentric rings drifting from center —
+  then composited through halation edge stencil. The organic grain boundary
+  meets the misregistered rings, creating a blurry, unstable target pattern
+  that dissolves at its edges.
+
+inputs: 3
+
+steps:
+  - type: ancient_wobbleeye
+    image: a
+    params:
+      rings: [5, 9]
+
+  - type: ancient_wobbleeye
+    image: b
+    params:
+      rings: [4, 8]
+
+  - type: ancient_halationedge
+    images: [c, a, b]
+    into: canvas
+    params:
+      width: [8, 18]
+      output: random
