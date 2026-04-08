@@ -42,6 +42,8 @@ interface RatingData {
   down: number;
   score: number;
   last_voted: string;
+  up_voters: string[];
+  down_voters: string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -84,6 +86,26 @@ function buildVoteButtons(
   };
 }
 
+/** Build a context block showing who voted, or null if no voters. */
+function buildVoterContext(slug: string, ratings: RatingData): any | null {
+  const upVoters = ratings.up_voters ?? [];
+  const downVoters = ratings.down_voters ?? [];
+  if (upVoters.length === 0 && downVoters.length === 0) return null;
+
+  const parts: string[] = [];
+  if (upVoters.length > 0) {
+    parts.push(`\ud83d\udc4d ${upVoters.map((id) => `<@${id}>`).join(", ")}`);
+  }
+  if (downVoters.length > 0) {
+    parts.push(`\ud83d\udc4e ${downVoters.map((id) => `<@${id}>`).join(", ")}`);
+  }
+  return {
+    type: "context",
+    block_id: `recipe_voters:${slug}`,
+    elements: [{ type: "mrkdwn", text: parts.join("  \u00b7  ") }],
+  };
+}
+
 /** Build the post actions block with current star state. */
 function buildStarButton(
   postedTs: string,
@@ -118,15 +140,20 @@ function rebuildBlocks(
   ratings: RatingData,
   userVotes: { vote: number; starred: boolean; favorited: boolean },
 ): any[] {
-  return existingBlocks.map((block: any) => {
-    if (block.block_id?.startsWith("post_actions:")) {
-      return buildStarButton(postedTs, slug, userVotes.starred);
-    }
-    if (block.block_id?.startsWith("recipe_actions:")) {
-      return buildVoteButtons(slug, ratings, userVotes);
-    }
-    return block;
-  });
+  return existingBlocks
+    .filter((b: any) => !b.block_id?.startsWith("recipe_voters:"))
+    .flatMap((block: any) => {
+      if (block.block_id?.startsWith("post_actions:")) {
+        return buildStarButton(postedTs, slug, userVotes.starred);
+      }
+      if (block.block_id?.startsWith("recipe_actions:")) {
+        const voterBlock = buildVoterContext(slug, ratings);
+        return voterBlock
+          ? [buildVoteButtons(slug, ratings, userVotes), voterBlock]
+          : buildVoteButtons(slug, ratings, userVotes);
+      }
+      return block;
+    });
 }
 
 // ---------------------------------------------------------------------------
@@ -254,7 +281,7 @@ async function gatherUserState(
     getUserVotes(env.RATINGS, userId),
     getFavorites(env.RATINGS, userId),
   ]);
-  const rating: RatingData = allRatings[slug] ?? { up: 0, down: 0, score: 0, last_voted: "" };
+  const rating: RatingData = allRatings[slug] ?? { up: 0, down: 0, score: 0, last_voted: "", up_voters: [], down_voters: [] };
   const starVotersRaw = await env.RATINGS.get(`star_voters:${postedTs}`);
   const starVoters: string[] = starVotersRaw ? JSON.parse(starVotersRaw) : [];
   return {

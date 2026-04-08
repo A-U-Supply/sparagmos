@@ -8,6 +8,8 @@ export interface RatingData {
   down: number;
   score: number;
   last_voted: string;
+  up_voters: string[];
+  down_voters: string[];
 }
 
 /** A starred recipe entry stored in KV. */
@@ -66,35 +68,49 @@ export async function vote(
     down: 0,
     score: 0,
     last_voted: "",
+    up_voters: [],
+    down_voters: [],
   };
+
+  // Backfill voter arrays for legacy data
+  if (!rating.up_voters) rating.up_voters = [];
+  if (!rating.down_voters) rating.down_voters = [];
 
   if (existing === direction) {
     // Toggle off: remove the vote
     if (direction === 1) {
       rating.up -= 1;
+      rating.up_voters = rating.up_voters.filter((id) => id !== userId);
     } else {
       rating.down -= 1;
+      rating.down_voters = rating.down_voters.filter((id) => id !== userId);
     }
     delete userVotes[slug];
   } else if (existing !== undefined) {
     // Change vote: undo old, apply new
     if (existing === 1) {
       rating.up -= 1;
+      rating.up_voters = rating.up_voters.filter((id) => id !== userId);
     } else {
       rating.down -= 1;
+      rating.down_voters = rating.down_voters.filter((id) => id !== userId);
     }
     if (direction === 1) {
       rating.up += 1;
+      rating.up_voters.push(userId);
     } else {
       rating.down += 1;
+      rating.down_voters.push(userId);
     }
     userVotes[slug] = direction;
   } else {
     // New vote
     if (direction === 1) {
       rating.up += 1;
+      rating.up_voters.push(userId);
     } else {
       rating.down += 1;
+      rating.down_voters.push(userId);
     }
     userVotes[slug] = direction;
   }
