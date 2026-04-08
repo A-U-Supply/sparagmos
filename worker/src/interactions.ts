@@ -339,7 +339,8 @@ async function handleRerun(
   env: Env,
   recipe: string,
 ): Promise<void> {
-  await dispatchWorkflow(env, recipe);
+  const resolved = recipe === "random" ? "" : recipe;
+  await dispatchWorkflow(env, resolved);
   // Future: post ephemeral message confirming dispatch
 }
 
@@ -438,9 +439,26 @@ export async function handleInteraction(
               const selected =
                 vals.rating_block?.rating_filter?.selected_option?.value ?? "all";
               const ratingFilters: string[] = selected !== "all" ? [selected] : [];
+              const chainChecked =
+                (vals.chain_block?.chain_toggle?.selected_options?.length ?? 0) > 0;
               const allRatings = await getRatings(env.RATINGS);
               const channelId = payload.view.private_metadata || "";
-              const updatedView = buildModalView(channelId, allRatings, ratingFilters);
+              const updatedView = buildModalView(channelId, allRatings, ratingFilters, chainChecked);
+              await updateView(env, payload.view.id, updatedView);
+            }
+            break;
+          }
+          case "chain_toggle": {
+            if (payload.view) {
+              const vals = payload.view.state.values;
+              const chainChecked =
+                (vals.chain_block?.chain_toggle?.selected_options?.length ?? 0) > 0;
+              const selected =
+                vals.rating_block?.rating_filter?.selected_option?.value ?? "all";
+              const ratingFilters: string[] = selected !== "all" ? [selected] : [];
+              const allRatings = await getRatings(env.RATINGS);
+              const channelId = payload.view.private_metadata || "";
+              const updatedView = buildModalView(channelId, allRatings, ratingFilters, chainChecked);
               await updateView(env, payload.view.id, updatedView);
             }
             break;
@@ -506,27 +524,53 @@ export async function handleInteraction(
           vals.rating_block?.rating_filter?.selected_option?.value ?? "all";
         const rating = ratingValue !== "all" ? ratingValue : "";
 
+        // Read chain selectors
+        const chain1 =
+          vals.chain_1_block?.chain_1_select?.selected_option?.value ?? null;
+        const chain2 =
+          vals.chain_2_block?.chain_2_select?.selected_option?.value ?? null;
+
         const resolvedRecipe =
           recipe && recipe !== "random" ? recipe : "";
+
+        // Build chain: primary recipe + any "Then..." selections
+        const chainParts = [
+          resolvedRecipe || "random",
+          chain1 && chain1 !== "random" ? chain1 : chain1 === "random" ? "random" : null,
+          chain2 && chain2 !== "random" ? chain2 : chain2 === "random" ? "random" : null,
+        ].filter(Boolean) as string[];
+        const isChain = chainParts.length > 1;
+        const chainStr = isChain ? chainParts.join(",") : undefined;
+
         const channelId = payload.view.private_metadata;
         const userId = payload.user.id;
-        const recipeName = resolvedRecipe || "random";
+        const recipeName = isChain
+          ? chainParts.join(" \u2192 ")
+          : (resolvedRecipe || "random");
 
         // Dispatch and confirm in background — modal must respond immediately
         const work = (async () => {
           const [ok, usage] = await Promise.all([
-            dispatchWorkflow(env, resolvedRecipe, urls, {
-              poster: poster ?? undefined,
-              age: age !== "any" ? age : undefined,
-              freshness: freshness !== "none" ? freshness : undefined,
-              rating: rating || undefined,
-            }),
+            dispatchWorkflow(
+              env,
+              isChain ? "" : resolvedRecipe,
+              urls,
+              {
+                poster: poster ?? undefined,
+                age: age !== "any" ? age : undefined,
+                freshness: freshness !== "none" ? freshness : undefined,
+                rating: rating || undefined,
+              },
+              chainStr,
+            ),
             fetchActionsUsage(env),
           ]);
 
           if (channelId) {
+            const emoji = isChain ? ":link:" : ":art:";
+            const verb = isChain ? "Chaining" : "Firing up";
             const msg = ok
-              ? `:art: Firing up *${recipeName}*... results in #img-junkyard in ~2-5 min.`
+              ? `${emoji} ${verb} *${recipeName}*... results in #img-junkyard in ~2-5 min.`
               : `:warning: Failed to dispatch workflow.`;
             const blocks = ok ? confirmationBlocks(msg) : undefined;
             if (blocks && usage) blocks.push(buildUsageContextShort(usage));
