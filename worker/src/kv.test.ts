@@ -50,6 +50,8 @@ describe("vote", () => {
     expect(result.down).toBe(0);
     expect(result.score).toBe(1);
     expect(result.last_voted).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(result.up_voters).toEqual(["user1"]);
+    expect(result.down_voters).toEqual([]);
   });
 
   it("adds a new downvote and returns correct score", async () => {
@@ -59,6 +61,8 @@ describe("vote", () => {
     expect(result.up).toBe(0);
     expect(result.down).toBe(1);
     expect(result.score).toBe(-1);
+    expect(result.up_voters).toEqual([]);
+    expect(result.down_voters).toEqual(["user1"]);
   });
 
   it("toggles off when same direction clicked again", async () => {
@@ -72,6 +76,8 @@ describe("vote", () => {
     expect(result.up).toBe(0);
     expect(result.down).toBe(0);
     expect(result.score).toBe(0);
+    expect(result.up_voters).toEqual([]);
+    expect(result.down_voters).toEqual([]);
   });
 
   it("changes vote from up to down", async () => {
@@ -83,6 +89,8 @@ describe("vote", () => {
     expect(result.up).toBe(0);
     expect(result.down).toBe(1);
     expect(result.score).toBe(-1);
+    expect(result.up_voters).toEqual([]);
+    expect(result.down_voters).toEqual(["user1"]);
   });
 
   it("changes vote from down to up", async () => {
@@ -94,6 +102,8 @@ describe("vote", () => {
     expect(result.up).toBe(1);
     expect(result.down).toBe(0);
     expect(result.score).toBe(1);
+    expect(result.up_voters).toEqual(["user1"]);
+    expect(result.down_voters).toEqual([]);
   });
 });
 
@@ -137,6 +147,8 @@ describe("multiple users voting on same recipe", () => {
     expect(result.up).toBe(2);
     expect(result.down).toBe(1);
     expect(result.score).toBe(1);
+    expect(result.up_voters).toEqual(["user1", "user2"]);
+    expect(result.down_voters).toEqual(["user3"]);
   });
 
   it("keeps per-user votes isolated", async () => {
