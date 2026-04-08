@@ -70,9 +70,26 @@ def main():
         logger.info(f"Saved {dest.name}")
         output_paths.append(dest)
 
+    from gif_bot import make_gif
+    gif_path = out_dir / "collage_stencil.gif"
+    frame_duration = int(cfg.get("stencil", {}).get("frame_duration", 100))
+    logger.info(f"Creating GIF at {frame_duration}ms/frame...")
+    gif_order = [0, 3, 1, 4, 2, 5]
+    make_gif([output_paths[i] for i in gif_order], gif_path, frame_duration_ms=frame_duration)
+
+    gif_pair_12 = out_dir / "collage_stencil_pair_12.gif"
+    gif_pair_34 = out_dir / "collage_stencil_pair_34.gif"
+    gif_pair_56 = out_dir / "collage_stencil_pair_56.gif"
+    make_gif([output_paths[0], output_paths[1]], gif_pair_12, frame_duration_ms=frame_duration)
+    make_gif([output_paths[2], output_paths[3]], gif_pair_34, frame_duration_ms=frame_duration)
+    make_gif([output_paths[4], output_paths[5]], gif_pair_56, frame_duration_ms=frame_duration)
+
+    post_paths = output_paths + [gif_path, gif_pair_12, gif_pair_34, gif_pair_56]
+
     if not args.no_post:
-        post_collages(token, args.post_channel, output_paths, bot_name="collage-stencil-bot", threaded=False)
-        logger.info(f"Posted {len(output_paths)} results to #{args.post_channel}")
+        message_ts = post_collages(token, args.post_channel, post_paths, bot_name="collage-stencil-bot", threaded=False)
+        logger.info(f"Posted {len(post_paths)} files to #{args.post_channel}")
+        print(f"MESSAGE_TS={message_ts}")
     else:
         logger.info(f"Saved to {out_dir} (--no-post)")
 

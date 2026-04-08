@@ -1,8 +1,6 @@
-name: Run Collage Stencil Bot
+name: Run Collage Stencil Bullseye Bot
 
 on:
-  schedule:
-    - cron: '0 9 * * *'  # 9am UTC daily
   workflow_dispatch:
     inputs:
       source_channel:
@@ -13,7 +11,7 @@ on:
         default: 'img-junkyard'
 
 jobs:
-  stencil:
+  run:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,10 +23,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run collage stencil bot
+      - name: Run collage stencil bullseye bot
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         run: |
-          python stencil_bot.py \
-            --source-channel "${{ inputs.source_channel || 'image-gen' }}" \
-            --post-channel "${{ inputs.post_channel || 'img-junkyard' }}"
+          python bullseye_bot.py \
+            --source-channel "${{ inputs.source_channel }}" \
+            --post-channel "${{ inputs.post_channel }}"
