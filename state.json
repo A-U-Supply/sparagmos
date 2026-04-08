@@ -2842,6 +2842,29 @@
       ],
       "processed_date": "2026-04-08",
       "posted_ts": "1775684300.064249"
+    },
+    {
+      "source_file_ids": [
+        "F09F36J9A21",
+        "F046ZBKPT61",
+        "F068UGZMG0J"
+      ],
+      "source_dates": [
+        "2025-09-14",
+        "2022-10-18",
+        "2023-12-06"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "ancients-halationedge+ancients-curvylinescreen+ancients-silver",
+      "effects": [
+        "ancient_silver"
+      ],
+      "processed_date": "2026-04-08",
+      "posted_ts": "1775684830.895159"
     }
   ]
 }
