@@ -1,0 +1,17 @@
+name: Ancients Curvy Line Screen
+description: >
+  Edge-following line screen stencil. Lines curve along image contours
+  using a gradient direction field with double-angle smoothing, falling
+  back to a default angle in flat regions. Creates an engraving or
+  topographic map effect used as a binary mask for compositing.
+
+inputs: 3
+
+steps:
+  - type: ancient_curvylinescreen
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: [20, 45]
+      angle: [30, 60]
+      output: all

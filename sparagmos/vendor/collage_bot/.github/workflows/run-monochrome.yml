@@ -1,8 +1,6 @@
-name: Run Collage Stencil Bot
+name: Run Collage Stencil Monochrome Bot
 
 on:
-  schedule:
-    - cron: '0 9 * * *'  # 9am UTC daily
   workflow_dispatch:
     inputs:
       source_channel:
@@ -11,9 +9,12 @@ on:
       post_channel:
         description: 'Channel to post results to'
         default: 'img-junkyard'
+      frame_duration:
+        description: 'GIF frame duration in ms'
+        default: '85'
 
 jobs:
-  stencil:
+  run:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,10 +26,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run collage stencil bot
+      - name: Run collage stencil monochrome bot
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         run: |
-          python stencil_bot.py \
-            --source-channel "${{ inputs.source_channel || 'image-gen' }}" \
-            --post-channel "${{ inputs.post_channel || 'img-junkyard' }}"
+          python monochrome_bot.py \
+            --source-channel "${{ inputs.source_channel }}" \
+            --post-channel "${{ inputs.post_channel }}" \
+            --frame-duration "${{ inputs.frame_duration }}"

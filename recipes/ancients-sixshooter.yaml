@@ -1,0 +1,21 @@
+name: Ancients Six Shooter
+description: >
+  Six circular cut-and-rotate operations in grid or hexagonal layout
+  applied to two images. Crop positions are shuffled before pasting back,
+  creating a scattered, displaced surface. The third image provides the
+  stencil mask merging the two shot-up surfaces.
+
+inputs: 3
+
+steps:
+  - type: ancient_sixshooter
+    image: a
+
+  - type: ancient_sixshooter
+    image: b
+
+  - type: ancient_stencil
+    images: [c, a, b]
+    into: canvas
+    params:
+      output: random

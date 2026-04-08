@@ -1,0 +1,16 @@
+name: Ancients Line Screen
+description: >
+  Fixed-angle parallel line screen stencil. Lines run at a constant angle
+  with width varying by image tone — thick in shadows, thin in highlights,
+  like an engraving plate. Used as a binary mask to composite two fill images.
+
+inputs: 3
+
+steps:
+  - type: ancient_linescreen
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: [20, 45]
+      angle: [0, 90]
+      output: all

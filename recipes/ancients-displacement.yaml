@@ -1,0 +1,19 @@
+name: Ancients Displacement
+description: >
+  Gradient-based displacement stencil. The stencil image's gradient field
+  warps both the mask boundary and the fill images. The boundary tears and
+  the fills stretch across it — strongest near the seam, fading over a
+  configurable falloff distance. Creates a violent tearing effect where
+  images meet.
+
+inputs: 3
+
+steps:
+  - type: ancient_displacement
+    images: [a, b, c]
+    into: canvas
+    params:
+      strength: [120, 300]
+      blur: [2.0, 5.0]
+      fill_falloff: [300, 800]
+      output: all
