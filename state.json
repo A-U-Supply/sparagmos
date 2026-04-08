@@ -2765,6 +2765,29 @@
       ],
       "processed_date": "2026-04-08",
       "posted_ts": "1775680541.758539"
+    },
+    {
+      "source_file_ids": [
+        "F0AC4G28N9K",
+        "F0A4NMNH09H",
+        "F081FL91AUQ"
+      ],
+      "source_dates": [
+        "2026-02-01",
+        "2025-12-20",
+        "2024-11-14"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "ancients-curvylinescreen",
+      "effects": [
+        "ancient_curvylinescreen"
+      ],
+      "processed_date": "2026-04-08",
+      "posted_ts": "1775681769.419739"
     }
   ]
 }
