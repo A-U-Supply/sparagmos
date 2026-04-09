@@ -2865,6 +2865,29 @@
       ],
       "processed_date": "2026-04-08",
       "posted_ts": "1775684830.895159"
+    },
+    {
+      "source_file_ids": [
+        "F0APJDKPDKN",
+        "F0AQ0LA9YJW",
+        "F07FCQZ8KEH"
+      ],
+      "source_dates": [
+        "2026-03-28",
+        "2026-03-31",
+        "2024-08-05"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "ancients-halftone",
+      "effects": [
+        "ancient_halftone"
+      ],
+      "processed_date": "2026-04-09",
+      "posted_ts": "1775739621.250679"
     }
   ]
 }
