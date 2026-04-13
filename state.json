@@ -2944,6 +2944,31 @@
       ],
       "processed_date": "2026-04-11",
       "posted_ts": "1775910855.969059"
+    },
+    {
+      "source_file_ids": [
+        "F0ANYHUTGUT",
+        "F0951E9M9T8",
+        "F09EEMTMFD4"
+      ],
+      "source_dates": [
+        "2026-03-26",
+        "2025-07-10",
+        "2025-09-10"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "ancients-wobbleeye",
+      "effects": [
+        "ancient_wobbleeye",
+        "ancient_wobbleeye",
+        "ancient_stencil"
+      ],
+      "processed_date": "2026-04-13",
+      "posted_ts": "1776085284.423549"
     }
   ]
 }
