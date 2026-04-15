@@ -1,5 +1,5 @@
 # Stage 1: Build primitive from Go source
-FROM golang:1.22-bookworm AS go-builder
+FROM golang:1.25-bookworm AS go-builder
 RUN go install github.com/fogleman/primitive@latest
 
 # Stage 2: Main image
