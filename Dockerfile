@@ -1,4 +1,9 @@
-FROM python:3.11-slim AS base
+# Stage 1: Build primitive from Go source
+FROM golang:1.22-bookworm AS go-builder
+RUN go install github.com/fogleman/primitive@latest
+
+# Stage 2: Main image
+FROM python:3.11-slim
 
 # System dependencies for effects
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -6,15 +11,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     netpbm \
     ffmpeg \
     potrace \
-    golang-go \
-    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install primitive (geometric shape reconstruction)
-RUN GOPATH=/usr/local go install github.com/fogleman/primitive@latest
-
-# Remove Go toolchain after building primitive (saves ~500MB)
-RUN apt-get purge -y golang-go git && apt-get autoremove -y
+# Copy primitive binary from Go build stage
+COPY --from=go-builder /go/bin/primitive /usr/local/bin/primitive
 
 # Relax ImageMagick policy (default Debian policy blocks many operations)
 RUN if [ -f /etc/ImageMagick-6/policy.xml ]; then \
