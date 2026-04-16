@@ -2995,6 +2995,32 @@
       ],
       "processed_date": "2026-04-14",
       "posted_ts": "1776171728.746749"
+    },
+    {
+      "source_file_ids": [
+        "F0AQTKQUELT",
+        "F08HYNAUCMN",
+        "F0AKH1C86CQ",
+        "F08CGBCDAQ3"
+      ],
+      "source_dates": [
+        "2026-04-06",
+        "2025-03-12",
+        "2026-03-05",
+        "2025-02-09"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q"
+      ],
+      "recipe": "ancients-quad",
+      "effects": [
+        "ancient_quad"
+      ],
+      "processed_date": "2026-04-16",
+      "posted_ts": ""
     }
   ]
 }
