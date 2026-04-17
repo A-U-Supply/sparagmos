@@ -3021,6 +3021,41 @@
       ],
       "processed_date": "2026-04-16",
       "posted_ts": ""
+    },
+    {
+      "source_file_ids": [
+        "F08E7F6MAJ3",
+        "F080SPJJ1B5",
+        "F082EUYRK5G",
+        "F0ALYPVN7H7"
+      ],
+      "source_dates": [
+        "2025-02-23",
+        "2024-11-14",
+        "2024-11-25",
+        "2026-03-14"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TFJBRK2Q"
+      ],
+      "recipe": "text-ghost",
+      "effects": [
+        "pca_decompose",
+        "channel_shift",
+        "spectral",
+        "dither",
+        "mask_composite",
+        "blend",
+        "mask_composite",
+        "mask_composite",
+        "crt_vhs",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-17",
+      "posted_ts": "1776430538.127019"
     }
   ]
 }
