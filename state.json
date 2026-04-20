@@ -3125,6 +3125,32 @@
       ],
       "processed_date": "2026-04-19",
       "posted_ts": "1776602224.350229"
+    },
+    {
+      "source_file_ids": [
+        "F0ALAF14YRF",
+        "F090EQA0SFR",
+        "F0AJZDF46KT"
+      ],
+      "source_dates": [
+        "2026-03-11",
+        "2025-06-10",
+        "2026-03-04"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "curvy-corruption",
+      "effects": [
+        "ancient_curvylinescreen",
+        "byte_corrupt",
+        "crt_vhs",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-20",
+      "posted_ts": "1776690313.341009"
     }
   ]
 }
