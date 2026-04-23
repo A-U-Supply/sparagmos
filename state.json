@@ -3215,6 +3215,34 @@
       ],
       "processed_date": "2026-04-22",
       "posted_ts": "1776862823.466469"
+    },
+    {
+      "source_file_ids": [
+        "F052MQN7R9B",
+        "F0AUCB9CNNL",
+        "F0AQXL6K7A6"
+      ],
+      "source_dates": [
+        "2023-04-11",
+        "2026-04-17",
+        "2026-04-05"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "spectral-stencil",
+      "effects": [
+        "spectral",
+        "mask_composite",
+        "sonify",
+        "mask_composite",
+        "dither",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-23",
+      "posted_ts": "1776949198.853659"
     }
   ]
 }
