@@ -3306,6 +3306,42 @@
       ],
       "processed_date": "2026-04-25",
       "posted_ts": "1777120733.198519"
+    },
+    {
+      "source_file_ids": [
+        "F08AAB2PCP2",
+        "F0935M1MGMA",
+        "F0AQPSZFGBV",
+        "F09DSNYUUR2"
+      ],
+      "source_dates": [
+        "2025-01-21",
+        "2025-06-26",
+        "2026-04-04",
+        "2025-09-05"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "luminance-layers",
+      "effects": [
+        "pca_decompose",
+        "channel_shift",
+        "dither",
+        "crt_vhs",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "collage",
+        "mask_composite",
+        "seam_carve",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-26",
+      "posted_ts": "1777223608.678239"
     }
   ]
 }
