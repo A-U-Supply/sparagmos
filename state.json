@@ -3372,6 +3372,31 @@
       ],
       "processed_date": "2026-04-27",
       "posted_ts": "1777295854.145249"
+    },
+    {
+      "source_file_ids": [
+        "F0AUQRWS65Q",
+        "F09U4P5DJVD",
+        "F06KHNJ2M6K"
+      ],
+      "source_dates": [
+        "2026-04-23",
+        "2025-11-21",
+        "2024-02-21"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "ancients-bullseye",
+      "effects": [
+        "ancient_bullseye",
+        "ancient_bullseye",
+        "ancient_stencil"
+      ],
+      "processed_date": "2026-04-28",
+      "posted_ts": "1777382870.399239"
     }
   ]
 }
