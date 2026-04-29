@@ -3397,6 +3397,32 @@
       ],
       "processed_date": "2026-04-28",
       "posted_ts": "1777382870.399239"
+    },
+    {
+      "source_file_ids": [
+        "F07L01FCTSN",
+        "F080SNTE4BG"
+      ],
+      "source_dates": [
+        "2024-09-05",
+        "2024-11-15"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "phantom-limb",
+      "effects": [
+        "spectral",
+        "pca_decompose",
+        "mask_composite",
+        "blend",
+        "spectral",
+        "channel_shift",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-04-29",
+      "posted_ts": "1777469022.330549"
     }
   ]
 }
