@@ -3458,6 +3458,39 @@
       ],
       "processed_date": "2026-04-30",
       "posted_ts": "1777557369.380629"
+    },
+    {
+      "source_file_ids": [
+        "F0932RW6CKF",
+        "F076QNLS40M",
+        "F0AP8EADP43",
+        "F09GLMY2SE6",
+        "F08CRRADLJK"
+      ],
+      "source_dates": [
+        "2025-06-26",
+        "2024-06-06",
+        "2026-03-28",
+        "2025-09-23",
+        "2025-02-13"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL",
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "halftone-collage-shift",
+      "effects": [
+        "ancient_halftone",
+        "collage",
+        "channel_shift",
+        "mask_composite",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-05-01",
+      "posted_ts": "1777640075.438519"
     }
   ]
 }
