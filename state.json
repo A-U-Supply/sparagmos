@@ -3518,6 +3518,36 @@
       ],
       "processed_date": "2026-05-02",
       "posted_ts": "1777726307.409699"
+    },
+    {
+      "source_file_ids": [
+        "F08QX0JCXT2",
+        "F0AUSA07ZEV",
+        "F0AU169G9QT",
+        "F07FEKTN760"
+      ],
+      "source_dates": [
+        "2025-04-29",
+        "2026-04-21",
+        "2026-04-21",
+        "2024-08-03"
+      ],
+      "source_users": [
+        "U03TA650DEZ",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "kaleidoscope-dream-displacement",
+      "effects": [
+        "ancient_kaleidoscope",
+        "ancient_kaleidoscope",
+        "deepdream",
+        "ancient_displacement",
+        "blend"
+      ],
+      "processed_date": "2026-05-04",
+      "posted_ts": "1777900899.682769"
     }
   ]
 }
