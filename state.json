@@ -3616,6 +3616,39 @@
       ],
       "processed_date": "2026-05-06",
       "posted_ts": "1778074123.885439"
+    },
+    {
+      "source_file_ids": [
+        "F071N9T5B4Y",
+        "F06LXS9NN5D",
+        "F08UCCYBVGV",
+        "F092QGFPPHD",
+        "F0ASMPKQFC6"
+      ],
+      "source_dates": [
+        "2024-04-27",
+        "2024-02-29",
+        "2025-05-28",
+        "2025-06-26",
+        "2026-04-14"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TA650DEZ",
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "silver-lathe-fragment",
+      "effects": [
+        "ancient_lathe",
+        "ancient_lathe",
+        "ancient_silver",
+        "fragment",
+        "pixel_sort"
+      ],
+      "processed_date": "2026-05-07",
+      "posted_ts": "1778116806.991639"
     }
   ]
 }
