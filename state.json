@@ -3685,6 +3685,45 @@
       ],
       "processed_date": "2026-05-07",
       "posted_ts": "1778161784.540669"
+    },
+    {
+      "source_file_ids": [
+        "F050B6VG2AE",
+        "F099BH4ESN5",
+        "F08JSPWHMGQ",
+        "F0AVD6N1FT4",
+        "F0AHKJ0MKC6"
+      ],
+      "source_dates": [
+        "2023-03-26",
+        "2025-08-04",
+        "2025-03-18",
+        "2026-04-26",
+        "2026-02-27"
+      ],
+      "source_users": [
+        "U03TA650DEZ",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "stencil-mosaic",
+      "effects": [
+        "dither",
+        "spectral",
+        "channel_shift",
+        "pca_decompose",
+        "pixel_sort",
+        "mask_composite",
+        "fragment",
+        "mask_composite",
+        "collage",
+        "spectral",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-05-08",
+      "posted_ts": "1778245659.130069"
     }
   ]
 }
