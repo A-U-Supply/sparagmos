@@ -3754,6 +3754,42 @@
       ],
       "processed_date": "2026-05-09",
       "posted_ts": "1778331164.617379"
+    },
+    {
+      "source_file_ids": [
+        "F090VLH4B97",
+        "F0851E7TTFD",
+        "F0AS1LP5YP7",
+        "F0A5AR3EW2C"
+      ],
+      "source_dates": [
+        "2025-06-08",
+        "2024-12-13",
+        "2026-04-10",
+        "2025-12-18"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TA650DEZ",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "interference-mask",
+      "effects": [
+        "channel_shift",
+        "spectral",
+        "pca_decompose",
+        "dither",
+        "blend",
+        "mask_composite",
+        "collage",
+        "mask_composite",
+        "pixel_sort",
+        "crt_vhs",
+        "byte_corrupt"
+      ],
+      "processed_date": "2026-05-10",
+      "posted_ts": "1778417630.977489"
     }
   ]
 }
