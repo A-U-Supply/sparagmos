@@ -3848,6 +3848,28 @@
       ],
       "processed_date": "2026-05-13",
       "posted_ts": "1778681131.963199"
+    },
+    {
+      "source_file_ids": [
+        "F097C7W7XQE",
+        "F0AQ6MNADSQ"
+      ],
+      "source_dates": [
+        "2025-07-25",
+        "2026-03-31"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "ghost-overlay",
+      "effects": [
+        "mask_composite",
+        "blend",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-05-14",
+      "posted_ts": "1778765307.387649"
     }
   ]
 }
