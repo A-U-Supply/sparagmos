@@ -3969,6 +3969,35 @@
       ],
       "processed_date": "2026-05-17",
       "posted_ts": "1779022489.801019"
+    },
+    {
+      "source_file_ids": [
+        "F0400M318JX",
+        "F0AQ0RJV1UY",
+        "F0AC5H01DNJ"
+      ],
+      "source_dates": [
+        "2022-08-27",
+        "2026-03-27",
+        "2026-02-01"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "voronoi-chimera",
+      "effects": [
+        "deepdream",
+        "pixel_sort",
+        "dither",
+        "fragment",
+        "blend",
+        "channel_shift",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-05-18",
+      "posted_ts": "1779116035.645459"
     }
   ]
 }
