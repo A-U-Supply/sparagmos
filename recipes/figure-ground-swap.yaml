@@ -1,0 +1,13 @@
+name: Figure-Ground Swap
+description: >
+  Segment the foreground subject in each of 3 images using GrabCut, then
+  composite all 6 fg/bg permutations: every foreground on every other
+  background. Hard binary mask — the cut line is the aesthetic statement.
+  Inspired by Greenberg's essay on collage and figure/ground ambiguity.
+inputs: 3
+steps:
+  - type: grabcut_composite
+    images: [a, b, c]
+    into: canvas
+    params:
+      seg_method: grabcut
