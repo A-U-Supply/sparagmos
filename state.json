@@ -3998,6 +3998,31 @@
       ],
       "processed_date": "2026-05-18",
       "posted_ts": "1779116035.645459"
+    },
+    {
+      "source_file_ids": [
+        "F05RY6STZTK",
+        "F08RMB5V4DU"
+      ],
+      "source_dates": [
+        "2023-09-08",
+        "2025-05-11"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "x-ray-composite",
+      "effects": [
+        "pca_decompose",
+        "mask_composite",
+        "blend",
+        "spectral",
+        "dither",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-05-19",
+      "posted_ts": "1779201280.646099"
     }
   ]
 }
