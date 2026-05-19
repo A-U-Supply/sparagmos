@@ -1,0 +1,14 @@
+name: Spiral Screen
+description: >
+  Archimedean spiral screen with arms that warp to follow image contours —
+  line width varies with tone (thick in shadows, thin in highlights). Each
+  of 3 images generates its own spiral stencil; all 6 permutations are
+  composited and returned.
+inputs: 3
+steps:
+  - type: spiralscreen
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: 80
+      warp_strength: 0.3

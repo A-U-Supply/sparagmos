@@ -1,0 +1,12 @@
+name: B&W Stencil
+description: >
+  All 3 images converted to high-contrast black-and-white via Otsu
+  thresholding. Stencil and fills are all B&W. Hard binary edges — the
+  cut line is the aesthetic statement. 3 images → all 6 permutation
+  composites.
+inputs: 3
+steps:
+  - type: bw_stencil
+    images: [a, b, c]
+    into: canvas
+    params: {}

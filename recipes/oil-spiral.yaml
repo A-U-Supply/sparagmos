@@ -1,0 +1,15 @@
+name: Oil Spiral
+description: >
+  Voronoi multi-spiral — up to 8 brightness peaks are detected and each
+  seeds an independent r³ spiral. Adjacent Voronoi cell boundaries produce
+  organic closed-loop forms that resemble iridescent oil-on-water or soap
+  bubble patterns. 3 images → all 6 permutation composites.
+inputs: 3
+steps:
+  - type: oilspiral
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: 20
+      warp_strength: 4.0
+      n_peaks: 8
