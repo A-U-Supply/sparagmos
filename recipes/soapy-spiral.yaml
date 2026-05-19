@@ -1,0 +1,14 @@
+name: Soapy Spiral
+description: >
+  Quadratic (r³) spiral screen centered on the most salient region of each
+  image via spectral residual saliency — arms are dense at the outer edges
+  and sparse at the center, giving a soapy bubble or lens-distortion effect.
+  3 images → all 6 permutation composites.
+inputs: 3
+steps:
+  - type: soapyspiral
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: 40
+      warp_strength: 0.7

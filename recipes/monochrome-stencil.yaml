@@ -1,0 +1,12 @@
+name: Monochrome Stencil
+description: >
+  Stencil generated from each image via Otsu thresholding; fill images
+  converted to silver gelatin print-style monochrome (grayscale + CLAHE
+  + unsharp mask) before compositing. 3 images → all 6 permutation
+  composites.
+inputs: 3
+steps:
+  - type: monochrome_stencil
+    images: [a, b, c]
+    into: canvas
+    params: {}

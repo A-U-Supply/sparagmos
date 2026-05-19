@@ -1,0 +1,22 @@
+name: Oil Spiral Cells Bleed
+description: >
+  Voronoi spiral-cells stencil with chrome fill effects applied to each
+  fill layer before compositing: sinusoidal ripple warp (curved chrome
+  reflection), chromatic aberration (prismatic edge sheen), contrast
+  stretch, and bulge warp (raised liquid rivulets). Hard binary stencil,
+  no feathering. 3 images → all 6 permutation composites.
+inputs: 3
+steps:
+  - type: oilspiralcellsbleed
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: 15
+      warp_strength: 4.0
+      n_peaks: 6
+      topo_blend: 0.2
+      bleed_strength: 0.35
+      chroma_shift: 10
+      ripple_amplitude: 20
+      ripple_wavelength: 40.0
+      bulge_strength: 0.8

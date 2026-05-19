@@ -1,0 +1,16 @@
+name: Oil Spiral Cells
+description: >
+  Voronoi spiral-cells with brightness-contour blending — spiral phase is
+  mixed with a topographic iso-brightness phase, so lines follow both
+  rotational spiral structure and the image's own tonal geography.
+  3 images → all 6 permutation composites.
+inputs: 3
+steps:
+  - type: oilspiralcells
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: 35
+      warp_strength: 2.0
+      n_peaks: 6
+      topo_blend: 0.2
