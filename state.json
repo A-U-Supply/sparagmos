@@ -4048,6 +4048,36 @@
       ],
       "processed_date": "2026-05-20",
       "posted_ts": "1779287636.581959"
+    },
+    {
+      "source_file_ids": [
+        "F0975H0ATHP",
+        "F0AV1LR8PS4",
+        "F06TQPKP2JF",
+        "F0ASPBKHE0Z"
+      ],
+      "source_dates": [
+        "2025-07-21",
+        "2026-04-21",
+        "2024-04-10",
+        "2026-04-11"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q"
+      ],
+      "recipe": "cyanotype-bullethole-mask",
+      "effects": [
+        "ancient_bullethole",
+        "ancient_bullethole",
+        "ancient_cyanotype",
+        "mask_composite",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-05-21",
+      "posted_ts": "1779374344.420829"
     }
   ]
 }
