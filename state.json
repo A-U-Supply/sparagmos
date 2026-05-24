@@ -4158,6 +4158,35 @@
       ],
       "processed_date": "2026-05-23",
       "posted_ts": "1779541262.592199"
+    },
+    {
+      "source_file_ids": [
+        "F0AVD6N1FT4",
+        "F04E3V22C2H",
+        "F0AT2S7SQP8"
+      ],
+      "source_dates": [
+        "2026-04-26",
+        "2022-12-07",
+        "2026-04-15"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "neural-chimera",
+      "effects": [
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "fragment",
+        "blend",
+        "style_transfer",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-05-24",
+      "posted_ts": "1779627937.128099"
     }
   ]
 }
