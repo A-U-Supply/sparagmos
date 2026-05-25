@@ -4187,6 +4187,36 @@
       ],
       "processed_date": "2026-05-24",
       "posted_ts": "1779627937.128099"
+    },
+    {
+      "source_file_ids": [
+        "F08SLTXG726",
+        "F0ATNUW7WCB",
+        "F094TLQED2S",
+        "F097DPQ6B37"
+      ],
+      "source_dates": [
+        "2025-05-15",
+        "2026-04-19",
+        "2025-07-08",
+        "2025-07-25"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q"
+      ],
+      "recipe": "lathe-silver-sonify",
+      "effects": [
+        "ancient_lathe",
+        "ancient_lathe",
+        "ancient_silver",
+        "sonify",
+        "mask_composite"
+      ],
+      "processed_date": "2026-05-25",
+      "posted_ts": "1779719562.250459"
     }
   ]
 }
