@@ -4320,6 +4320,38 @@
       ],
       "processed_date": "2026-05-28",
       "posted_ts": "1779981935.649509"
+    },
+    {
+      "source_file_ids": [
+        "F0B6NC53JD6",
+        "F0B4K43B41W",
+        "F0B3MDXA35K",
+        "F087177BV2Q",
+        "F0ARF7X4ML7"
+      ],
+      "source_dates": [
+        "2026-05-24",
+        "2026-05-14",
+        "2026-05-14",
+        "2024-12-31",
+        "2026-04-09"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q"
+      ],
+      "recipe": "triple-stencil-cascade",
+      "effects": [
+        "ancient_stencil",
+        "ancient_halftone",
+        "ancient_displacement",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-05-29",
+      "posted_ts": "1780065586.009789"
     }
   ]
 }
