@@ -4467,6 +4467,31 @@
       ],
       "processed_date": "2026-06-02",
       "posted_ts": "1780415844.327639"
+    },
+    {
+      "source_file_ids": [
+        "F07V71CD18W",
+        "F0922DUHJCB",
+        "F09DZ5M4BDY"
+      ],
+      "source_dates": [
+        "2024-11-08",
+        "2025-06-19",
+        "2025-09-07"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TA650DEZ",
+        "U03TFJBRK2Q"
+      ],
+      "recipe": "lathe-displacement",
+      "effects": [
+        "ancient_lathe",
+        "ancient_lathe",
+        "ancient_displacement"
+      ],
+      "processed_date": "2026-06-03",
+      "posted_ts": "1780503341.314279"
     }
   ]
 }
