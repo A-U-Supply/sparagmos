@@ -4518,6 +4518,42 @@
       ],
       "processed_date": "2026-06-04",
       "posted_ts": ""
+    },
+    {
+      "source_file_ids": [
+        "F08UCDH32R3",
+        "F0AS16KFRBJ",
+        "F0B4MMYQACB",
+        "F0509HPF2NP"
+      ],
+      "source_dates": [
+        "2025-05-28",
+        "2026-04-06",
+        "2026-05-19",
+        "2023-03-25"
+      ],
+      "source_users": [
+        "U03TA650DEZ",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TA650DEZ"
+      ],
+      "recipe": "luminance-layers",
+      "effects": [
+        "pca_decompose",
+        "channel_shift",
+        "dither",
+        "crt_vhs",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "collage",
+        "mask_composite",
+        "seam_carve",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-06-06",
+      "posted_ts": "1780757092.989959"
     }
   ]
 }
