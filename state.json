@@ -4554,6 +4554,32 @@
       ],
       "processed_date": "2026-06-06",
       "posted_ts": "1780757092.989959"
+    },
+    {
+      "source_file_ids": [
+        "F03TE85N85U",
+        "F08KUR91A1F",
+        "F071BN6FCMC"
+      ],
+      "source_dates": [
+        "2022-08-14",
+        "2025-03-27",
+        "2024-05-01"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "vhs-halation",
+      "effects": [
+        "crt_vhs",
+        "crt_vhs",
+        "ancient_halationedge",
+        "channel_shift"
+      ],
+      "processed_date": "2026-06-07",
+      "posted_ts": "1780838372.865789"
     }
   ]
 }
