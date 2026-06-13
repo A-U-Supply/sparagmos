@@ -4743,6 +4743,32 @@
       ],
       "processed_date": "2026-06-12",
       "posted_ts": "1781274756.093599"
+    },
+    {
+      "source_file_ids": [
+        "F0AP47T1WBX",
+        "F0AU4AREBRU",
+        "F0A6ZS92Q1W"
+      ],
+      "source_dates": [
+        "2026-03-27",
+        "2026-04-21",
+        "2025-12-30"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "bullseye-cyanotype",
+      "effects": [
+        "ancient_bullseye",
+        "ancient_bullseye",
+        "ancient_cyanotype",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-06-13",
+      "posted_ts": "1781357011.685729"
     }
   ]
 }
