@@ -4831,6 +4831,36 @@
       ],
       "processed_date": "2026-06-15",
       "posted_ts": "1781553281.251779"
+    },
+    {
+      "source_file_ids": [
+        "F07N6JT1UDB",
+        "F0AU018V4H1",
+        "F0603QY6GV6"
+      ],
+      "source_dates": [
+        "2024-09-20",
+        "2026-04-21",
+        "2023-10-02"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "fossil-record",
+      "effects": [
+        "pca_decompose",
+        "pca_decompose",
+        "pca_decompose",
+        "blend",
+        "blend",
+        "dither",
+        "channel_shift",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-06-16",
+      "posted_ts": "1781626994.066719"
     }
   ]
 }
