@@ -4861,6 +4861,42 @@
       ],
       "processed_date": "2026-06-16",
       "posted_ts": "1781626994.066719"
+    },
+    {
+      "source_file_ids": [
+        "F07U2R53XFE",
+        "F08QN84Q3RR",
+        "F06UV2SAVMW",
+        "F0AS1LP5YP7"
+      ],
+      "source_dates": [
+        "2024-10-29",
+        "2025-05-01",
+        "2024-04-13",
+        "2026-04-10"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "stratum-shift",
+      "effects": [
+        "channel_shift",
+        "dither",
+        "pca_decompose",
+        "pixel_sort",
+        "collage",
+        "seam_carve",
+        "mask_composite",
+        "blend",
+        "mask_composite",
+        "dither",
+        "byte_corrupt"
+      ],
+      "processed_date": "2026-06-17",
+      "posted_ts": "1781726820.878509"
     }
   ]
 }
