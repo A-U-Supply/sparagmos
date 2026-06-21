@@ -4997,6 +4997,45 @@
       ],
       "processed_date": "2026-06-20",
       "posted_ts": "1781962027.366619"
+    },
+    {
+      "source_file_ids": [
+        "F067SK942D6",
+        "F0APEMBJXRD",
+        "F071LHS62BT",
+        "F0400M318JX",
+        "F04TX8F8ZKM"
+      ],
+      "source_dates": [
+        "2023-11-23",
+        "2026-03-31",
+        "2024-04-29",
+        "2022-08-27",
+        "2023-03-14"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "hallucinated-quilt",
+      "effects": [
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "collage",
+        "fragment",
+        "channel_shift",
+        "spectral",
+        "jpeg_destroy",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-06-21",
+      "posted_ts": "1782050897.774929"
     }
   ]
 }
