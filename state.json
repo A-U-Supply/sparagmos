@@ -5069,6 +5069,32 @@
       ],
       "processed_date": "2026-06-24",
       "posted_ts": "1782310695.560399"
+    },
+    {
+      "source_file_ids": [
+        "F075E0LJMM3",
+        "F06GRK8RXFT",
+        "F07FVDC3RPH"
+      ],
+      "source_dates": [
+        "2024-05-28",
+        "2024-01-30",
+        "2024-08-09"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "sorted-displacement",
+      "effects": [
+        "pixel_sort",
+        "pixel_sort",
+        "ancient_displacement",
+        "channel_shift"
+      ],
+      "processed_date": "2026-06-26",
+      "posted_ts": "1782482481.792669"
     }
   ]
 }
