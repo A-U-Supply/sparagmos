@@ -5317,6 +5317,31 @@
       ],
       "processed_date": "2026-07-02",
       "posted_ts": "1782998932.117819"
+    },
+    {
+      "source_file_ids": [
+        "F0ASJT8JD9B",
+        "F0AMXP5FGCR",
+        "F0B4WG2ESUW"
+      ],
+      "source_dates": [
+        "2026-04-14",
+        "2026-03-19",
+        "2026-05-20"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "ancients-wobbleeye",
+      "effects": [
+        "ancient_wobbleeye",
+        "ancient_wobbleeye",
+        "ancient_stencil"
+      ],
+      "processed_date": "2026-07-03",
+      "posted_ts": "1783086036.300169"
     }
   ]
 }
