@@ -5371,6 +5371,31 @@
       ],
       "processed_date": "2026-07-04",
       "posted_ts": "1783169881.976999"
+    },
+    {
+      "source_file_ids": [
+        "F0AQYG4TUVC",
+        "F086QSUMCLS",
+        "F0B4SNTM275"
+      ],
+      "source_dates": [
+        "2026-04-06",
+        "2024-12-28",
+        "2026-05-20"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "bullethole-silver",
+      "effects": [
+        "ancient_bullethole",
+        "ancient_bullethole",
+        "ancient_silver"
+      ],
+      "processed_date": "2026-07-05",
+      "posted_ts": "1783256724.245119"
     }
   ]
 }
