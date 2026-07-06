@@ -5396,6 +5396,33 @@
       ],
       "processed_date": "2026-07-05",
       "posted_ts": "1783256724.245119"
+    },
+    {
+      "source_file_ids": [
+        "F09232ZEJCU",
+        "F08EU7ZBT7Z",
+        "F08BKEC42UT"
+      ],
+      "source_dates": [
+        "2025-06-18",
+        "2025-02-27",
+        "2025-02-03"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "dream-cutout",
+      "effects": [
+        "deepdream",
+        "mask_composite",
+        "channel_shift",
+        "mask_composite",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-07-06",
+      "posted_ts": "1783349843.792119"
     }
   ]
 }
