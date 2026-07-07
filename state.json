@@ -5423,6 +5423,31 @@
       ],
       "processed_date": "2026-07-06",
       "posted_ts": "1783349843.792119"
+    },
+    {
+      "source_file_ids": [
+        "F0B1T0V6W77",
+        "F050DLFUHQU",
+        "F08HPC0BF9C"
+      ],
+      "source_dates": [
+        "2026-05-06",
+        "2023-03-26",
+        "2025-03-15"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TA650DEZ",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "ancients-kaleidoscope",
+      "effects": [
+        "ancient_kaleidoscope",
+        "ancient_kaleidoscope",
+        "ancient_stencil"
+      ],
+      "processed_date": "2026-07-07",
+      "posted_ts": "1783433115.595529"
     }
   ]
 }
