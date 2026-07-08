@@ -5448,6 +5448,29 @@
       ],
       "processed_date": "2026-07-07",
       "posted_ts": "1783433115.595529"
+    },
+    {
+      "source_file_ids": [
+        "F0AP184Q8H1",
+        "F07FE79PJP6",
+        "F092HJDUA8K"
+      ],
+      "source_dates": [
+        "2026-03-27",
+        "2024-08-02",
+        "2025-06-23"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "bw-stencil",
+      "effects": [
+        "bw_stencil"
+      ],
+      "processed_date": "2026-07-08",
+      "posted_ts": "1783517336.329599"
     }
   ]
 }
