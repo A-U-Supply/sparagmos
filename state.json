@@ -5471,6 +5471,28 @@
       ],
       "processed_date": "2026-07-08",
       "posted_ts": "1783517336.329599"
+    },
+    {
+      "source_file_ids": [
+        "F07FE79PJP6",
+        "F0ANB8AR6RK"
+      ],
+      "source_dates": [
+        "2024-08-02",
+        "2026-03-24"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "ghost-overlay",
+      "effects": [
+        "mask_composite",
+        "blend",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-07-09",
+      "posted_ts": "1783607320.174739"
     }
   ]
 }
