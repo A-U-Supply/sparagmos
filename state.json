@@ -5493,6 +5493,29 @@
       ],
       "processed_date": "2026-07-09",
       "posted_ts": "1783607320.174739"
+    },
+    {
+      "source_file_ids": [
+        "F075KCD2AAY",
+        "F09DL4EM22H",
+        "F0403852B36"
+      ],
+      "source_dates": [
+        "2024-05-28",
+        "2025-09-05",
+        "2022-08-27"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "oil-spiral-cells",
+      "effects": [
+        "oilspiralcells"
+      ],
+      "processed_date": "2026-07-10",
+      "posted_ts": "1783692569.230469"
     }
   ]
 }
