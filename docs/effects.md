@@ -108,6 +108,8 @@ The effect is auto-discovered by the CLI's `_register_all_effects()` function �
 
 **jpeg_destroy** — Multi-generation JPEG compression. Save at very low quality, reopen, repeat. Each cycle amplifies compression artifacts — blocking, ringing, color shift. The digital equivalent of photocopying a photocopy.
 
+**tone** — The tonal primitive: grayscale, per-image Otsu (or fixed) binarization, flat posterize, percentile contrast normalization, and inversion, plus photographic tints — cyanotype, silver gelatin, sepia/bronze duotones, and riso-style spot inks on paper white. `mode: normalize` is the anti-mud anchor for chains that drift toward uniform grey.
+
 ### Pure Python — Simulation
 
 **crt_vhs** — Composite CRT/VHS simulation. Horizontal scan line darkening, random row jitter (tracking errors), chroma blur (color bleeding from analog signal degradation), phosphor glow (bloom from CRT phosphors).
@@ -135,6 +137,8 @@ The effect is auto-discovered by the CLI's `_register_all_effects()` function �
 **format_roundtrip** — Chains of lossy format conversions. JPEG → BMP → JPEG loses precision at each step. Potrace chain: raster → bitmap → vector trace → raster introduces dramatic simplification. Requires potrace for vector chain.
 
 **primitive** — Wraps the `primitive` Go binary. Reconstructs image using geometric shapes (triangles, rectangles, ellipses, circles). Low iteration counts produce abstract, painterly results. Requires primitive installed.
+
+**text_relic** — OCR-guarded destruction. Tesseract finds legible words; their pixel regions survive untouched (or lightly embossed) while everything around them is washed out, block-moshed, or pixel-sorted. If no text is found, the whole frame is destroyed. Requires tesseract installed.
 
 ### Neural / AI
 

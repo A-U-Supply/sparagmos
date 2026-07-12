@@ -1,0 +1,18 @@
+name: Omo Specimen
+description: >
+  Lab-plate compositing. One image is shot through with six circular
+  die-cuts, then takes its place in an Otsu stencil with the other two —
+  the result reads as a specimen tray or Rorschach plate: airy, clinical,
+  mostly light ground. Single output, omo batch.
+
+inputs: 3
+
+steps:
+  - type: ancient_sixshooter
+    image: a
+
+  - type: ancient_stencil
+    images: [a, b, c]
+    into: canvas
+    params:
+      output: random

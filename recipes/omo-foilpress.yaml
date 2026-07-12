@@ -1,0 +1,23 @@
+name: Omo Foilpress
+description: >
+  Material press. Gradient displacement pushes the stencil boundary until
+  the composite reads as an image hammered into metal, then a bronze
+  duotone with a contrast anchor keeps the relief from sinking into mud.
+  Embossed foil, not glitch. Single output, omo batch.
+
+inputs: 3
+
+steps:
+  - type: ancient_displacement
+    images: [a, b, c]
+    into: canvas
+    params:
+      strength: [14, 30]
+      output: random
+
+  - type: tone
+    image: canvas
+    params:
+      mode: normalize
+      cutoff: [0.5, 2.0]
+      tint: bronze

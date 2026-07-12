@@ -1,0 +1,23 @@
+name: Omo Medallion
+description: >
+  A kaleidoscope as an object, not a takeover. The second image is folded
+  into a radial mandala, then set only into the deepest shadows of the
+  host — which otherwise goes untouched. A medallion nesting in the dark
+  pockets of an ordinary photograph. Single output, omo batch.
+
+inputs: 2
+
+steps:
+  - type: ancient_kaleidoscope
+    image: b
+    params:
+      folds: [4, 8]
+
+  - type: mask_composite
+    images: [a, b]
+    into: canvas
+    params:
+      mask_source: threshold
+      threshold: [50, 100]
+      feather: [2, 8]
+      invert: false
