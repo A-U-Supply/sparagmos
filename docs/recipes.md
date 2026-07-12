@@ -2,6 +2,8 @@
 
 Recipes are YAML files in `recipes/` that define named pipelines of chained effects with parameters.
 
+**Naming conventions:** the `omo-` prefix (omophagia — the feast that follows the rending) marks the 2026 batch designed from the stacks survey of indexed outputs: single-output recipes across three registers — print-material (`omo-counterfeit`, `omo-specimen`, `omo-foilpress`, `omo-riso`), noir/toned (`omo-hardcut`, `omo-nocturne`), and semantic-collision (`omo-medallion`, `omo-reliquary`). New batches should adopt their own greppable prefix.
+
 ## Schema
 
 ### Single-input recipe (original / still supported)
@@ -205,6 +207,25 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 | style_weight | float | — | 1e6 | Style loss weight |
 | content_weight | float | — | 1 | Content loss weight |
 | iterations | int | 1-200 | 50 | Optimization iterations |
+
+### tone
+| Param | Type | Range | Default | Description |
+|-------|------|-------|---------|-------------|
+| mode | string | none/grayscale/binary/posterize/normalize/invert | none | Tonal operation |
+| tint | string | none/cyanotype/silver/sepia/bronze/ink | none | Photographic tint applied after mode |
+| inks | list/string | crimson/cobalt/vermilion/forest/violet/teal | all | Ink pool for `tint: ink` (seeded random pick; avoid 2-element lists — they parse as ranges) |
+| levels | int | 2-8 | 3 | Posterize levels |
+| cutoff | float | 0.0-5.0 | 1.0 | Percentile clipped at each end for normalize |
+| threshold | int | -1 to 255 | -1 | Binary threshold; -1 = per-image Otsu |
+| normalize_first | bool | — | false | Autocontrast before the mode operation |
+
+### text_relic
+| Param | Type | Range | Default | Description |
+|-------|------|-------|---------|-------------|
+| background | string | washout/mosh/sort/random | random | How the non-text region is destroyed |
+| preserve | string | sharp/emboss | sharp | Keep text pixels verbatim or lightly embossed |
+| pad | int | 0-60 | 10 | Padding around each detected word box |
+| min_conf | int | 0-95 | 40 | Minimum OCR confidence for a word to survive |
 
 ## Example Recipes with Commentary
 
