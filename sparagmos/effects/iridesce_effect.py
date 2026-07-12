@@ -1,9 +1,9 @@
 """Iridesce effect — oil-slick / thin-film interference sheen.
 
-Maps a cyclic interference palette onto the image's luminance gradient,
-so color shifts with surface "curvature" the way light does on a soap
-bubble or a gasoline film. From the glim batch: the stacks survey found
-nothing saturated or luminous in the corpus.
+Two-image compose: image A is the surface dipped in oil, image B is the
+light — B's luminance gradient drives the interference film that plays
+across A, so B's shapes are visible only as shifts in the sheen. With a
+single image the film comes from the image's own gradient.
 """
 
 from __future__ import annotations
@@ -12,7 +12,13 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from sparagmos.effects import ConfigError, Effect, EffectContext, EffectResult, register_effect
+from sparagmos.effects import (
+    ComposeEffect,
+    ConfigError,
+    EffectContext,
+    EffectResult,
+    register_effect,
+)
 
 
 def _film_palette(t: np.ndarray) -> np.ndarray:
@@ -24,15 +30,20 @@ def _film_palette(t: np.ndarray) -> np.ndarray:
     return np.stack([r, g, b], axis=-1) * 255.0
 
 
-class IridesceEffect(Effect):
+class IridesceEffect(ComposeEffect):
     name = "iridesce"
-    description = "Oil-slick sheen — thin-film interference palette driven by the luminance gradient"
+    description = "Oil-slick sheen on A driven by B's luminance gradient — B is the light on A's surface"
     requires: list[str] = []
 
-    def apply(self, image: Image.Image, params: dict, context: EffectContext) -> EffectResult:
+    def compose(self, images: list[Image.Image], params: dict, context: EffectContext) -> EffectResult:
         params = self.validate_params(params)
-        arr = np.array(image.convert("RGB")).astype(np.float32)
-        gray = cv2.cvtColor(arr.astype(np.uint8), cv2.COLOR_RGB2GRAY).astype(np.float32)
+        surface = images[0].convert("RGB")
+        light = (images[1] if len(images) > 1 else images[0]).convert("RGB")
+        if light.size != surface.size:
+            light = light.resize(surface.size, Image.LANCZOS)
+
+        arr = np.array(surface).astype(np.float32)
+        gray = cv2.cvtColor(np.array(light), cv2.COLOR_RGB2GRAY).astype(np.float32)
         gray = cv2.GaussianBlur(gray, (0, 0), sigmaX=params["scale"])
 
         gx = cv2.Sobel(gray, cv2.CV_32F, 1, 0, ksize=5)
@@ -44,14 +55,14 @@ class IridesceEffect(Effect):
             mag_hi = 1.0
         magnitude = np.clip(magnitude / mag_hi, 0.0, 1.0)
 
-        # Film "thickness": orientation sets the base color, magnitude and
-        # local brightness sweep it through the interference cycle.
+        # Film "thickness": B's gradient orientation sets the base color;
+        # its magnitude and brightness sweep it through the cycle.
         t = (orientation + magnitude * 1.5 + gray / 255.0 * 0.75 + params["phase"]) % 1.0
         film = _film_palette(t)
 
-        # Blend the film over the original, weighted by strength and gradient
-        # magnitude. Screen where the film is bright, multiply where dark, so
-        # the slick reads as saturated color rather than a pale sheen.
+        # Blend the film over A, weighted by strength and B's gradient
+        # magnitude. Screen where the film is bright, multiply where dark,
+        # so the slick reads as saturated color rather than a pale sheen.
         weight = (params["strength"] * (0.55 + 0.45 * magnitude))[:, :, None]
         screened = 255.0 - (255.0 - arr) * (255.0 - film) / 255.0
         overlaid = np.where(film > 128.0, screened, arr * film / 128.0)
@@ -61,6 +72,9 @@ class IridesceEffect(Effect):
             image=Image.fromarray(np.clip(out, 0, 255).astype(np.uint8)),
             metadata=params,
         )
+
+    def apply(self, image: Image.Image, params: dict, context: EffectContext) -> EffectResult:
+        return self.compose([image, image], params, context)
 
     def validate_params(self, params: dict) -> dict:
         return {

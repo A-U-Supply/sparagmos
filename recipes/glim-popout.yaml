@@ -1,14 +1,15 @@
 name: Glim Popout
 description: >
-  Illusion register — chromostereopsis. The image quantized to pure
-  saturated red and deep blue (sometimes with a black mid-band). Long
-  and short wavelengths focus at different depths, so the red plane
-  physically floats in front of the blue. Single output, glim batch.
+  Illusion register, two images at two depths: A's bright shapes become
+  the pure-red plane, B's bright shapes the deep-blue plane.
+  Chromostereopsis focuses the wavelengths at different depths, so A
+  physically floats in front of B. Single output, glim batch.
 
-inputs: 1
+inputs: 2
 
 steps:
   - type: chromostereo
-    image: canvas
+    images: [a, b]
+    into: canvas
     params:
-      bands: [2, 3]
+      cutoff: [0.45, 0.65]

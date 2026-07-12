@@ -110,17 +110,17 @@ The effect is auto-discovered by the CLI's `_register_all_effects()` function �
 
 **tone** — The tonal primitive: grayscale, per-image Otsu (or fixed) binarization, flat posterize, percentile contrast normalization, and inversion, plus photographic tints — cyanotype, silver gelatin, sepia/bronze duotones, and riso-style spot inks on paper white. `mode: normalize` is the anti-mud anchor for chains that drift toward uniform grey.
 
-**iridesce** — Oil-slick sheen. A cyclic thin-film interference palette rides the luminance gradient, so color sweeps with surface "curvature" like light on a soap bubble; gradient magnitude weights the blend so flat areas keep more source.
+**iridesce** — Oil-slick sheen (2 inputs). A is the surface dipped in oil; B is the light — B's luminance gradient drives the interference film that plays across A, so B's shapes appear only as shifts in the sheen.
 
-**prism** — Spectral dispersion. The luminance is tinted into N pure spectral copies displaced progressively along a light axis and lighten-blended: white where the copies align, full rainbows at every edge. Works on monochrome sources (it colorizes rather than hue-rotates).
+**prism** — Spectral dispersion (2 inputs). A's brighter-than-median luminance is split into N pure spectral copies displaced along a light axis and screened onto ground B: A's ghost lands on B as refracted rainbow light. Works on monochrome sources.
 
-**sequin** — Mirrored-disc mosaic: hex-packed sequins take their local color, hue-jittered and saturated, each with an off-center specular glint. Output capped at 2048px longest edge to keep PNG sizes in line.
+**sequin** — Flip-sequin pillow (2 inputs): hex-packed discs take A's local colors; wherever B is bright the discs flip to mirror silver, so B's shapes appear drawn into A. Output capped at 2048px longest edge.
 
-**holofoil** — Holographic sticker. Otsu shapes filled with an angle-swept rainbow foil plus a moving sheen band; starburst glints planted on the brightest source points; dark or paper ground.
+**holofoil** — Holographic sticker (2 inputs). Shapes cut from A's Otsu stencil, filled with angle-swept rainbow foil; B's blurred luminance phase-shifts the foil so B ghosts inside like the latent image in a real holo sticker. Starburst glints on A's brightest points.
 
-**chromostereo** — Chromostereopsis: the image quantized to pure saturated red and deep blue (optional black mid-band). The eye focuses the wavelengths at different depths, so red regions physically float in front of blue.
+**chromostereo** — Chromostereopsis (2 inputs): A's bright shapes become the pure-red plane, B's the deep-blue plane, the rest black. The eye focuses the wavelengths at different depths, so A physically floats in front of B.
 
-**driftring** — Peripheral drift illusion (Kitaoka "Rotating Snakes" family): concentric rings of wedge quads cycling black → dark → white → light in the source's palette, direction alternating per ring — the static image crawls in peripheral vision. Output capped at 2048px.
+**driftring** — Peripheral drift illusion (2 inputs, Kitaoka "Rotating Snakes" family): B's brightest points seed a Voronoi field of drift wheels; A supplies the palette. Rings of wedge quads cycle black → dark → white → light, direction alternating per ring and wheel — the static image crawls in peripheral vision. Output capped at 2048px.
 
 ### Pure Python — Simulation
 
@@ -150,7 +150,7 @@ The effect is auto-discovered by the CLI's `_register_all_effects()` function �
 
 **primitive** — Wraps the `primitive` Go binary. Reconstructs image using geometric shapes (triangles, rectangles, ellipses, circles). Low iteration counts produce abstract, painterly results. Requires primitive installed.
 
-**text_relic** — OCR-guarded destruction. Tesseract finds legible words; their pixel regions survive untouched (or lightly embossed) while everything around them is washed out, block-moshed, or pixel-sorted. If no text is found, the whole frame is destroyed. Requires tesseract installed.
+**text_relic** — OCR-guarded destruction (2 inputs). Tesseract finds legible words in A; they survive untouched (or embossed) while everything around them is REPLACED by a destroyed image B (washout / mosh / pixel-sort) — A's words embedded in B's ruins. No text found → destroyed B fills the frame. Requires tesseract installed.
 
 ### Neural / AI
 

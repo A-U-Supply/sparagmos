@@ -71,10 +71,10 @@ def test_holofoil_ground_param(photo, context):
 
 def test_prism_fringes_monochrome(photo, context):
     gray = photo.convert("L").convert("RGB")
-    result = PrismEffect().apply(gray, {"max_offset": 0.05, "keep_base": 0.2}, context)
+    result = PrismEffect().apply(gray, {"max_offset": 0.05, "ground_dim": 0.25}, context)
     arr = np.array(result.image).astype(int)
     chroma = np.abs(arr - arr.mean(axis=2, keepdims=True)).mean()
-    assert chroma > 5.0
+    assert chroma > 3.0
 
 
 def test_sequin_caps_oversize(context):
@@ -101,9 +101,73 @@ def test_bandsplit_resizes_mismatched(photo, context):
 
 
 def test_chromostereo_palette_is_pure(photo, context):
-    result = ChromostereoEffect().apply(photo, {"bands": 3}, context)
+    result = ChromostereoEffect().apply(photo, {}, context)
     colors = {tuple(c) for c in np.unique(np.array(result.image).reshape(-1, 3), axis=0)}
     assert len(colors) <= 3
+
+
+def test_chromostereo_two_planes(context):
+    """A's bright shape lands on the red plane, B's on the blue plane."""
+    a = np.zeros((120, 160, 3), dtype=np.uint8)
+    a[20:60, 20:60] = 255
+    b = np.zeros((120, 160, 3), dtype=np.uint8)
+    b[70:110, 100:140] = 255
+    result = ChromostereoEffect().compose(
+        [Image.fromarray(a), Image.fromarray(b)], {"cutoff": 0.5}, context
+    )
+    out = np.array(result.image).astype(int)
+    a_zone = out[30:50, 30:50]
+    b_zone = out[80:100, 110:130]
+    assert (a_zone[:, :, 0] > 200).mean() > 0.9  # red plane
+    assert (b_zone[:, :, 2] > 150).mean() > 0.9  # blue plane
+    assert (b_zone[:, :, 0] < 60).all()
+
+
+def test_sequin_flip_regions(photo, context):
+    """Discs under B's bright half flip to near-neutral silver."""
+    b = np.zeros((photo.height, photo.width), dtype=np.uint8)
+    b[:, photo.width // 2:] = 255
+    result = SequinEffect().compose(
+        [photo, Image.fromarray(b).convert("RGB")], {"disc": 20, "sparkle": 0.0}, context
+    )
+    out = np.array(result.image).astype(np.float32)
+    right = out[:, photo.width // 2 + 20:]
+    chroma = np.abs(right - right.mean(axis=2, keepdims=True)).mean()
+    assert chroma < 8.0  # silver side is near-neutral
+    assert right.mean() > 120  # and bright
+
+
+def test_iridesce_film_driven_by_b(context):
+    """A flat grey A gains structured color from B's gradient."""
+    flat = Image.new("RGB", (160, 120), (128, 128, 128))
+    grad = np.tile(np.linspace(0, 255, 160, dtype=np.uint8), (120, 1))
+    b = Image.fromarray(np.stack([grad] * 3, axis=2))
+    result = IridesceEffect().compose([flat, b], {"strength": 0.9}, context)
+    arr = np.array(result.image).astype(int)
+    chroma = np.abs(arr - arr.mean(axis=2, keepdims=True)).mean()
+    assert chroma > 3.0
+
+
+def test_prism_ground_is_b(context):
+    """With a black A (no light), the output is just B dimmed."""
+    black = Image.new("RGB", (160, 120), (0, 0, 0))
+    rng = np.random.default_rng(2)
+    b_arr = rng.integers(60, 220, (120, 160, 3), dtype=np.uint8)
+    result = PrismEffect().compose(
+        [black, Image.fromarray(b_arr)], {"ground_dim": 0.5}, context
+    )
+    out = np.array(result.image).astype(np.float32)
+    assert np.abs(out - b_arr.astype(np.float32) * 0.5).mean() < 3.0
+
+
+def test_driftring_wheels_seeded_by_b(photo, context):
+    b = np.zeros((photo.height, photo.width), dtype=np.uint8)
+    b[20:40, 20:40] = 255
+    b[200:220, 280:300] = 255
+    result = DriftringEffect().compose(
+        [photo, Image.fromarray(b).convert("RGB")], {"wheels": 4}, context
+    )
+    assert len(result.metadata["centers"]) >= 2
 
 
 def test_driftring_uses_four_step_palette(photo, context):

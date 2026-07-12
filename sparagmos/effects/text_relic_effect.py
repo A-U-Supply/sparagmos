@@ -1,9 +1,10 @@
 """Text relic effect — OCR-guarded destruction.
 
-Detected text regions survive untouched (or embossed) while everything
-around them is destroyed. Born from the stacks survey: surviving text was
-the single strongest predictor of a good sparagmos output, but until now
-it only survived by luck.
+Two-image compose: text detected in image A survives untouched (or
+embossed) while everything around it is REPLACED by a destroyed image B
+— A's words embedded in B's ruins. Born from the stacks survey:
+surviving text was the single strongest predictor of a good sparagmos
+output, but until now it only survived by luck.
 """
 
 from __future__ import annotations
@@ -13,18 +14,24 @@ import random
 import numpy as np
 from PIL import Image, ImageFilter
 
-from sparagmos.effects import ConfigError, Effect, EffectContext, EffectResult, register_effect
+from sparagmos.effects import (
+    ComposeEffect,
+    ConfigError,
+    EffectContext,
+    EffectResult,
+    register_effect,
+)
 
 BACKGROUNDS = ("washout", "mosh", "sort", "random")
 PRESERVE = ("sharp", "emboss")
 
 
-class TextRelicEffect(Effect):
+class TextRelicEffect(ComposeEffect):
     name = "text_relic"
-    description = "OCR finds text; text stays crisp while the rest of the image is destroyed"
+    description = "OCR finds A's text; it stays crisp, embedded in the destroyed remains of B"
     requires: list[str] = ["tesseract"]
 
-    def apply(self, image: Image.Image, params: dict, context: EffectContext) -> EffectResult:
+    def compose(self, images: list[Image.Image], params: dict, context: EffectContext) -> EffectResult:
         params = self.validate_params(params)
 
         try:
@@ -34,8 +41,12 @@ class TextRelicEffect(Effect):
                 "text_relic requires pytesseract. Install with: pip install pytesseract"
             ) from e
 
-        img = image.convert("RGB")
+        img = images[0].convert("RGB")
+        ruin_img = (images[1] if len(images) > 1 else images[0]).convert("RGB")
+        if ruin_img.size != img.size:
+            ruin_img = ruin_img.resize(img.size, Image.LANCZOS)
         arr = np.array(img)
+        ruin = np.array(ruin_img)
         h, w = arr.shape[:2]
         rng = random.Random(context.seed)
 
@@ -65,7 +76,7 @@ class TextRelicEffect(Effect):
         if background == "random":
             background = rng.choice(("washout", "mosh", "sort"))
 
-        destroyed = self._destroy(arr, background, rng)
+        destroyed = self._destroy(ruin, background, rng)
 
         if boxes:
             relic = arr.copy()
@@ -80,6 +91,9 @@ class TextRelicEffect(Effect):
             image=Image.fromarray(result),
             metadata={**params, "background_used": background, "text_boxes": boxes},
         )
+
+    def apply(self, image: Image.Image, params: dict, context: EffectContext) -> EffectResult:
+        return self.compose([image, image], params, context)
 
     def _destroy(self, arr: np.ndarray, background: str, rng: random.Random) -> np.ndarray:
         if background == "washout":

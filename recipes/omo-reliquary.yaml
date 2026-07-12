@@ -1,15 +1,16 @@
 name: Omo Reliquary
 description: >
-  Text survives the demolition. OCR finds every legible word and seals it
-  behind glass while the rest of the frame is washed out, moshed, or
-  pixel-sorted around the relics. What the image said outlives what the
-  image was. Single output, omo batch.
+  Two images: OCR finds every legible word in A and seals it behind
+  glass, while everything around the words is replaced by B — washed
+  out, moshed, or pixel-sorted. A's inscription survives, embedded in
+  the ruins of another image. Single output, omo batch.
 
-inputs: 1
+inputs: 2
 
 steps:
   - type: text_relic
-    image: canvas
+    images: [a, b]
+    into: canvas
     params:
       background: random
       preserve: sharp

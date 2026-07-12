@@ -1,15 +1,18 @@
 name: Glim Holofoil
 description: >
-  Sparkle register. Otsu shapes filled with angle-swept rainbow foil and
-  a moving sheen band, starburst glints planted on the brightest points —
-  a holographic trading-card sticker of whatever the source was. Single
-  output, glim batch.
+  Sparkle register, two images: shapes cut from A's Otsu stencil and
+  filled with angle-swept rainbow foil; B's luminance phase-shifts the
+  foil so B ghosts inside the hologram like the latent image in a real
+  holo sticker. Starburst glints on A's brightest points. Single output,
+  glim batch.
 
-inputs: 1
+inputs: 2
 
 steps:
   - type: holofoil
-    image: canvas
+    images: [a, b]
+    into: canvas
     params:
       angle: [0.0, 360.0]
       glints: [4, 9]
+      latent: [0.8, 1.8]
