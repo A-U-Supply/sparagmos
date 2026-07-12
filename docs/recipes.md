@@ -238,6 +238,7 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 | Param | Type | Range | Default | Description |
 |-------|------|-------|---------|-------------|
 | angle | float | 0-360 | 30 | Rainbow sweep axis (degrees) |
+| latent | float | 0.0-3.0 | 1.2 | How strongly B phase-shifts the foil (the latent image) |
 | glints | int | 0-12 | 6 | Starburst glints on brightest points |
 | invert | bool | — | false | Swap foil/ground regions |
 | ground | string | dark/paper | dark | Background fill |
@@ -248,7 +249,7 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 | copies | int | 3-12 | 7 | Spectral copies across red→violet |
 | max_offset | float | ≤1.0 = fraction of diagonal, else px | 0.04 | Dispersion distance |
 | axis | float | 0-360 | 0 | Dispersion axis (degrees) |
-| keep_base | float | 0.0-1.0 | 0.35 | How much original to retain |
+| ground_dim | float | 0.1-1.0 | 0.55 | How much of ground B shows beneath the dispersed light |
 
 ### sequin
 | Param | Type | Range | Default | Description |
@@ -256,6 +257,7 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 | disc | int | 8-96 | 26 | Sequin diameter (px) |
 | hue_jitter | float | 0.0-1.0 | 0.35 | Per-disc hue wobble |
 | sparkle | float | 0.0-1.0 | 0.6 | Fraction of discs with a specular glint |
+| flip_threshold | float | 0.3-0.85 | 0.55 | Normalized B brightness above which discs flip to silver |
 
 ### bandsplit
 | Param | Type | Range | Default | Description |
@@ -267,8 +269,8 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 ### chromostereo
 | Param | Type | Range | Default | Description |
 |-------|------|-------|---------|-------------|
-| bands | int | 2-3 | 2 | 2 = red/blue, 3 adds a black mid-band |
-| invert | bool | — | false | Swap red/blue assignment |
+| cutoff | float | 0.3-0.8 | 0.55 | Normalized brightness above which a shape joins its plane |
+| invert | bool | — | false | Swap which image gets the red (front) plane |
 | saturation | float | 0.6-1.0 | 1.0 | Color purity |
 
 ### driftring
@@ -278,6 +280,7 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 | segments | int | 8-48 | 24 | 4-step quads per ring |
 | hue_spread | float | 0.0-0.5 | 0.12 | Hue gap between dark and light steps |
 | texture | float | 0.0-0.4 | 0.0 | Whisper of the source inside the steps |
+| wheels | int | 1-9 | 5 | Drift wheels seeded from B's bright points |
 
 ### stereogram
 | Param | Type | Range | Default | Description |
