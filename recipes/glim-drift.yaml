@@ -1,0 +1,17 @@
+name: Glim Drift
+description: >
+  Illusion register — peripheral drift. The image is rebuilt as
+  concentric rings of wedge segments cycling black, dark, white, light
+  in the source's own palette, direction alternating ring to ring.
+  Hold still and look just beside it: the rings crawl. Single output,
+  glim batch.
+
+inputs: 1
+
+steps:
+  - type: driftring
+    image: canvas
+    params:
+      rings: [9, 15]
+      segments: [18, 30]
+      hue_spread: [0.08, 0.2]

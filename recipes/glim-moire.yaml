@@ -1,0 +1,25 @@
+name: Glim Moire
+description: >
+  Illusion register. Two contour-hugging line screens laid over each
+  other at slightly mismatched frequency and angle — the interference
+  bands aren't in either screen, and they shimmer and swim as you
+  scroll past. Single output, glim batch.
+
+inputs: 3
+
+steps:
+  - type: ancient_linescreen
+    images: [a, b, c]
+    into: canvas
+    params:
+      frequency: [24, 40]
+      angle: [40, 50]
+      output: random
+
+  - type: ancient_linescreen
+    images: [canvas, a, b]
+    into: canvas
+    params:
+      frequency: [24, 40]
+      angle: [44, 56]
+      output: random

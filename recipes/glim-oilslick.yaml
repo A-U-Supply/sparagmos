@@ -1,0 +1,16 @@
+name: Glim Oilslick
+description: >
+  Sparkle register. A thin-film interference palette rides the image's
+  own luminance gradient, so color sweeps with surface curvature —
+  the whole frame coated in soap-bubble gasoline sheen. Single output,
+  glim batch.
+
+inputs: 1
+
+steps:
+  - type: iridesce
+    image: canvas
+    params:
+      strength: [0.5, 0.85]
+      scale: [6.0, 14.0]
+      phase: [0.0, 1.0]
