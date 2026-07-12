@@ -1,16 +1,19 @@
 name: Glim Sequin
 description: >
-  Sparkle register. The image is rebuilt as hex-packed sequin discs —
-  each takes its local color, hue-jittered and saturated, with an
-  off-center specular glint. From across the room it's the picture;
-  up close it's craft-supply glitter. Single output, glim batch.
+  Sparkle register, two images — the flip-sequin pillow: A is the
+  fabric (each disc takes its local A color, hue-jittered), and B is
+  what someone dragged their hand across — where B is bright the discs
+  flip to mirror silver, so B's shapes appear drawn into A in flipped
+  sequins. Single output, glim batch.
 
-inputs: 1
+inputs: 2
 
 steps:
   - type: sequin
-    image: canvas
+    images: [a, b]
+    into: canvas
     params:
       disc: [16, 40]
       hue_jitter: [0.2, 0.6]
       sparkle: [0.45, 0.8]
+      flip_threshold: [0.45, 0.65]

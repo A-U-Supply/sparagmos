@@ -1,17 +1,18 @@
 name: Glim Prism
 description: >
-  Sparkle register. The image is split into hue-rotated copies smeared
-  progressively along a light axis and screen-blended back together —
-  every edge fringes into a full spectrum, light through a prism rather
-  than VHS aberration. Single output, glim batch.
+  Sparkle register, two images: B is the ground; A's luminance is split
+  into pure spectral copies smeared along a light axis and screened onto
+  B — A's ghost lands on B as refracted rainbow light, white where the
+  copies align, rainbows at every edge. Single output, glim batch.
 
-inputs: 1
+inputs: 2
 
 steps:
   - type: prism
-    image: canvas
+    images: [a, b]
+    into: canvas
     params:
       copies: [5, 9]
       max_offset: [0.02, 0.07]
       axis: [0.0, 360.0]
-      keep_base: [0.15, 0.35]
+      ground_dim: [0.4, 0.65]
