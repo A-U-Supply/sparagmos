@@ -1,0 +1,28 @@
+name: Omo Counterfeit
+description: >
+  Engraved-currency treatment. One image is wobble-eyed into off-axis
+  rings, then all three pass through a contour-following line screen —
+  the guilloche of a banknote that never cleared. Dithering restricts
+  the surface to a stamped-ink palette. Single output, omo batch.
+
+inputs: 3
+
+steps:
+  - type: ancient_wobbleeye
+    image: a
+    params:
+      rings: [3, 6]
+
+  - type: ancient_curvylinescreen
+    images: [b, a, c]
+    into: canvas
+    params:
+      frequency: [24, 60]
+      angle: [15, 75]
+      output: random
+
+  - type: dither
+    image: canvas
+    params:
+      palette: ega
+      num_colors: [4, 6]

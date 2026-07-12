@@ -1,0 +1,19 @@
+name: Omo Hardcut
+description: >
+  BW collage bot homage, one cut only. All three images are crushed to
+  pure per-image Otsu black-and-white — fills included, no midtones
+  anywhere — and composited along one hard binary seam. A whisper of
+  JPEG grit keeps the print honest. Single output, omo batch.
+
+inputs: 3
+
+steps:
+  - type: bw_stencil
+    images: [a, b, c]
+    into: canvas
+
+  - type: jpeg_destroy
+    image: canvas
+    params:
+      quality: [30, 60]
+      iterations: [1, 3]
