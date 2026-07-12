@@ -2,7 +2,7 @@
 
 Recipes are YAML files in `recipes/` that define named pipelines of chained effects with parameters.
 
-**Naming conventions:** the `omo-` prefix (omophagia — the feast that follows the rending) marks the 2026 batch designed from the stacks survey of indexed outputs: single-output recipes across three registers — print-material (`omo-counterfeit`, `omo-specimen`, `omo-foilpress`, `omo-riso`), noir/toned (`omo-hardcut`, `omo-nocturne`), and semantic-collision (`omo-medallion`, `omo-reliquary`). New batches should adopt their own greppable prefix.
+**Naming conventions:** the `omo-` prefix (omophagia — the feast that follows the rending) marks the 2026 batch designed from the stacks survey of indexed outputs: single-output recipes across three registers — print-material (`omo-counterfeit`, `omo-specimen`, `omo-foilpress`, `omo-riso`), noir/toned (`omo-hardcut`, `omo-nocturne`), and semantic-collision (`omo-medallion`, `omo-reliquary`). The `glim-` prefix marks the colorful/sparkly + optical-illusion batch (iridesce/holofoil/prism/sequin sparkle; hybrid/popout/drift/magiceye/moire illusions). New batches should adopt their own greppable prefix.
 
 ## Schema
 
@@ -226,6 +226,65 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 | preserve | string | sharp/emboss | sharp | Keep text pixels verbatim or lightly embossed |
 | pad | int | 0-60 | 10 | Padding around each detected word box |
 | min_conf | int | 0-95 | 40 | Minimum OCR confidence for a word to survive |
+
+### iridesce
+| Param | Type | Range | Default | Description |
+|-------|------|-------|---------|-------------|
+| strength | float | 0.0-1.0 | 0.65 | Blend weight of the interference film |
+| scale | float | 1-60 | 9 | Gaussian blur of the gradient field (px) |
+| phase | float | 0.0-1.0 | 0.0 | Phase offset into the film palette |
+
+### holofoil
+| Param | Type | Range | Default | Description |
+|-------|------|-------|---------|-------------|
+| angle | float | 0-360 | 30 | Rainbow sweep axis (degrees) |
+| glints | int | 0-12 | 6 | Starburst glints on brightest points |
+| invert | bool | — | false | Swap foil/ground regions |
+| ground | string | dark/paper | dark | Background fill |
+
+### prism
+| Param | Type | Range | Default | Description |
+|-------|------|-------|---------|-------------|
+| copies | int | 3-12 | 7 | Spectral copies across red→violet |
+| max_offset | float | ≤1.0 = fraction of diagonal, else px | 0.04 | Dispersion distance |
+| axis | float | 0-360 | 0 | Dispersion axis (degrees) |
+| keep_base | float | 0.0-1.0 | 0.35 | How much original to retain |
+
+### sequin
+| Param | Type | Range | Default | Description |
+|-------|------|-------|---------|-------------|
+| disc | int | 8-96 | 26 | Sequin diameter (px) |
+| hue_jitter | float | 0.0-1.0 | 0.35 | Per-disc hue wobble |
+| sparkle | float | 0.0-1.0 | 0.6 | Fraction of discs with a specular glint |
+
+### bandsplit
+| Param | Type | Range | Default | Description |
+|-------|------|-------|---------|-------------|
+| sigma_low | float | 4-48 | 14 | Lowpass blur of image A |
+| sigma_high | float | 0.8-12 | 3 | Highpass cutoff of image B |
+| high_gain | float | 0.3-3.0 | 1.2 | Detail layer gain |
+
+### chromostereo
+| Param | Type | Range | Default | Description |
+|-------|------|-------|---------|-------------|
+| bands | int | 2-3 | 2 | 2 = red/blue, 3 adds a black mid-band |
+| invert | bool | — | false | Swap red/blue assignment |
+| saturation | float | 0.6-1.0 | 1.0 | Color purity |
+
+### driftring
+| Param | Type | Range | Default | Description |
+|-------|------|-------|---------|-------------|
+| rings | int | 4-24 | 11 | Ring count across the half-frame |
+| segments | int | 8-48 | 24 | 4-step quads per ring |
+| hue_spread | float | 0.0-0.5 | 0.12 | Hue gap between dark and light steps |
+| texture | float | 0.0-0.4 | 0.0 | Whisper of the source inside the steps |
+
+### stereogram
+| Param | Type | Range | Default | Description |
+|-------|------|-------|---------|-------------|
+| strip | int | 48-220 | 110 | Repeating pattern width (px) |
+| depth_gain | float | 0.02-0.4 | 0.16 | Depth-to-shift scale |
+| mode | string | texture/dots | texture | Pattern source |
 
 ## Example Recipes with Commentary
 

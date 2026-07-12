@@ -1,0 +1,17 @@
+name: Glim Hybrid
+description: >
+  Illusion register — the Einstein/Marilyn trick. Low spatial
+  frequencies of A fused with high frequencies of B: the thumbnail is
+  one image, the expanded view is another. Squint and it changes
+  identity. Single output, glim batch.
+
+inputs: 2
+
+steps:
+  - type: bandsplit
+    images: [a, b]
+    into: canvas
+    params:
+      sigma_low: [10.0, 20.0]
+      sigma_high: [2.0, 5.0]
+      high_gain: [1.0, 1.6]

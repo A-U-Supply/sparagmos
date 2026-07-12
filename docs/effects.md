@@ -110,6 +110,18 @@ The effect is auto-discovered by the CLI's `_register_all_effects()` function �
 
 **tone** — The tonal primitive: grayscale, per-image Otsu (or fixed) binarization, flat posterize, percentile contrast normalization, and inversion, plus photographic tints — cyanotype, silver gelatin, sepia/bronze duotones, and riso-style spot inks on paper white. `mode: normalize` is the anti-mud anchor for chains that drift toward uniform grey.
 
+**iridesce** — Oil-slick sheen. A cyclic thin-film interference palette rides the luminance gradient, so color sweeps with surface "curvature" like light on a soap bubble; gradient magnitude weights the blend so flat areas keep more source.
+
+**prism** — Spectral dispersion. The luminance is tinted into N pure spectral copies displaced progressively along a light axis and lighten-blended: white where the copies align, full rainbows at every edge. Works on monochrome sources (it colorizes rather than hue-rotates).
+
+**sequin** — Mirrored-disc mosaic: hex-packed sequins take their local color, hue-jittered and saturated, each with an off-center specular glint. Output capped at 2048px longest edge to keep PNG sizes in line.
+
+**holofoil** — Holographic sticker. Otsu shapes filled with an angle-swept rainbow foil plus a moving sheen band; starburst glints planted on the brightest source points; dark or paper ground.
+
+**chromostereo** — Chromostereopsis: the image quantized to pure saturated red and deep blue (optional black mid-band). The eye focuses the wavelengths at different depths, so red regions physically float in front of blue.
+
+**driftring** — Peripheral drift illusion (Kitaoka "Rotating Snakes" family): concentric rings of wedge quads cycling black → dark → white → light in the source's palette, direction alternating per ring — the static image crawls in peripheral vision. Output capped at 2048px.
+
 ### Pure Python — Simulation
 
 **crt_vhs** — Composite CRT/VHS simulation. Horizontal scan line darkening, random row jitter (tracking errors), chroma blur (color bleeding from analog signal degradation), phosphor glow (bloom from CRT phosphors).

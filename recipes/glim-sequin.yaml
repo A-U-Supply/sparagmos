@@ -1,0 +1,16 @@
+name: Glim Sequin
+description: >
+  Sparkle register. The image is rebuilt as hex-packed sequin discs —
+  each takes its local color, hue-jittered and saturated, with an
+  off-center specular glint. From across the room it's the picture;
+  up close it's craft-supply glitter. Single output, glim batch.
+
+inputs: 1
+
+steps:
+  - type: sequin
+    image: canvas
+    params:
+      disc: [16, 40]
+      hue_jitter: [0.2, 0.6]
+      sparkle: [0.45, 0.8]
