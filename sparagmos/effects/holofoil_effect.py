@@ -1,8 +1,9 @@
-"""Holofoil effect — holographic sticker treatment.
+"""Holofoil effect — holographic sticker with a latent second image.
 
-Otsu shapes filled with an angle-driven rainbow gradient plus starburst
-glints at the image's brightest points: a holographic trading-card
-sticker of whatever the source was.
+Two-image compose: shapes are cut from image A's Otsu stencil and filled
+with angle-swept rainbow foil; image B's blurred luminance phase-shifts
+the foil, so B ghosts inside the hologram the way real holo stickers
+hide a latent image. Starburst glints land on A's brightest points.
 """
 
 from __future__ import annotations
@@ -13,7 +14,13 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from sparagmos.effects import ConfigError, Effect, EffectContext, EffectResult, register_effect
+from sparagmos.effects import (
+    ComposeEffect,
+    ConfigError,
+    EffectContext,
+    EffectResult,
+    register_effect,
+)
 from sparagmos.effects.tone_effect import _otsu_threshold
 
 GROUNDS = {"dark": (14, 14, 22), "paper": (242, 238, 228)}
@@ -32,15 +39,20 @@ def _rainbow(t: np.ndarray) -> np.ndarray:
     return np.stack([r, g, b], axis=-1) * 255.0
 
 
-class HolofoilEffect(Effect):
+class HolofoilEffect(ComposeEffect):
     name = "holofoil"
-    description = "Holographic sticker — Otsu shapes filled with angle-swept rainbow foil plus starburst glints"
+    description = "Holographic sticker — A's Otsu shapes in rainbow foil, B ghosting inside as the latent image"
     requires: list[str] = []
 
-    def apply(self, image: Image.Image, params: dict, context: EffectContext) -> EffectResult:
+    def compose(self, images: list[Image.Image], params: dict, context: EffectContext) -> EffectResult:
         params = self.validate_params(params)
         rng = random.Random(context.seed)
-        arr = np.array(image.convert("RGB"))
+        base = images[0].convert("RGB")
+        latent_img = (images[1] if len(images) > 1 else images[0]).convert("RGB")
+        if latent_img.size != base.size:
+            latent_img = latent_img.resize(base.size, Image.LANCZOS)
+
+        arr = np.array(base)
         h, w = arr.shape[:2]
         gray = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
 
@@ -56,7 +68,10 @@ class HolofoilEffect(Effect):
         shimmer = cv2.GaussianBlur(
             np.random.default_rng(context.seed).random((h, w)).astype(np.float32), (0, 0), 24
         )
-        foil = _rainbow(sweep * 2.0 + shimmer * 0.5 + gray.astype(np.float32) / 255.0 * 0.3)
+        # The latent image: B's blurred luminance phase-shifts the foil.
+        latent = cv2.cvtColor(np.array(latent_img), cv2.COLOR_RGB2GRAY).astype(np.float32)
+        latent = cv2.GaussianBlur(latent, (0, 0), 6) / 255.0
+        foil = _rainbow(sweep * 2.0 + shimmer * 0.5 + latent * params["latent"])
         # Foil sheen: brighten toward white along a soft secondary band
         sheen = (0.5 + 0.5 * np.cos(sweep * 12.0 * np.pi + shimmer * 4.0))[:, :, None]
         foil = foil * (0.75 + 0.25 * sheen) + 255.0 * 0.18 * sheen
@@ -68,6 +83,9 @@ class HolofoilEffect(Effect):
         img = Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))
         self._add_glints(img, gray, fg, params["glints"], rng)
         return EffectResult(image=img, metadata={**params, "threshold": thresh})
+
+    def apply(self, image: Image.Image, params: dict, context: EffectContext) -> EffectResult:
+        return self.compose([image, image], params, context)
 
     @staticmethod
     def _add_glints(img: Image.Image, gray: np.ndarray, fg: np.ndarray, n: int, rng: random.Random) -> None:
@@ -106,6 +124,7 @@ class HolofoilEffect(Effect):
             "glints": max(0, min(12, int(params.get("glints", 6)))),
             "invert": bool(params.get("invert", False)),
             "ground": ground,
+            "latent": max(0.0, min(3.0, float(params.get("latent", 1.2)))),
         }
 
 
