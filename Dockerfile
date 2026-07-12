@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     netpbm \
     ffmpeg \
     potrace \
+    tesseract-ocr \
+    tesseract-ocr-eng \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy primitive binary from Go build stage
