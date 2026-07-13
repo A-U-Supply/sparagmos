@@ -12,7 +12,7 @@ steps:
     images: [a, b, c]
     into: canvas
     params:
-      frequency: [24, 40]
+      frequency: [14, 26]
       angle: [40, 50]
       output: random
 
@@ -20,6 +20,6 @@ steps:
     images: [canvas, a, b]
     into: canvas
     params:
-      frequency: [24, 40]
+      frequency: [14, 26]
       angle: [44, 56]
       output: random

@@ -2,9 +2,9 @@ name: Omo Nocturne
 description: >
   Daguerreotype broadcast. Silver gelatin toning — crushed blacks,
   halation bloom, film grain — composited through a single Otsu stencil,
-  then run through a dying CRT: faint scan lines, a breath of jitter,
-  no color bleed. A century-old print received on a dead channel.
-  Single output, omo batch.
+  received on a dying CRT, and then every legible word from the first
+  image is re-stamped crisp over the transmission. The text survives the
+  broadcast. Single output, omo batch.
 
 inputs: 3
 
@@ -22,3 +22,12 @@ steps:
       jitter_amount: [1, 2]
       color_bleed: 0.0
       phosphor_glow: [0.05, 0.15]
+
+  - type: text_relic
+    images: [a, canvas]
+    into: canvas
+    params:
+      background: keep
+      preserve: sharp
+      pad: [4, 10]
+      min_conf: [40, 60]
