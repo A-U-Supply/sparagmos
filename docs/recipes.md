@@ -222,7 +222,7 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 ### text_relic
 | Param | Type | Range | Default | Description |
 |-------|------|-------|---------|-------------|
-| background | string | washout/mosh/sort/random | random | How the non-text region is destroyed |
+| background | string | washout/mosh/sort/random/keep | random | How the non-text region is destroyed; `keep` destroys nothing and just stamps A's text onto B |
 | preserve | string | sharp/emboss | sharp | Keep text pixels verbatim or lightly embossed |
 | pad | int | 0-60 | 10 | Padding around each detected word box |
 | min_conf | int | 0-95 | 40 | Minimum OCR confidence for a word to survive |
@@ -233,6 +233,7 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 | strength | float | 0.0-1.0 | 0.65 | Blend weight of the interference film |
 | scale | float | 1-60 | 9 | Gaussian blur of the gradient field (px) |
 | phase | float | 0.0-1.0 | 0.0 | Phase offset into the film palette |
+| gloss | float | 0.0-1.0 | 0.5 | Wet specular bloom strength |
 
 ### holofoil
 | Param | Type | Range | Default | Description |
@@ -250,6 +251,7 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 | max_offset | float | ≤1.0 = fraction of diagonal, else px | 0.04 | Dispersion distance |
 | axis | float | 0-360 | 0 | Dispersion axis (degrees) |
 | ground_dim | float | 0.1-1.0 | 0.55 | How much of ground B shows beneath the dispersed light |
+| light_gain | float | 0.5-3.0 | 1.5 | Brightness multiplier on A's dispersed light |
 
 ### sequin
 | Param | Type | Range | Default | Description |
@@ -271,6 +273,8 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 |-------|------|-------|---------|-------------|
 | cutoff | float | 0.3-0.8 | 0.55 | Normalized brightness above which a shape joins its plane |
 | invert | bool | — | false | Swap which image gets the red (front) plane |
+| overlay | float | 0.6-1.0 | 0.85 | Red-plane opacity (blue ghosts through its edges) |
+| shadow | int | 0-40 | 10 | Drop-shadow offset A casts onto the blue layer (px) |
 | saturation | float | 0.6-1.0 | 1.0 | Color purity |
 
 ### driftring

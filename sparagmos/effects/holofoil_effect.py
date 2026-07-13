@@ -72,9 +72,14 @@ class HolofoilEffect(ComposeEffect):
         latent = cv2.cvtColor(np.array(latent_img), cv2.COLOR_RGB2GRAY).astype(np.float32)
         latent = cv2.GaussianBlur(latent, (0, 0), 6) / 255.0
         foil = _rainbow(sweep * 2.0 + shimmer * 0.5 + latent * params["latent"])
-        # Foil sheen: brighten toward white along a soft secondary band
+        # Metallic base: mix the rainbow halfway toward silver so the sheen
+        # reads as foil, not candy; then B also modulates BRIGHTNESS so the
+        # latent image reads as an embossed ghost, not just a hue drift.
+        silver = np.full_like(foil, 205.0)
+        foil = foil * 0.5 + silver * 0.5
+        foil = foil * (0.68 + 0.55 * latent)[:, :, None]
         sheen = (0.5 + 0.5 * np.cos(sweep * 12.0 * np.pi + shimmer * 4.0))[:, :, None]
-        foil = foil * (0.75 + 0.25 * sheen) + 255.0 * 0.18 * sheen
+        foil = foil * (0.75 + 0.25 * sheen) + 255.0 * 0.22 * sheen
 
         out = np.empty_like(arr, dtype=np.float32)
         out[:] = GROUNDS[params["ground"]]

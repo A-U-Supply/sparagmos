@@ -11,6 +11,7 @@ size stays in line with the rest of the corpus.
 
 from __future__ import annotations
 
+import cv2
 import numpy as np
 from PIL import Image, ImageFilter
 
@@ -21,6 +22,7 @@ from sparagmos.effects import (
     EffectResult,
     register_effect,
 )
+from sparagmos.effects.tone_effect import _otsu_threshold
 
 MAX_EDGE = 1800
 
@@ -41,11 +43,17 @@ class StereogramEffect(ComposeEffect):
         w, h = depth_src.size
         strip = params["strip"]
 
-        # Depth map: blurred, normalized 0..1 (bright = near)
-        depth_img = depth_src.filter(ImageFilter.GaussianBlur(radius=max(2, strip // 12)))
-        depth = np.array(depth_img).astype(np.float32)
-        lo, hi = np.percentile(depth, 4), np.percentile(depth, 96)
-        depth = np.clip((depth - lo) / max(1.0, hi - lo), 0.0, 1.0)
+        # Depth map: a posterized SILHOUETTE, like real Magic Eye plates —
+        # a crisp figure floating on one plane reads; continuous depth mush
+        # doesn't. Otsu splits figure from ground; light blur rounds edges.
+        depth_img = depth_src.filter(ImageFilter.GaussianBlur(radius=max(2, strip // 16)))
+        depth = np.array(depth_img).astype(np.uint8)
+        figure = (depth > _otsu_threshold(depth)).astype(np.float32)
+        # The silhouette is the minority region, raised toward the viewer
+        if figure.mean() > 0.5:
+            figure = 1.0 - figure
+        figure = cv2.GaussianBlur(figure, (0, 0), sigmaX=2.0)
+        depth = 0.12 + 0.78 * figure
 
         # Texture strip: a strip-wide crop of B, tiled vertically to output height
         tex_h = max(strip, int(texture.height * strip / max(1, texture.width)))

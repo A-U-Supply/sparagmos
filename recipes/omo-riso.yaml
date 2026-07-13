@@ -1,24 +1,51 @@
 name: Omo Riso
 description: >
-  Spot-color risograph. A halftone dot-screen stencil is normalized,
-  posterized to two or three flat levels, and printed in a single random
-  ink on paper white — crimson, cobalt, vermilion, forest, violet, or
-  teal. Flat, bright, and hard-edged. Single output, omo batch.
+  Two-color risograph overprint. A halftone dot-screen plate and a
+  line-screen plate are each posterized flat and printed in their own
+  random spot ink, then overprinted multiply — two images, two visibly
+  different inks, the registration slightly off the way risos always
+  are. Single output, omo batch.
 
 inputs: 3
 
 steps:
   - type: ancient_halftone
     images: [a, b, c]
-    into: canvas
+    into: plate1
     params:
       frequency: [30, 60]
       output: random
 
   - type: tone
-    image: canvas
+    image: plate1
     params:
       mode: posterize
       levels: [2, 3]
       normalize_first: true
       tint: ink
+      inks: [crimson, vermilion, violet]
+
+  - type: ancient_linescreen
+    images: [b, c, a]
+    into: plate2
+    params:
+      frequency: [20, 44]
+      output: random
+
+  - type: tone
+    image: plate2
+    params:
+      mode: posterize
+      levels: [2, 3]
+      normalize_first: true
+      tint: ink
+      inks: [cobalt, forest, teal]
+
+  - type: blend
+    images: [plate1, plate2]
+    into: canvas
+    params:
+      mode: multiply
+      strength: [0.85, 1.0]
+      offset_x: [-30, 30]
+      offset_y: [-30, 30]

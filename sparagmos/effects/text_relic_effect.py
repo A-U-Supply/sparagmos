@@ -22,7 +22,7 @@ from sparagmos.effects import (
     register_effect,
 )
 
-BACKGROUNDS = ("washout", "mosh", "sort", "random")
+BACKGROUNDS = ("washout", "mosh", "sort", "random", "keep")
 PRESERVE = ("sharp", "emboss")
 
 
@@ -76,7 +76,24 @@ class TextRelicEffect(ComposeEffect):
         if background == "random":
             background = rng.choice(("washout", "mosh", "sort"))
 
-        destroyed = self._destroy(ruin, background, rng)
+        # keep: destroy nothing — stamp A's text regions onto B as-is.
+        destroyed = ruin if background == "keep" else self._destroy(ruin, background, rng)
+
+        fallback = None
+        if not boxes and background != "keep":
+            # Asemic fallback: no words found, so A's strongest marks survive
+            # instead — dilated high-gradient contours, padded like word boxes.
+            import cv2
+
+            gray = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
+            gx = cv2.Sobel(gray, cv2.CV_32F, 1, 0, ksize=3)
+            gy = cv2.Sobel(gray, cv2.CV_32F, 0, 1, ksize=3)
+            mag = np.sqrt(gx * gx + gy * gy)
+            strong = mag > np.percentile(mag, 96)
+            kernel = np.ones((max(3, pad), max(3, pad)), np.uint8)
+            mask = cv2.dilate(strong.astype(np.uint8), kernel).astype(bool)
+            boxes = -1  # sentinel: asemic marks, not words
+            fallback = "asemic"
 
         if boxes:
             relic = arr.copy()
@@ -89,7 +106,8 @@ class TextRelicEffect(ComposeEffect):
 
         return EffectResult(
             image=Image.fromarray(result),
-            metadata={**params, "background_used": background, "text_boxes": boxes},
+            metadata={**params, "background_used": background, "text_boxes": boxes,
+                      "fallback": fallback},
         )
 
     def apply(self, image: Image.Image, params: dict, context: EffectContext) -> EffectResult:
@@ -100,7 +118,7 @@ class TextRelicEffect(ComposeEffect):
             return self._washout(arr)
         if background == "mosh":
             return self._mosh(arr, rng)
-        return self._sort(arr)
+        return self._sort(arr, rng)
 
     @staticmethod
     def _washout(arr: np.ndarray) -> np.ndarray:
@@ -129,18 +147,21 @@ class TextRelicEffect(ComposeEffect):
         return result
 
     @staticmethod
-    def _sort(arr: np.ndarray) -> np.ndarray:
-        """Column-sort pixels by brightness in mid-tone spans."""
+    def _sort(arr: np.ndarray, rng: random.Random) -> np.ndarray:
+        """Column-sort pixels by brightness in BOUNDED segments — texture,
+        not frame-length smears."""
         result = arr.copy()
         gray = arr.mean(axis=2)
-        span = (gray > 60) & (gray < 200)
+        h = arr.shape[0]
         for x in range(arr.shape[1]):
-            ys = np.where(span[:, x])[0]
-            if len(ys) < 8:
-                continue
-            y0, y1 = ys[0], ys[-1] + 1
-            order = np.argsort(gray[y0:y1, x])
-            result[y0:y1, x] = arr[y0:y1, x][order]
+            y = rng.randint(0, 60)
+            while y < h - 12:
+                seg = rng.randint(40, 120)
+                y1 = min(h, y + seg)
+                if rng.random() < 0.75:
+                    order = np.argsort(gray[y:y1, x])
+                    result[y:y1, x] = arr[y:y1, x][order]
+                y = y1 + rng.randint(4, 40)
         return result
 
     def validate_params(self, params: dict) -> dict:

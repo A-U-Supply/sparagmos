@@ -150,7 +150,7 @@ The effect is auto-discovered by the CLI's `_register_all_effects()` function �
 
 **primitive** — Wraps the `primitive` Go binary. Reconstructs image using geometric shapes (triangles, rectangles, ellipses, circles). Low iteration counts produce abstract, painterly results. Requires primitive installed.
 
-**text_relic** — OCR-guarded destruction (2 inputs). Tesseract finds legible words in A; they survive untouched (or embossed) while everything around them is REPLACED by a destroyed image B (washout / mosh / pixel-sort) — A's words embedded in B's ruins. No text found → destroyed B fills the frame. Requires tesseract installed.
+**text_relic** — OCR-guarded destruction (2 inputs). Tesseract finds legible words in A; they survive untouched (or embossed) while everything around them is REPLACED by a destroyed image B (washout / mosh / pixel-sort) — A's words embedded in B's ruins. No text found → A's strongest contours survive instead as asemic marks. Requires tesseract installed.
 
 ### Neural / AI
 

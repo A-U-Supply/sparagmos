@@ -1,9 +1,9 @@
 name: Glim Magiceye
 description: >
-  Illusion register — a genuine autostereogram. Image A's luminance
-  becomes a depth map, image B the repeating texture. Unfocus or cross
-  your eyes until the pattern doubles and A's shapes float free of the
-  surface. Single output, glim batch.
+  Illusion register — a genuine autostereogram. A's Otsu silhouette
+  becomes a crisp floating depth plane; B supplies the dense random-dot
+  palette, Magic-Eye style. Unfocus or cross your eyes until the pattern
+  doubles and A's shape lifts off the page. Single output, glim batch.
 
 inputs: 2
 
@@ -12,6 +12,6 @@ steps:
     images: [a, b]
     into: canvas
     params:
-      strip: [90, 130]
-      depth_gain: [0.12, 0.22]
-      mode: texture
+      strip: [56, 88]
+      depth_gain: [0.14, 0.24]
+      mode: dots
