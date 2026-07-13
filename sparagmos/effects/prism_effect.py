@@ -54,6 +54,7 @@ class PrismEffect(ComposeEffect):
         # bright sources don't wash the whole frame into haze.
         floor = float(np.median(gray))
         gray = np.clip((gray - floor) / max(0.15, 1.0 - floor), 0.0, 1.0)
+        gray = np.clip(gray * params["light_gain"], 0.0, 1.0)
         acc = np.zeros((h, w, 3), dtype=np.float32)
         for i in range(copies):
             frac = i / max(1, copies - 1)
@@ -84,6 +85,7 @@ class PrismEffect(ComposeEffect):
             "max_offset": max(0.005, min(400.0, float(params.get("max_offset", 0.04)))),
             "axis": float(params.get("axis", 0.0)) % 360.0,
             "ground_dim": max(0.1, min(1.0, float(params.get("ground_dim", 0.55)))),
+            "light_gain": max(0.5, min(3.0, float(params.get("light_gain", 1.5)))),
         }
 
 

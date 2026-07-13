@@ -54,9 +54,21 @@ class ChromostereoEffect(ComposeEffect):
         out = np.empty((h, w, 3), dtype=np.float32)
         out[:] = (4.0, 2.0, 8.0)
         out[back] = blue
-        out[front] = red
 
-        return EffectResult(image=Image.fromarray(out.astype(np.uint8)), metadata=params)
+        # Monocular depth cues so red reads as IN FRONT, not just adjacent:
+        # a soft dark shadow cast by A's shapes onto the blue layer, and the
+        # red plane laid on semi-transparent so blue ghosts through its edges.
+        shadow_px = params["shadow"]
+        if shadow_px > 0:
+            shadow = np.zeros((h, w), dtype=np.float32)
+            shadow[shadow_px:, shadow_px:] = front[:-shadow_px, :-shadow_px].astype(np.float32)
+            shadow = cv2.GaussianBlur(shadow, (0, 0), sigmaX=max(2, shadow_px / 2))
+            out *= (1.0 - 0.7 * np.clip(shadow, 0, 1))[:, :, None]
+
+        alpha = params["overlay"]
+        out[front] = out[front] * (1.0 - alpha) + red[None, :] * alpha
+
+        return EffectResult(image=Image.fromarray(np.clip(out, 0, 255).astype(np.uint8)), metadata=params)
 
     def apply(self, image: Image.Image, params: dict, context: EffectContext) -> EffectResult:
         return self.compose([image, image], params, context)
@@ -66,6 +78,8 @@ class ChromostereoEffect(ComposeEffect):
             "cutoff": max(0.3, min(0.8, float(params.get("cutoff", 0.55)))),
             "invert": bool(params.get("invert", False)),
             "saturation": max(0.6, min(1.0, float(params.get("saturation", 1.0)))),
+            "overlay": max(0.6, min(1.0, float(params.get("overlay", 0.85)))),
+            "shadow": max(0, min(40, int(params.get("shadow", 10)))),
         }
 
 

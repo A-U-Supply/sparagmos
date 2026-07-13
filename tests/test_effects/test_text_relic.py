@@ -88,7 +88,19 @@ def test_text_region_survives(effect, text_image, context, background):
 
 
 @needs_tesseract
-def test_no_text_destroys_whole_frame(effect, no_text_image, context):
+def test_no_text_falls_back_to_asemic_marks(effect, no_text_image, context):
     result = effect.apply(no_text_image, {"background": "washout"}, context)
-    assert result.metadata["text_boxes"] == 0
+    assert result.metadata["fallback"] == "asemic"
     assert not np.array_equal(np.array(no_text_image), np.array(result.image))
+
+
+@needs_tesseract
+def test_keep_mode_stamps_text_without_destroying(effect, text_image, context):
+    b = Image.new("RGB", text_image.size, (40, 90, 40))
+    result = effect.compose([text_image, b], {"background": "keep"}, context)
+    out = np.array(result.image)
+    assert result.metadata["text_boxes"] > 0
+    # Most of the frame is untouched B; some pixels come from A's text plate
+    green = (np.abs(out.astype(int) - np.array([40, 90, 40])) < 2).all(axis=2)
+    assert green.mean() > 0.5
+    assert (~green).sum() > 200

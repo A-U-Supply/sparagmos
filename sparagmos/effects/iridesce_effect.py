@@ -27,7 +27,10 @@ def _film_palette(t: np.ndarray) -> np.ndarray:
     r = 0.5 + 0.5 * np.cos(two_pi * t)
     g = 0.5 + 0.5 * np.cos(two_pi * t - 2.1)
     b = 0.5 + 0.5 * np.cos(two_pi * t - 4.2)
-    return np.stack([r, g, b], axis=-1) * 255.0
+    rgb = np.stack([r, g, b], axis=-1)
+    # Steepen toward pure hues so the film reads saturated, not pastel
+    rgb = np.clip((rgb - 0.5) * 1.6 + 0.5, 0.0, 1.0)
+    return rgb * 255.0
 
 
 class IridesceEffect(ComposeEffect):
@@ -57,7 +60,7 @@ class IridesceEffect(ComposeEffect):
 
         # Film "thickness": B's gradient orientation sets the base color;
         # its magnitude and brightness sweep it through the cycle.
-        t = (orientation + magnitude * 1.5 + gray / 255.0 * 0.75 + params["phase"]) % 1.0
+        t = (orientation + magnitude * 2.0 + gray / 255.0 * 1.0 + params["phase"]) % 1.0
         film = _film_palette(t)
 
         # Blend the film over A, weighted by strength and B's gradient
@@ -67,6 +70,13 @@ class IridesceEffect(ComposeEffect):
         screened = 255.0 - (255.0 - arr) * (255.0 - film) / 255.0
         overlaid = np.where(film > 128.0, screened, arr * film / 128.0)
         out = arr * (1.0 - weight) + overlaid * weight
+
+        # Wet gloss: specular bloom where the light source is hottest
+        if params["gloss"] > 0:
+            norm = gray / 255.0
+            spec = np.power(np.clip(norm, 0, 1), 4.0)
+            spec = cv2.GaussianBlur(spec, (0, 0), sigmaX=max(2.0, params["scale"] / 2)) * params["gloss"]
+            out = 255.0 - (255.0 - out) * (255.0 - spec[:, :, None] * 255.0) / 255.0
 
         return EffectResult(
             image=Image.fromarray(np.clip(out, 0, 255).astype(np.uint8)),
@@ -79,8 +89,9 @@ class IridesceEffect(ComposeEffect):
     def validate_params(self, params: dict) -> dict:
         return {
             "strength": max(0.0, min(1.0, float(params.get("strength", 0.65)))),
-            "scale": max(1.0, min(60.0, float(params.get("scale", 9.0)))),
+            "scale": max(4.0, min(60.0, float(params.get("scale", 12.0)))),
             "phase": float(params.get("phase", 0.0)) % 1.0,
+            "gloss": max(0.0, min(1.0, float(params.get("gloss", 0.5)))),
         }
 
 

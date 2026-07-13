@@ -12,8 +12,6 @@ size stays in line with the rest of the corpus.
 
 from __future__ import annotations
 
-import colorsys
-
 import cv2
 import numpy as np
 from PIL import Image
@@ -75,19 +73,21 @@ class DriftringEffect(ComposeEffect):
         arr = np.array(palette_img)
         h, w = arr.shape[:2]
 
-        # Palette: black / dark saturated / white / light pale, hues from A.
+        # LOCAL color steps so A's image emerges through the wheel field:
+        # the black/white steps stay global (they carry the drift illusion),
+        # while the dark and light steps take A's local color, darkened-
+        # saturated and lightened respectively.
+        blur = cv2.GaussianBlur(arr, (0, 0), sigmaX=max(3, min(w, h) // 60))
+        hsv = cv2.cvtColor(blur, cv2.COLOR_RGB2HSV).astype(np.float32)
+        dark_hsv = hsv.copy()
+        dark_hsv[:, :, 1] = np.clip(dark_hsv[:, :, 1] * 2.2 + 90, 120, 255)
+        dark_hsv[:, :, 2] = np.clip(dark_hsv[:, :, 2] * 0.4 + 25, 0, 140)
+        dark_img = cv2.cvtColor(dark_hsv.astype(np.uint8), cv2.COLOR_HSV2RGB).astype(np.float32)
+        light_hsv = hsv.copy()
+        light_hsv[:, :, 1] = np.clip(light_hsv[:, :, 1] * 1.1 + 60, 70, 255)
+        light_hsv[:, :, 2] = np.clip(light_hsv[:, :, 2] * 0.45 + 165, 130, 245)
+        light_img = cv2.cvtColor(light_hsv.astype(np.uint8), cv2.COLOR_HSV2RGB).astype(np.float32)
         hue = _dominant_hue(arr)
-        dark = colorsys.hls_to_rgb(hue, 0.32, 0.95)
-        light = colorsys.hls_to_rgb((hue + params["hue_spread"]) % 1.0, 0.78, 0.85)
-        palette = np.array(
-            [
-                (8, 8, 10),
-                tuple(int(c * 255) for c in dark),
-                (250, 250, 248),
-                tuple(int(c * 255) for c in light),
-            ],
-            dtype=np.uint8,
-        )
 
         seed_gray = cv2.cvtColor(np.array(seed_img), cv2.COLOR_RGB2GRAY)
         centers = _wheel_centers(seed_gray, params["wheels"])
@@ -111,11 +111,16 @@ class DriftringEffect(ComposeEffect):
             direction = np.where(ring % 2 == 0, 1, -1) * (1 if wi % 2 == 0 else -1)
             idx[mask] = ((seg * direction + ring) % 4)[mask]
 
-        out = palette[idx]
+        out = np.empty((h, w, 3), dtype=np.float32)
+        out[idx == 0] = (8.0, 8.0, 10.0)
+        out[idx == 2] = (250.0, 250.0, 248.0)
+        out[idx == 1] = dark_img[idx == 1]
+        out[idx == 3] = light_img[idx == 3]
 
         if params["texture"] > 0:
             t = params["texture"]
-            out = (out.astype(np.float32) * (1 - t) + arr.astype(np.float32) * t).astype(np.uint8)
+            out = out * (1 - t) + arr.astype(np.float32) * t
+        out = out.astype(np.uint8)
 
         return EffectResult(
             image=Image.fromarray(out),

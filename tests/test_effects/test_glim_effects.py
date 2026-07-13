@@ -100,10 +100,14 @@ def test_bandsplit_resizes_mismatched(photo, context):
     assert result.image.size == photo.size
 
 
-def test_chromostereo_palette_is_pure(photo, context):
+def test_chromostereo_planes_dominate(photo, context):
+    """Red/blue/near-black should dominate even with overlay + shadow cues."""
     result = ChromostereoEffect().apply(photo, {}, context)
-    colors = {tuple(c) for c in np.unique(np.array(result.image).reshape(-1, 3), axis=0)}
-    assert len(colors) <= 3
+    arr = np.array(result.image).astype(int)
+    reddish = (arr[:, :, 0] > 150) & (arr[:, :, 2] < 120)
+    bluish = (arr[:, :, 2] > 120) & (arr[:, :, 0] < 100)
+    darkish = arr.sum(axis=2) < 120
+    assert (reddish | bluish | darkish).mean() > 0.95
 
 
 def test_chromostereo_two_planes(context):
@@ -170,12 +174,16 @@ def test_driftring_wheels_seeded_by_b(photo, context):
     assert len(result.metadata["centers"]) >= 2
 
 
-def test_driftring_uses_four_step_palette(photo, context):
+def test_driftring_keeps_bw_poles_and_local_color(photo, context):
     result = DriftringEffect().apply(photo, {"texture": 0.0}, context)
-    colors = np.unique(np.array(result.image).reshape(-1, 3), axis=0)
-    assert len(colors) <= 4
-    lums = sorted(c.astype(int).mean() for c in colors)
-    assert lums[0] < 30 and lums[-1] > 220  # black and white poles present
+    arr = np.array(result.image).astype(int)
+    is_black = (np.abs(arr - np.array([8, 8, 10])) < 3).all(axis=2)
+    is_white = (np.abs(arr - np.array([250, 250, 248])) < 3).all(axis=2)
+    assert is_black.mean() > 0.1 and is_white.mean() > 0.1  # illusion poles
+    colored = arr[~(is_black | is_white)]
+    assert len(colored) > 0
+    chroma = np.abs(colored - colored.mean(axis=1, keepdims=True)).mean()
+    assert chroma > 4.0  # color steps carry A's local color
 
 
 def test_stereogram_recovers_depth(context):
