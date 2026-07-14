@@ -49,3 +49,9 @@ steps:
       strength: [0.85, 1.0]
       offset_x: [-30, 30]
       offset_y: [-30, 30]
+
+  - type: netpbm
+    image: canvas
+    params:
+      filter: ppmspread
+      amount: [2, 4]

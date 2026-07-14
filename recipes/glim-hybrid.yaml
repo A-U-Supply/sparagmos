@@ -12,6 +12,6 @@ steps:
     images: [a, b]
     into: canvas
     params:
-      sigma_low: [10.0, 20.0]
+      sigma_low: [8.0, 14.0]
       sigma_high: [4.0, 8.0]
-      high_gain: [1.6, 2.4]
+      high_gain: [1.4, 2.0]

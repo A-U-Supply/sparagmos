@@ -12,13 +12,14 @@ steps:
     images: [a, b, c]
     into: canvas
     params:
-      strength: [8, 16]
+      strength: [10, 18]
+      blur: [2, 6]
       output: random
 
   - type: tone
     image: canvas
     params:
       mode: posterize
-      levels: 5
+      levels: 4
       normalize_first: true
       tint: bronze

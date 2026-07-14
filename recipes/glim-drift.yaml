@@ -1,10 +1,10 @@
 name: Glim Drift
 description: >
-  Illusion register, two images: B's brightest points seed a field of
-  drift wheels (many wheels crawl harder than one), and A supplies the
-  palette. Each wheel cycles black, dark, white, light with direction
-  alternating ring to ring — hold still and look just beside it. Single
-  output, glim batch.
+  Illusion register, two images: A's silhouette is built out of a hex
+  field of small drift wheels — black, dark, white, light steps in A's
+  own palette, direction alternating wheel to wheel — floating over B,
+  dimmed. The shape is the image; the surface never stops crawling.
+  Single output, glim batch.
 
 inputs: 2
 
@@ -13,7 +13,7 @@ steps:
     images: [a, b]
     into: canvas
     params:
-      rings: [9, 15]
-      segments: [18, 30]
+      rings: [4, 8]
+      segments: [16, 28]
       hue_spread: [0.08, 0.2]
-      wheels: [3, 7]
+      wheels: [5, 9]

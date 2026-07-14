@@ -110,17 +110,21 @@ The effect is auto-discovered by the CLI's `_register_all_effects()` function �
 
 **tone** — The tonal primitive: grayscale, per-image Otsu (or fixed) binarization, flat posterize, percentile contrast normalization, and inversion, plus photographic tints — cyanotype, silver gelatin, sepia/bronze duotones, and riso-style spot inks on paper white. `mode: normalize` is the anti-mud anchor for chains that drift toward uniform grey.
 
-**iridesce** — Oil-slick sheen (2 inputs). A is the surface dipped in oil; B is the light — B's luminance gradient drives the interference film that plays across A, so B's shapes appear only as shifts in the sheen.
+**iridesce** — Oil-slick sheen (2 inputs). A is the surface dipped in oil; B is the light — B's luminance gradient drives the interference film that plays across A, with darkened troughs and specular gloss bloom for the wet look.
 
-**prism** — Spectral dispersion (2 inputs). A's brighter-than-median luminance is split into N pure spectral copies displaced along a light axis and screened onto ground B: A's ghost lands on B as refracted rainbow light. Works on monochrome sources.
+**prism** — Spectral dispersion (2 inputs). A's brighter-than-median luminance is split into N pure spectral copies fanned out at jittered angles with caustic streaks, lighten-combined over dimmed ground B — messy refracted light. Works on monochrome sources.
 
-**sequin** — Flip-sequin pillow (2 inputs): hex-packed discs take A's local colors; wherever B is bright the discs flip to mirror silver, so B's shapes appear drawn into A. Output capped at 2048px longest edge.
+**sequin** — Flip-sequin pillow (2 inputs): hard-edged faceted hexagon sequins take A's local colors (saturated, two-tone facet split, specular wedges); B's drawn shape — always the minority region — flips to mirror silver. Output capped at 2048px longest edge.
 
 **holofoil** — Holographic sticker (2 inputs). Shapes cut from A's Otsu stencil, filled with angle-swept rainbow foil; B's blurred luminance phase-shifts the foil so B ghosts inside like the latent image in a real holo sticker. Starburst glints on A's brightest points.
 
+**bandsplit** — Hybrid image (2 inputs, the Einstein/Marilyn illusion): lowpass of A + highpass of B. Thumbnails and squints show A; full size shows B.
+
+**stereogram** — Magic Eye autostereogram (2 inputs): A's Otsu silhouette is the floating depth plane; B supplies the texture or random-dot palette. Two convergence dots (one strip apart) sit above the pattern — fuse them into three and the shape snaps into depth. Output capped at 1800px.
+
 **chromostereo** — Chromostereopsis (2 inputs): A's bright shapes become the pure-red plane, B's the deep-blue plane, the rest black. The eye focuses the wavelengths at different depths, so A physically floats in front of B.
 
-**driftring** — Peripheral drift illusion (2 inputs, Kitaoka "Rotating Snakes" family): B's brightest points seed a Voronoi field of drift wheels; A supplies the palette. Rings of wedge quads cycle black → dark → white → light, direction alternating per ring and wheel — the static image crawls in peripheral vision. Output capped at 2048px.
+**driftring** — Peripheral drift illusion (2 inputs, Kitaoka "Rotating Snakes" family): A's Otsu silhouette is built from a hex field of small drift wheels — quads cycling black → dark → white → light in A's local palette, direction alternating per ring and wheel — floating over dimmed B. The shape is the image; the surface crawls in peripheral vision. Output capped at 2048px.
 
 ### Pure Python — Simulation
 

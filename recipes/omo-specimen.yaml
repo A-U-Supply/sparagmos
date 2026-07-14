@@ -1,9 +1,10 @@
 name: Omo Specimen
 description: >
-  Lab-plate compositing. One image is shot through with six circular
-  die-cuts, then takes its place in an Otsu stencil with the other two —
-  the result reads as a specimen tray or Rorschach plate: airy, clinical,
-  mostly light ground. Single output, omo batch.
+  Lab-plate compositing under the thermal camera. One image is shot
+  through with six circular die-cuts, takes its place in an Otsu stencil
+  with the other two, and the whole plate is read out in false-color
+  thermal — the specimen as the instrument sees it. Single output, omo
+  batch.
 
 inputs: 3
 
@@ -16,3 +17,9 @@ steps:
     into: canvas
     params:
       output: random
+
+  - type: dither
+    image: canvas
+    params:
+      palette: thermal
+      num_colors: [6, 8]
