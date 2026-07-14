@@ -20,6 +20,8 @@ from sparagmos.effects import (
     register_effect,
 )
 
+MAX_EDGE = 2048
+
 
 def _film_palette(t: np.ndarray) -> np.ndarray:
     """Cyclic thin-film palette: t in [0,1) -> float RGB in [0,255]."""
@@ -42,6 +44,9 @@ class IridesceEffect(ComposeEffect):
         params = self.validate_params(params)
         surface = images[0].convert("RGB")
         light = (images[1] if len(images) > 1 else images[0]).convert("RGB")
+        if max(surface.size) > MAX_EDGE:
+            surface = surface.copy()
+            surface.thumbnail((MAX_EDGE, MAX_EDGE))
         if light.size != surface.size:
             light = light.resize(surface.size, Image.LANCZOS)
 
@@ -74,8 +79,12 @@ class IridesceEffect(ComposeEffect):
         # Wet gloss: specular bloom where the light source is hottest
         if params["gloss"] > 0:
             norm = gray / 255.0
-            spec = np.power(np.clip(norm, 0, 1), 4.0)
+            spec = np.power(np.clip(norm, 0, 1), 3.0)
             spec = cv2.GaussianBlur(spec, (0, 0), sigmaX=max(2.0, params["scale"] / 2)) * params["gloss"]
+            # Wet = contrast: darken the film troughs, then bloom highlights
+            film_lum = film.mean(axis=2) / 255.0
+            trough = np.clip(0.55 - film_lum, 0, 1) * params["gloss"]
+            out *= (1.0 - 0.55 * trough)[:, :, None]
             out = 255.0 - (255.0 - out) * (255.0 - spec[:, :, None] * 255.0) / 255.0
 
         return EffectResult(
@@ -91,7 +100,7 @@ class IridesceEffect(ComposeEffect):
             "strength": max(0.0, min(1.0, float(params.get("strength", 0.65)))),
             "scale": max(4.0, min(60.0, float(params.get("scale", 12.0)))),
             "phase": float(params.get("phase", 0.0)) % 1.0,
-            "gloss": max(0.0, min(1.0, float(params.get("gloss", 0.5)))),
+            "gloss": max(0.0, min(1.0, float(params.get("gloss", 0.7)))),
         }
 
 

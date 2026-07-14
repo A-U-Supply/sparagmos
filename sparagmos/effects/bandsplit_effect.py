@@ -20,6 +20,9 @@ from sparagmos.effects import (
 )
 
 
+MAX_EDGE = 2048
+
+
 class BandsplitEffect(ComposeEffect):
     name = "bandsplit"
     description = "Hybrid image — lowpass of A + highpass of B; identity changes with viewing distance"
@@ -29,6 +32,9 @@ class BandsplitEffect(ComposeEffect):
         params = self.validate_params(params)
         base = images[0].convert("RGB")
         detail = (images[1] if len(images) > 1 else images[0]).convert("RGB")
+        if max(base.size) > MAX_EDGE:
+            base = base.copy()
+            base.thumbnail((MAX_EDGE, MAX_EDGE))
         if detail.size != base.size:
             detail = detail.resize(base.size, Image.LANCZOS)
 

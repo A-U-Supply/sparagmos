@@ -24,6 +24,7 @@ from sparagmos.effects import (
 from sparagmos.effects.tone_effect import _otsu_threshold
 
 GROUNDS = {"dark": (14, 14, 22), "paper": (242, 238, 228)}
+MAX_EDGE = 2048
 
 
 def _rainbow(t: np.ndarray) -> np.ndarray:
@@ -49,6 +50,9 @@ class HolofoilEffect(ComposeEffect):
         rng = random.Random(context.seed)
         base = images[0].convert("RGB")
         latent_img = (images[1] if len(images) > 1 else images[0]).convert("RGB")
+        if max(base.size) > MAX_EDGE:
+            base = base.copy()
+            base.thumbnail((MAX_EDGE, MAX_EDGE))
         if latent_img.size != base.size:
             latent_img = latent_img.resize(base.size, Image.LANCZOS)
 
@@ -70,7 +74,10 @@ class HolofoilEffect(ComposeEffect):
         )
         # The latent image: B's blurred luminance phase-shifts the foil.
         latent = cv2.cvtColor(np.array(latent_img), cv2.COLOR_RGB2GRAY).astype(np.float32)
-        latent = cv2.GaussianBlur(latent, (0, 0), 6) / 255.0
+        latent = cv2.GaussianBlur(latent, (0, 0), 6)
+        # Full-range stretch so the latent image always embosses distinctly
+        lo, hi = np.percentile(latent, 3), np.percentile(latent, 97)
+        latent = np.clip((latent - lo) / max(1.0, hi - lo), 0.0, 1.0)
         foil = _rainbow(sweep * 2.0 + shimmer * 0.5 + latent * params["latent"])
         # Metallic base: mix the rainbow halfway toward silver so the sheen
         # reads as foil, not candy; then B also modulates BRIGHTNESS so the

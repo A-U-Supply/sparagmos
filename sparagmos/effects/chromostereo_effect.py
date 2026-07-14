@@ -21,6 +21,9 @@ from sparagmos.effects import (
 )
 
 
+MAX_EDGE = 2048
+
+
 def _bright_mask(img: Image.Image, size: tuple[int, int], cutoff: float) -> np.ndarray:
     if img.size != size:
         img = img.resize(size, Image.LANCZOS)
@@ -39,6 +42,9 @@ class ChromostereoEffect(ComposeEffect):
         params = self.validate_params(params)
         front_img = images[0].convert("RGB")
         back_img = (images[1] if len(images) > 1 else images[0]).convert("RGB")
+        if max(front_img.size) > MAX_EDGE:
+            front_img = front_img.copy()
+            front_img.thumbnail((MAX_EDGE, MAX_EDGE))
         if params["invert"]:
             front_img, back_img = back_img, front_img
 
