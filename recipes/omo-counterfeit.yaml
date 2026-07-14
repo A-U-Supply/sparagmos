@@ -1,40 +1,55 @@
 name: Omo Counterfeit
 description: >
-  Engraved-currency treatment. One image is wobble-eyed into off-axis
-  rings, then crossed through TWO contour-following line screens at
-  clashing angles — dense guilloche, the security pattern of a banknote
-  that never cleared — and printed in a single engraved ink. Single
-  output, omo batch.
+  Engraved seal on security paper. A full-frame ultra-fine line screen
+  is toned to pale banknote paper; the first image is wobble-eyed into a
+  rosette and engraved through a contour line screen in dark ink, then
+  overprinted multiply — the seal pressed into the weave, currency that
+  never cleared. Single output, omo batch.
 
 inputs: 3
 
 steps:
-  - type: ancient_wobbleeye
-    image: a
+  - type: ancient_linescreen
+    images: [b, c, a]
+    into: paper
     params:
-      rings: [3, 6]
-
-  - type: ancient_curvylinescreen
-    images: [b, a, c]
-    into: canvas
-    params:
-      frequency: [90, 160]
-      angle: [10, 40]
-      output: random
-
-  - type: ancient_curvylinescreen
-    images: [canvas, a, b]
-    into: canvas
-    params:
-      frequency: [90, 160]
-      angle: [50, 80]
+      frequency: [150, 190]
+      angle: [0, 15]
       output: random
 
   - type: tone
-    image: canvas
+    image: paper
     params:
       mode: posterize
       levels: 3
       normalize_first: true
+      tint: sepia
+
+  - type: ancient_wobbleeye
+    image: a
+    params:
+      rings: [6, 10]
+
+  - type: ancient_curvylinescreen
+    images: [a, b, c]
+    into: seal
+    params:
+      frequency: [100, 140]
+      angle: [30, 60]
+      output: random
+
+  - type: tone
+    image: seal
+    params:
+      mode: posterize
+      levels: 2
+      normalize_first: true
       tint: ink
       inks: [forest, crimson, cobalt]
+
+  - type: blend
+    images: [paper, seal]
+    into: canvas
+    params:
+      mode: multiply
+      strength: [0.8, 0.95]

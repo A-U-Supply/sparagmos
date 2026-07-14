@@ -97,6 +97,21 @@ class StereogramEffect(ComposeEffect):
                 same[x] = r  # path compression
                 row[x] = trow[x % strip] if r == x else row[r]
 
+        # Convergence dots: two dots exactly one strip apart. Unfocus until
+        # they become three and the hidden shape snaps into depth — the
+        # classic printed-Magic-Eye viewing aid. Skipped when the frame is
+        # too small to hold them.
+        dot_y = max(10, strip // 6)
+        dot_r = max(4, strip // 14)
+        if w > strip + dot_r * 8 and h > dot_y + dot_r * 2:
+            for cx in (w // 2 - strip // 2, w // 2 + strip // 2):
+                y0, y1 = max(0, dot_y - dot_r * 2), min(h, dot_y + dot_r * 2)
+                x0, x1 = max(0, cx - dot_r * 2), min(w, cx + dot_r * 2)
+                yy0, xx0 = np.mgrid[y0:y1, x0:x1]
+                d2 = (yy0 - dot_y) ** 2 + (xx0 - cx) ** 2
+                out[yy0[d2 <= (dot_r * 2) ** 2], xx0[d2 <= (dot_r * 2) ** 2]] = 245
+                out[yy0[d2 <= dot_r**2], xx0[d2 <= dot_r**2]] = 10
+
         return EffectResult(
             image=Image.fromarray(out),
             metadata={**params, "size": (w, h)},

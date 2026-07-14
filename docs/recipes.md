@@ -2,7 +2,7 @@
 
 Recipes are YAML files in `recipes/` that define named pipelines of chained effects with parameters.
 
-**Naming conventions:** the `omo-` prefix (omophagia — the feast that follows the rending) marks the 2026 batch designed from the stacks survey of indexed outputs: single-output recipes across three registers — print-material (`omo-counterfeit`, `omo-specimen`, `omo-foilpress`, `omo-riso`), noir/toned (`omo-hardcut`, `omo-nocturne`), and semantic-collision (`omo-medallion`, `omo-reliquary`). The `glim-` prefix marks the colorful/sparkly + optical-illusion batch (iridesce/holofoil/prism/sequin sparkle; hybrid/popout/drift/magiceye/moire illusions). New batches should adopt their own greppable prefix.
+**Naming conventions:** the `omo-` prefix (omophagia — the feast that follows the rending) marks the 2026 batch designed from the stacks survey of indexed outputs: single-output recipes across three registers — print-material (`omo-counterfeit`, `omo-specimen`, `omo-foilpress`, `omo-riso`), noir/toned (`omo-hardcut`, `omo-nocturne`), and semantic-collision (`omo-medallion`, `omo-reliquary`). The `glim-` prefix marks the colorful/sparkly + optical-illusion batch (iridesce/holofoil/prism/sequin sparkle; hybrid/popout/anaglyph/drift/magiceye illusions). New batches should adopt their own greppable prefix.
 
 ## Schema
 
@@ -218,6 +218,7 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 | cutoff | float | 0.0-5.0 | 1.0 | Percentile clipped at each end for normalize |
 | threshold | int | -1 to 255 | -1 | Binary threshold; -1 = per-image Otsu |
 | normalize_first | bool | — | false | Autocontrast before the mode operation |
+| max_edge | int | 0-8192 | 0 (off) | Downscale so the longest edge fits (working-scale/PNG-size cap) |
 
 ### text_relic
 | Param | Type | Range | Default | Description |
@@ -251,7 +252,8 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 | max_offset | float | ≤1.0 = fraction of diagonal, else px | 0.04 | Dispersion distance |
 | axis | float | 0-360 | 0 | Dispersion axis (degrees) |
 | ground_dim | float | 0.1-1.0 | 0.55 | How much of ground B shows beneath the dispersed light |
-| light_gain | float | 0.5-3.0 | 1.5 | Brightness multiplier on A's dispersed light |
+| light_gain | float | 0.5-3.0 | 1.8 | Brightness multiplier on A's dispersed light |
+| fan | float | 0-45 | 14 | Per-copy refraction-angle jitter (degrees) — messier caustics |
 
 ### sequin
 | Param | Type | Range | Default | Description |
@@ -284,7 +286,7 @@ Resolved from Llama Vision analysis. Requires `vision: true` at the recipe level
 | segments | int | 8-48 | 24 | 4-step quads per ring |
 | hue_spread | float | 0.0-0.5 | 0.12 | Hue gap between dark and light steps |
 | texture | float | 0.0-0.4 | 0.0 | Whisper of the source inside the steps |
-| wheels | int | 1-9 | 5 | Drift wheels seeded from B's bright points |
+| wheels | int | 2-14 | 6 | Wheel density across A's silhouette (hex grid) |
 
 ### stereogram
 | Param | Type | Range | Default | Description |

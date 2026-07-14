@@ -94,6 +94,10 @@ class ToneEffect(Effect):
         params = self.validate_params(params)
         img = image.convert("RGB")
 
+        if params["max_edge"] and max(img.size) > params["max_edge"]:
+            img = img.copy()
+            img.thumbnail((params["max_edge"], params["max_edge"]))
+
         if params["normalize_first"] and params["mode"] != "normalize":
             img = Image.fromarray(_normalize(np.array(img), params["cutoff"]))
 
@@ -156,6 +160,7 @@ class ToneEffect(Effect):
             "cutoff": max(0.0, min(5.0, float(params.get("cutoff", 1.0)))),
             "threshold": max(-1, min(255, int(threshold))),
             "normalize_first": bool(params.get("normalize_first", False)),
+            "max_edge": max(0, min(8192, int(params.get("max_edge", 0)))),
         }
 
 

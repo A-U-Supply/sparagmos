@@ -1,13 +1,13 @@
-"""Sequin effect — flip-sequin pillow.
+"""Sequin effect — flip-sequin pillow with faceted, angular sequins.
 
-Two-image compose: image A is the sequin fabric (each disc takes its
-local A color, hue-jittered), and image B is what someone dragged their
-hand across — wherever B is bright, discs render flipped to mirror
-silver, so B's shapes appear drawn into A in flipped sequins.
+Two-image compose: image A is the sequin fabric (each sequin takes its
+local A color, saturated, not washed), and image B is what someone
+dragged their hand across — wherever B is bright, sequins flip to
+mirror silver, so B's shapes appear drawn into A.
 
-Each disc is shaded like a real tilted sequin: a linear light gradient
-across a random axis, a specular hotspot near the bright edge, and
-occasional star glints — glitter, not bathroom tile.
+Each sequin is a hard-edged hexagon/octagon at a random rotation, split
+into a bright face and a dark face along a hard chord — the "catching
+the light" facet line — with a white specular wedge on the bright side.
 
 Pattern-heavy output: rendered at a capped working scale so PNG byte
 size stays in line with the rest of the corpus.
@@ -18,6 +18,7 @@ from __future__ import annotations
 import colorsys
 import random
 
+import cv2
 import numpy as np
 from PIL import Image
 
@@ -30,13 +31,19 @@ from sparagmos.effects import (
 )
 
 MAX_EDGE = 2048
-SILVER = np.array([225.0, 229.0, 238.0])
-BG = np.array([14.0, 12.0, 16.0])
+SILVER = np.array([228.0, 232.0, 242.0])
+BG = np.array([10.0, 8.0, 12.0])
+
+
+def _ngon(cx: float, cy: float, r: float, n: int, rot: float) -> np.ndarray:
+    angles = rot + np.arange(n) * (2 * np.pi / n)
+    pts = np.stack([cx + r * np.cos(angles), cy + r * np.sin(angles)], axis=1)
+    return pts.astype(np.int32)
 
 
 class SequinEffect(ComposeEffect):
     name = "sequin"
-    description = "Flip-sequin pillow — shaded, tilted discs from A; where B is bright they flip to mirror silver"
+    description = "Flip-sequin pillow — faceted hexagon sequins from A; where B is bright they flip to mirror silver"
     requires: list[str] = []
 
     def compose(self, images: list[Image.Image], params: dict, context: EffectContext) -> EffectResult:
@@ -57,17 +64,12 @@ class SequinEffect(ComposeEffect):
         lo, hi = np.percentile(draw_arr, 2), np.percentile(draw_arr, 98)
         draw_arr = np.clip((draw_arr - lo) / max(1.0, hi - lo), 0.0, 1.0)
         flip_cut = params["flip_threshold"]
+        # The silver (flipped) side is the DRAWN shape — always the minority.
+        if (draw_arr > flip_cut).mean() > 0.5:
+            draw_arr = 1.0 - draw_arr
 
-        out = np.empty((h, w, 3), dtype=np.float32)
-        out[:] = BG
-
-        # Per-diameter geometry cache: distance grid + circle mask
-        d = int(disc)
-        ys, xs = np.mgrid[0:d, 0:d].astype(np.float32)
-        cx = cy = (d - 1) / 2.0
-        dx, dy = (xs - cx) / (d / 2.0), (ys - cy) / (d / 2.0)
-        rr = np.sqrt(dx * dx + dy * dy)
-        circle = rr <= 0.96
+        out = np.empty((h, w, 3), dtype=np.uint8)
+        out[:] = BG.astype(np.uint8)
 
         rad = disc / 2.0
         row_step = disc * 0.866
@@ -76,57 +78,57 @@ class SequinEffect(ComposeEffect):
         while y - rad < h:
             x = rad + (rad if row % 2 else 0)
             while x - rad < w:
-                x0, y0 = int(round(x - rad)), int(round(y - rad))
-                x1, y1 = x0 + d, y0 + d
-                px0, py0 = max(0, x0), max(0, y0)
-                px1, py1 = min(w, x1), min(h, y1)
-                if px1 > px0 and py1 > py0:
-                    sx0, sy0 = px0 - x0, py0 - y0
-                    sx1, sy1 = sx0 + (px1 - px0), sy0 + (py1 - py0)
-                    region_mask = circle[sy0:sy1, sx0:sx1]
-
-                    flipped = draw_arr[py0:py1, px0:px1].mean() > flip_cut
+                x0, y0 = int(max(0, x - rad)), int(max(0, y - rad))
+                x1, y1 = int(min(w, x + rad)), int(min(h, y + rad))
+                if x1 > x0 and y1 > y0:
+                    flipped = draw_arr[y0:y1, x0:x1].mean() > flip_cut
                     if flipped:
-                        color = SILVER + rng.uniform(-12, 12)
+                        base = SILVER + rng.uniform(-10, 10)
                     else:
-                        r_, g_, b_ = arr[py0:py1, px0:px1].reshape(-1, 3).mean(axis=0) / 255.0
+                        r_, g_, b_ = arr[y0:y1, x0:x1].reshape(-1, 3).mean(axis=0) / 255.0
                         hh, ll, ss = colorsys.rgb_to_hls(r_, g_, b_)
                         hh = (hh + rng.uniform(-params["hue_jitter"], params["hue_jitter"]) * 0.5) % 1.0
-                        ss = min(1.0, ss * 1.7 + 0.3)
-                        ll = min(0.9, ll * 1.1 + 0.05)
+                        ss = min(1.0, max(0.55, ss * 1.9))
+                        ll = min(0.75, max(0.22, ll))
                         fr, fg_, fb = colorsys.hls_to_rgb(hh, ll, ss)
-                        color = np.array([fr, fg_, fb]) * 255.0
+                        base = np.array([fr, fg_, fb]) * 255.0
 
-                    # Tilted-sequin shading: linear light gradient across a
-                    # random axis + rim falloff + specular hotspot.
-                    theta = rng.uniform(0, 2 * np.pi)
-                    grad = dx * np.cos(theta) + dy * np.sin(theta)  # -1..1
-                    shade = 0.72 + 0.5 * (grad * 0.5 + 0.5)  # 0.72..1.22
-                    shade -= 0.28 * np.clip(rr - 0.65, 0, 1) / 0.35  # dark rim
-                    hot = np.exp(-((dx - 0.45 * np.cos(theta)) ** 2 + (dy - 0.45 * np.sin(theta)) ** 2) / 0.06)
-                    disc_px = color[None, None, :] * shade[:, :, None] + 255.0 * (hot * params["sparkle"])[:, :, None]
-                    if flipped:
-                        disc_px += 255.0 * (hot * 0.35)[:, :, None]  # mirrors flare harder
+                    n = rng.choice((6, 6, 8))  # mostly hexagons
+                    rot = rng.uniform(0, 2 * np.pi)
+                    poly = _ngon(x, y, rad * 0.98, n, rot)
 
-                    patch = out[py0:py1, px0:px1]
-                    patch[region_mask] = np.clip(disc_px[sy0:sy1, sx0:sx1], 0, 255)[region_mask]
+                    # Dark face fills the whole sequin, bright face is the
+                    # half-polygon beyond a hard chord through the center.
+                    light_dir = rng.uniform(0, 2 * np.pi)
+                    ldx, ldy = np.cos(light_dir), np.sin(light_dir)
+                    dark = np.clip(base * 0.55, 0, 255)
+                    bright = np.clip(base * 1.35 + 30, 0, 255)
+                    cv2.fillConvexPoly(out, poly, dark.tolist())
+                    side = (poly[:, 0] - x) * ldx + (poly[:, 1] - y) * ldy
+                    keep = poly[side > -rad * 0.05]
+                    if len(keep) >= 3:
+                        chord = np.array(
+                            [[x - ldy * rad, y + ldx * rad], [x + ldy * rad, y - ldx * rad]], dtype=np.int32
+                        )
+                        half = cv2.convexHull(np.vstack([keep, chord]))
+                        cv2.fillConvexPoly(out, half, bright.tolist())
+                    # Specular wedge near the bright edge
+                    if rng.random() < params["sparkle"]:
+                        sx = x + ldx * rad * 0.55
+                        sy = y + ldy * rad * 0.55
+                        spec = _ngon(sx, sy, rad * 0.28, 3, rot + rng.uniform(0, 2))
+                        cv2.fillConvexPoly(out, spec, (255, 255, 255))
 
-                    # Occasional star glint on top
-                    if rng.random() < 0.05:
-                        gx, gy = int(x), int(y)
-                        ray = int(rad * 1.1)
-                        for ddx, ddy in ((1, 0), (0, 1)):
-                            for t in range(-ray, ray + 1):
-                                yy2, xx2 = gy + ddy * t, gx + ddx * t
-                                if 0 <= yy2 < h and 0 <= xx2 < w:
-                                    fade = 1.0 - abs(t) / (ray + 1)
-                                    out[yy2, xx2] = np.clip(out[yy2, xx2] + 230 * fade, 0, 255)
+                    if rng.random() < 0.04:
+                        ray = int(rad * 1.2)
+                        cv2.line(out, (int(x - ray), int(y)), (int(x + ray), int(y)), (255, 255, 255), 1)
+                        cv2.line(out, (int(x), int(y - ray)), (int(x), int(y + ray)), (255, 255, 255), 1)
                 x += disc
             y += row_step
             row += 1
 
         return EffectResult(
-            image=Image.fromarray(out.astype(np.uint8)),
+            image=Image.fromarray(out),
             metadata={**params, "size": (w, h)},
         )
 

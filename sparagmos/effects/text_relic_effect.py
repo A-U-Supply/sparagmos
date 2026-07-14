@@ -22,6 +22,7 @@ from sparagmos.effects import (
     register_effect,
 )
 
+MAX_EDGE = 2048
 BACKGROUNDS = ("washout", "mosh", "sort", "random", "keep")
 PRESERVE = ("sharp", "emboss")
 
@@ -43,6 +44,9 @@ class TextRelicEffect(ComposeEffect):
 
         img = images[0].convert("RGB")
         ruin_img = (images[1] if len(images) > 1 else images[0]).convert("RGB")
+        if max(img.size) > MAX_EDGE:
+            img = img.copy()
+            img.thumbnail((MAX_EDGE, MAX_EDGE))
         if ruin_img.size != img.size:
             ruin_img = ruin_img.resize(img.size, Image.LANCZOS)
         arr = np.array(img)
@@ -74,7 +78,10 @@ class TextRelicEffect(ComposeEffect):
 
         background = params["background"]
         if background == "random":
-            background = rng.choice(("washout", "mosh", "sort"))
+            # mosh is out of the random pool: block-swap fights the preserved
+            # text/line-work that makes this recipe sing (still available
+            # explicitly).
+            background = rng.choice(("washout", "sort"))
 
         # keep: destroy nothing — stamp A's text regions onto B as-is.
         destroyed = ruin if background == "keep" else self._destroy(ruin, background, rng)

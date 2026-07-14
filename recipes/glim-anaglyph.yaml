@@ -1,0 +1,28 @@
+name: Glim Anaglyph
+description: >
+  Illusion register, two images: A and B blended into one scene, then
+  the red and blue channels pulled apart in opposite directions — the
+  doubled 3D-glasses image. Wear actual red/cyan glasses and the two
+  sources separate into different depths. Single output, glim batch.
+
+inputs: 2
+
+steps:
+  - type: blend
+    images: [a, b]
+    into: canvas
+    params:
+      mode: opacity
+      strength: [0.4, 0.6]
+
+  - type: channel_shift
+    image: canvas
+    params:
+      offset_r: [-70, -25]
+      offset_g: 0
+      offset_b: [25, 70]
+
+  - type: tone
+    image: canvas
+    params:
+      max_edge: 2048
