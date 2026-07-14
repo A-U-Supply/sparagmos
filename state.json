@@ -5605,6 +5605,41 @@
       ],
       "processed_date": "2026-07-13",
       "posted_ts": "1783951745.279269"
+    },
+    {
+      "source_file_ids": [
+        "F089VTFF35M",
+        "F0AFX8NPHE3",
+        "F0AF3NGV3V2",
+        "F0AU40ABX8D"
+      ],
+      "source_dates": [
+        "2025-01-25",
+        "2026-02-21",
+        "2026-02-14",
+        "2026-04-21"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "fracture-and-mask",
+      "effects": [
+        "channel_shift",
+        "spectral",
+        "pca_decompose",
+        "dither",
+        "fragment",
+        "mask_composite",
+        "collage",
+        "mask_composite",
+        "pixel_sort",
+        "byte_corrupt"
+      ],
+      "processed_date": "2026-07-14",
+      "posted_ts": "1784034363.477789"
     }
   ]
 }
