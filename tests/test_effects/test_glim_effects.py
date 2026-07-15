@@ -164,26 +164,30 @@ def test_prism_ground_is_b(context):
     assert np.abs(out - b_arr.astype(np.float32) * 0.5).mean() < 3.0
 
 
-def test_driftring_ground_is_dimmed_b(photo, context):
-    """Outside A's silhouette the output is B, dimmed."""
-    b = np.full((photo.height, photo.width, 3), 200, dtype=np.uint8)
-    result = DriftringEffect().compose(
-        [photo, Image.fromarray(b)], {"wheels": 6}, context
-    )
+def test_driftring_weaves_both_sources(photo, context):
+    """Dark wedges are made of A's shadows, light wedges of B's highlights."""
+    # A is dark, B is bright: the wheels must carry both, not synthetic B/W.
+    a = np.full((photo.height, photo.width, 3), 40, dtype=np.uint8)
+    a[:, :, 0] = 120  # A skews red in shadow
+    b = np.full((photo.height, photo.width, 3), 210, dtype=np.uint8)
+    b[:, :, 2] = 120  # B skews warm in highlight
+    result = DriftringEffect().compose([Image.fromarray(a), Image.fromarray(b)], {"wheels": 6}, context)
     arr = np.array(result.image).astype(int)
-    dim_b = (np.abs(arr - int(200 * 0.28)) < 4).all(axis=2)
-    assert dim_b.mean() > 0.1  # the ground region reads as dimmed B
+    # The two sources have distinct hues, so the output must span a real range
+    # of colors (not collapse to black + white poles over a dead ground).
+    assert arr[:, :, 0].std() > 15 and arr[:, :, 2].std() > 15
+    # Dark, red-leaning pixels (A) and bright pixels (B) both present.
+    dark_red = ((arr[:, :, 0] > arr[:, :, 2]) & (arr.mean(axis=2) < 90))
+    bright = arr.mean(axis=2) > 180
+    assert dark_red.mean() > 0.02 and bright.mean() > 0.02
 
 
-def test_driftring_keeps_bw_poles_and_local_color(photo, context):
+def test_driftring_covers_frame_and_seeds_stable(photo, context):
     result = DriftringEffect().apply(photo, {"texture": 0.0}, context)
-    arr = np.array(result.image).astype(int)
-    is_black = (np.abs(arr - np.array([8, 8, 10])) < 3).all(axis=2)
-    is_white = (np.abs(arr - np.array([250, 250, 248])) < 3).all(axis=2)
-    # Poles live only inside the silhouette now, so smaller but present
-    assert is_black.mean() > 0.01 and is_white.mean() > 0.01
-    coverage = result.metadata["figure_coverage"]
-    assert 0.02 < coverage < 0.75
+    coverage = result.metadata["wheel_coverage"]
+    assert 0.2 < coverage < 0.95  # wheels fill much of the frame, not a silhouette
+    again = DriftringEffect().apply(photo, {"texture": 0.0}, context)
+    assert np.array_equal(np.array(result.image), np.array(again.image))
 
 
 def test_stereogram_recovers_depth(context):
