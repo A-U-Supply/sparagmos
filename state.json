@@ -5709,6 +5709,26 @@
       ],
       "processed_date": "2026-07-16",
       "posted_ts": "1784207894.526099"
+    },
+    {
+      "source_file_ids": [
+        "F080WFRPS1K",
+        "F05LF649PD3"
+      ],
+      "source_dates": [
+        "2024-11-15",
+        "2023-08-06"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TA650DEZ"
+      ],
+      "recipe": "glim-holofoil",
+      "effects": [
+        "holofoil"
+      ],
+      "processed_date": "2026-07-17",
+      "posted_ts": "1784293291.386439"
     }
   ]
 }
