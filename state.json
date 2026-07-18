@@ -5729,6 +5729,32 @@
       ],
       "processed_date": "2026-07-17",
       "posted_ts": "1784293291.386439"
+    },
+    {
+      "source_file_ids": [
+        "F0BF92WEF6D",
+        "F04B7S5BUAJ",
+        "F04TX8F8ZKM",
+        "F09448JFKV1"
+      ],
+      "source_dates": [
+        "2026-07-05",
+        "2022-11-17",
+        "2023-03-14",
+        "2025-07-04"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "ancients-collage",
+      "effects": [
+        "ancient_collage"
+      ],
+      "processed_date": "2026-07-18",
+      "posted_ts": "1784379481.074089"
     }
   ]
 }
