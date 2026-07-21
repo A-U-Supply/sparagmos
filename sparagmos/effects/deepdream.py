@@ -31,6 +31,16 @@ class DeepDreamEffect(Effect):
         device = torch.device("cpu")
         img = image.convert("RGB")
 
+        # InceptionV3 gradient ascent at full photo resolution blows the job
+        # sandbox's memory cap. Cap the working resolution when a recipe sets
+        # max_edge; the final output is resized back to the original size below
+        # (dream_img.resize(image.size, ...)). Unset = full-res as before.
+        max_edge = params.get("max_edge")
+        if max_edge and max(img.size) > max_edge:
+            scale = max_edge / max(img.size)
+            work_size = (max(1, round(img.width * scale)), max(1, round(img.height * scale)))
+            img = img.resize(work_size, Image.LANCZOS)
+
         # Load InceptionV3 up to a mid-level layer
         model = models.inception_v3(weights=models.Inception_V3_Weights.DEFAULT)
         model.eval()
@@ -152,7 +162,14 @@ class DeepDreamEffect(Effect):
             "octave_scale": float(params.get("octave_scale", 1.4)),
             "jitter": int(params.get("jitter", 32)),
             "learning_rate": float(params.get("learning_rate", 0.01)),
+            "max_edge": int(params["max_edge"]) if params.get("max_edge") is not None else None,
         }
+        if validated["max_edge"] is not None and validated["max_edge"] < 64:
+            raise ConfigError(
+                f"max_edge must be >= 64, got {validated['max_edge']}",
+                effect_name=self.name,
+                param_name="max_edge",
+            )
         if not (1 <= validated["iterations"] <= 50):
             raise ConfigError(
                 f"iterations must be between 1 and 50, got {validated['iterations']}",
