@@ -39,6 +39,18 @@ class StyleTransferEffect(Effect):
         device = torch.device("cpu")
         img = image.convert("RGB")
 
+        # VGG19 at full photo resolution blows the job sandbox's memory cap
+        # (relu1_1 alone is ~3GB for a 12MP input). Cap the working resolution
+        # for the neural passes, then restore the original size afterwards so
+        # downstream compositing/output dims are unchanged. Only active when a
+        # recipe sets max_edge; unset = full-res behaviour as before.
+        orig_size = img.size
+        max_edge = params.get("max_edge")
+        if max_edge and max(img.size) > max_edge:
+            scale = max_edge / max(img.size)
+            work_size = (max(1, round(img.width * scale)), max(1, round(img.height * scale)))
+            img = img.resize(work_size, Image.LANCZOS)
+
         def img_to_tensor(pil_img: Image.Image) -> torch.Tensor:
             arr = np.array(pil_img).astype(np.float32) / 255.0
             t = torch.from_numpy(arr).permute(2, 0, 1).unsqueeze(0)
@@ -152,6 +164,8 @@ class StyleTransferEffect(Effect):
             h.remove()
 
         result_img = tensor_to_img(opt_t)
+        if result_img.size != orig_size:
+            result_img = result_img.resize(orig_size, Image.LANCZOS)
 
         return EffectResult(
             image=result_img,
@@ -159,6 +173,7 @@ class StyleTransferEffect(Effect):
                 "style_weight": style_weight,
                 "content_weight": content_weight,
                 "iterations": iterations,
+                "max_edge": max_edge,
             },
         )
 
@@ -167,7 +182,14 @@ class StyleTransferEffect(Effect):
             "style_weight": float(params.get("style_weight", 1e6)),
             "content_weight": float(params.get("content_weight", 1.0)),
             "iterations": int(params.get("iterations", 50)),
+            "max_edge": int(params["max_edge"]) if params.get("max_edge") is not None else None,
         }
+        if validated["max_edge"] is not None and validated["max_edge"] < 64:
+            raise ConfigError(
+                f"max_edge must be >= 64, got {validated['max_edge']}",
+                effect_name=self.name,
+                param_name="max_edge",
+            )
         if not (1 <= validated["iterations"] <= 200):
             raise ConfigError(
                 f"iterations must be between 1 and 200, got {validated['iterations']}",
