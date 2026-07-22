@@ -13,26 +13,26 @@ steps:
   - type: style_transfer
     image: a
     params:
-      iterations: [80, 150]
+      iterations: [50, 80]
       style_weight: [1.0e5, 1.0e6]
       content_weight: [1.0, 10.0]
-      max_edge: 768
+      max_edge: 512
 
   - type: style_transfer
     image: b
     params:
-      iterations: [60, 120]
+      iterations: [40, 70]
       style_weight: [5.0e4, 5.0e5]
       content_weight: [1.0, 8.0]
-      max_edge: 768
+      max_edge: 512
 
   - type: style_transfer
     image: c
     params:
-      iterations: [70, 130]
+      iterations: [45, 75]
       style_weight: [8.0e4, 8.0e5]
       content_weight: [1.0, 12.0]
-      max_edge: 768
+      max_edge: 512
 
   - type: blend
     images: [a, b]
