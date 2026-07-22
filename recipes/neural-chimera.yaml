@@ -13,7 +13,7 @@ steps:
       iterations: [8, 15]
       octave_scale: 1.4
       learning_rate: [0.01, 0.02]
-      max_edge: 768
+      max_edge: 512
 
   - type: deepdream
     image: b
@@ -21,7 +21,7 @@ steps:
       iterations: [5, 10]
       octave_scale: [1.2, 1.4]
       learning_rate: [0.005, 0.015]
-      max_edge: 768
+      max_edge: 512
 
   - type: deepdream
     image: c
@@ -29,7 +29,7 @@ steps:
       iterations: [10, 20]
       octave_scale: 1.5
       learning_rate: [0.01, 0.025]
-      max_edge: 768
+      max_edge: 512
 
   - type: fragment
     images: [a, b, c]
@@ -52,7 +52,7 @@ steps:
       style_weight: [500000, 1500000]
       content_weight: 1
       iterations: [10, 25]
-      max_edge: 768
+      max_edge: 512
 
   - type: jpeg_destroy
     image: canvas
