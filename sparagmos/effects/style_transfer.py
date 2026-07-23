@@ -41,10 +41,10 @@ class StyleTransferEffect(Effect):
 
         # VGG19 at full photo resolution blows the job sandbox's memory cap
         # (relu1_1 alone is ~3GB for a 12MP input). Cap the working resolution
-        # for the neural passes, then restore the original size afterwards so
-        # downstream compositing/output dims are unchanged. Only active when a
-        # recipe sets max_edge; unset = full-res behaviour as before.
-        orig_size = img.size
+        # when a recipe sets max_edge. The reduced size is kept for the output
+        # (NOT upscaled back) so the rest of the pipeline — seam_carve in
+        # particular, which is O(seams x pixels) — runs cheaply too. Unset =
+        # full-res behaviour as before.
         max_edge = params.get("max_edge")
         if max_edge and max(img.size) > max_edge:
             scale = max_edge / max(img.size)
@@ -164,8 +164,6 @@ class StyleTransferEffect(Effect):
             h.remove()
 
         result_img = tensor_to_img(opt_t)
-        if result_img.size != orig_size:
-            result_img = result_img.resize(orig_size, Image.LANCZOS)
 
         return EffectResult(
             image=result_img,

@@ -33,8 +33,8 @@ class DeepDreamEffect(Effect):
 
         # InceptionV3 gradient ascent at full photo resolution blows the job
         # sandbox's memory cap. Cap the working resolution when a recipe sets
-        # max_edge; the final output is resized back to the original size below
-        # (dream_img.resize(image.size, ...)). Unset = full-res as before.
+        # max_edge; the reduced size is kept for the output (see out_size below)
+        # so the rest of the pipeline runs cheaply. Unset = full-res as before.
         max_edge = params.get("max_edge")
         if max_edge and max(img.size) > max_edge:
             scale = max_edge / max(img.size)
@@ -145,8 +145,13 @@ class DeepDreamEffect(Effect):
 
         hook.remove()
 
+        # When max_edge downscaled the input, keep the reduced size for the
+        # output so the rest of the pipeline runs cheaply; otherwise restore
+        # the original size (also undoes any MIN_DIM upscale).
+        out_size = img.size if max_edge else image.size
+
         return EffectResult(
-            image=dream_img.resize(image.size, Image.LANCZOS),
+            image=dream_img.resize(out_size, Image.LANCZOS),
             metadata={
                 "iterations": iterations,
                 "octave_scale": octave_scale,
