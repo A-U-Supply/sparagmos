@@ -5890,6 +5890,44 @@
       ],
       "processed_date": "2026-07-24",
       "posted_ts": "1784898987.329969"
+    },
+    {
+      "source_file_ids": [
+        "F09283MQ6AZ",
+        "F0AU426HNJ1",
+        "F07GDGXT53M",
+        "F09H39M6S2H",
+        "F08J69QAXK4"
+      ],
+      "source_dates": [
+        "2025-06-19",
+        "2026-04-21",
+        "2024-08-10",
+        "2025-09-25",
+        "2025-03-18"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "stamp-collection",
+      "effects": [
+        "fragment",
+        "fragment",
+        "dither",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "collage",
+        "byte_corrupt",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-07-25",
+      "posted_ts": "1784984351.056559"
     }
   ]
 }
