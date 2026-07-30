@@ -6033,6 +6033,29 @@
       ],
       "processed_date": "2026-07-29",
       "posted_ts": "1785333255.893509"
+    },
+    {
+      "source_file_ids": [
+        "F0BEGD7DSAY",
+        "F0A009F6C80",
+        "F0BC9D5U2R3"
+      ],
+      "source_dates": [
+        "2026-07-01",
+        "2025-11-21",
+        "2026-06-22"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "ancients-displacement",
+      "effects": [
+        "ancient_displacement"
+      ],
+      "processed_date": "2026-07-30",
+      "posted_ts": "1785417896.917249"
     }
   ]
 }
