@@ -6056,6 +6056,32 @@
       ],
       "processed_date": "2026-07-30",
       "posted_ts": "1785417896.917249"
+    },
+    {
+      "source_file_ids": [
+        "F08MW12RP8D",
+        "F0B3JCQ01M1"
+      ],
+      "source_dates": [
+        "2025-04-13",
+        "2026-05-14"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "feedback-loop",
+      "effects": [
+        "blend",
+        "imagemagick",
+        "channel_shift",
+        "fragment",
+        "blend",
+        "channel_shift",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-07-31",
+      "posted_ts": "1785504595.564769"
     }
   ]
 }
