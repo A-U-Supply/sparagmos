@@ -6118,6 +6118,44 @@
       ],
       "processed_date": "2026-08-01",
       "posted_ts": "1785588852.685179"
+    },
+    {
+      "source_file_ids": [
+        "F08UCE3MGE9",
+        "F0BC8SLG3KJ",
+        "F0AU7K3G9T4",
+        "F086X1VBUBW",
+        "F0B299FKVKK"
+      ],
+      "source_dates": [
+        "2025-05-28",
+        "2026-06-18",
+        "2026-04-21",
+        "2024-12-30",
+        "2026-05-06"
+      ],
+      "source_users": [
+        "U03TA650DEZ",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q"
+      ],
+      "recipe": "entropy-garden",
+      "effects": [
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "collage",
+        "mask_composite",
+        "fragment",
+        "blend",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-08-02",
+      "posted_ts": "1785675812.414689"
     }
   ]
 }
