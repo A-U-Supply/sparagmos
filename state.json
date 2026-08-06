@@ -6259,6 +6259,33 @@
       ],
       "processed_date": "2026-08-05",
       "posted_ts": "1785937279.565059"
+    },
+    {
+      "source_file_ids": [
+        "F04EWKM0SM6",
+        "F0AT132E081",
+        "F04M9203FCJ"
+      ],
+      "source_dates": [
+        "2022-12-07",
+        "2026-04-13",
+        "2023-01-31"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "mask-and-glitch",
+      "effects": [
+        "mask_composite",
+        "crt_vhs",
+        "mask_composite",
+        "byte_corrupt",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-08-06",
+      "posted_ts": "1786023559.249519"
     }
   ]
 }
