@@ -6479,6 +6479,41 @@
       ],
       "processed_date": "2026-08-13",
       "posted_ts": "1786625008.862749"
+    },
+    {
+      "source_file_ids": [
+        "F0BGNN5HLG6",
+        "F081N4L2GTA",
+        "F0B3QPARDSN",
+        "F0AP4GB1K6J"
+      ],
+      "source_dates": [
+        "2026-07-11",
+        "2024-11-15",
+        "2026-05-14",
+        "2026-03-27"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "noise-cathedral",
+      "effects": [
+        "pca_decompose",
+        "spectral",
+        "deepdream",
+        "pixel_sort",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "fragment",
+        "channel_shift",
+        "byte_corrupt"
+      ],
+      "processed_date": "2026-08-14",
+      "posted_ts": "1786711279.552889"
     }
   ]
 }
