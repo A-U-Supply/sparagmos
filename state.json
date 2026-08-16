@@ -6543,6 +6543,42 @@
       ],
       "processed_date": "2026-08-15",
       "posted_ts": "1786796242.203819"
+    },
+    {
+      "source_file_ids": [
+        "F0AJZDF46KT",
+        "F0ASEEDRHT4",
+        "F0BB4PC8FL2",
+        "F0BEEK93GU9"
+      ],
+      "source_dates": [
+        "2026-03-04",
+        "2026-04-13",
+        "2026-06-17",
+        "2026-07-01"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "dissolve-cascade",
+      "effects": [
+        "pixel_sort",
+        "channel_shift",
+        "spectral",
+        "crt_vhs",
+        "blend",
+        "mask_composite",
+        "blend",
+        "mask_composite",
+        "collage",
+        "jpeg_destroy",
+        "channel_shift"
+      ],
+      "processed_date": "2026-08-16",
+      "posted_ts": "1786882635.250569"
     }
   ]
 }
