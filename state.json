@@ -6602,6 +6602,29 @@
       ],
       "processed_date": "2026-08-17",
       "posted_ts": "1786969266.215569"
+    },
+    {
+      "source_file_ids": [
+        "F0B3NMEDYUE",
+        "F05CTRR9LHG",
+        "F0403852B36"
+      ],
+      "source_dates": [
+        "2026-05-14",
+        "2023-06-16",
+        "2022-08-27"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "ancients-stencil",
+      "effects": [
+        "ancient_stencil"
+      ],
+      "processed_date": "2026-08-18",
+      "posted_ts": "1787055813.945489"
     }
   ]
 }
