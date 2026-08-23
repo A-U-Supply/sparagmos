@@ -6759,6 +6759,46 @@
       ],
       "processed_date": "2026-08-22",
       "posted_ts": "1787401056.067929"
+    },
+    {
+      "source_file_ids": [
+        "F09L5CV5Z6U",
+        "F0B4S4AMR6X",
+        "F0BA1C9FF5F",
+        "F0AU0QX2BB5",
+        "F0APSVARRDX"
+      ],
+      "source_dates": [
+        "2025-10-08",
+        "2026-05-20",
+        "2026-06-11",
+        "2026-04-21",
+        "2026-03-27"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "recursive-stencil",
+      "effects": [
+        "pca_decompose",
+        "pca_decompose",
+        "pca_decompose",
+        "pca_decompose",
+        "pca_decompose",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "collage",
+        "pixel_sort",
+        "byte_corrupt"
+      ],
+      "processed_date": "2026-08-23",
+      "posted_ts": "1787487466.294569"
     }
   ]
 }
