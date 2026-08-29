@@ -6950,6 +6950,28 @@
       ],
       "processed_date": "2026-08-28",
       "posted_ts": "1787952967.317869"
+    },
+    {
+      "source_file_ids": [
+        "F0B01NU7M0C",
+        "F09FFGT33EU"
+      ],
+      "source_dates": [
+        "2026-04-26",
+        "2025-09-11"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "simple-cutout",
+      "effects": [
+        "mask_composite",
+        "channel_shift",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-08-29",
+      "posted_ts": "1788018880.153699"
     }
   ]
 }
