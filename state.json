@@ -6998,6 +6998,31 @@
       ],
       "processed_date": "2026-08-30",
       "posted_ts": "1788104429.375789"
+    },
+    {
+      "source_file_ids": [
+        "F0BR2PN3PSA",
+        "F09K4P9QT6X",
+        "F08HY41TFJS"
+      ],
+      "source_dates": [
+        "2026-08-19",
+        "2025-10-08",
+        "2025-03-18"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "ancients-bullethole",
+      "effects": [
+        "ancient_bullethole",
+        "ancient_bullethole",
+        "ancient_stencil"
+      ],
+      "processed_date": "2026-08-31",
+      "posted_ts": "1788200658.685479"
     }
   ]
 }
