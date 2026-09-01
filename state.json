@@ -7023,6 +7023,31 @@
       ],
       "processed_date": "2026-08-31",
       "posted_ts": "1788200658.685479"
+    },
+    {
+      "source_file_ids": [
+        "F0ATBMZ8G21",
+        "F0B3VUP74S1",
+        "F0AU7HVLYRY"
+      ],
+      "source_dates": [
+        "2026-04-16",
+        "2026-05-15",
+        "2026-04-21"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "bullseye-wobble-displacement",
+      "effects": [
+        "ancient_bullseye",
+        "ancient_wobbleeye",
+        "ancient_displacement"
+      ],
+      "processed_date": "2026-09-01",
+      "posted_ts": "1788277496.038479"
     }
   ]
 }
