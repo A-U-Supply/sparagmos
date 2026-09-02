@@ -7048,6 +7048,26 @@
       ],
       "processed_date": "2026-09-01",
       "posted_ts": "1788277496.038479"
+    },
+    {
+      "source_file_ids": [
+        "F0826FFF5LH",
+        "F09B55KGN9X"
+      ],
+      "source_dates": [
+        "2024-11-21",
+        "2025-08-18"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "glim-popout",
+      "effects": [
+        "chromostereo"
+      ],
+      "processed_date": "2026-09-02",
+      "posted_ts": "1788363161.911749"
     }
   ]
 }
