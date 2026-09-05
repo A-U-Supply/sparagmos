@@ -7141,6 +7141,45 @@
       ],
       "processed_date": "2026-09-04",
       "posted_ts": "1788549311.712769"
+    },
+    {
+      "source_file_ids": [
+        "F0ASPR3KZ6W",
+        "F0ASG5JR3PV",
+        "F0BUZTEHUQZ",
+        "F08ADSL0PT9",
+        "F0ALPECUBTN"
+      ],
+      "source_dates": [
+        "2026-04-14",
+        "2026-04-14",
+        "2026-09-04",
+        "2025-01-29",
+        "2026-03-14"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q"
+      ],
+      "recipe": "chimera-engine",
+      "effects": [
+        "deepdream",
+        "pixel_sort",
+        "dither",
+        "crt_vhs",
+        "channel_shift",
+        "fragment",
+        "blend",
+        "mask_composite",
+        "channel_shift",
+        "fragment",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-09-05",
+      "posted_ts": "1788617411.356089"
     }
   ]
 }
