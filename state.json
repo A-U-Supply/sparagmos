@@ -7210,6 +7210,44 @@
       ],
       "processed_date": "2026-09-06",
       "posted_ts": "1788705263.541059"
+    },
+    {
+      "source_file_ids": [
+        "F09UL4QES3C",
+        "F0BA1C9FF5F",
+        "F077X6J0W4D",
+        "F07VAPYU0KX",
+        "F04TH4QK8P8"
+      ],
+      "source_dates": [
+        "2025-11-21",
+        "2026-06-11",
+        "2024-06-13",
+        "2024-11-08",
+        "2023-03-13"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TA650DEZ"
+      ],
+      "recipe": "dream-fragment-storm",
+      "effects": [
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "fragment",
+        "deepdream",
+        "mask_composite",
+        "collage",
+        "mask_composite",
+        "jpeg_destroy",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-09-07",
+      "posted_ts": "1788800539.948379"
     }
   ]
 }
