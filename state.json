@@ -7248,6 +7248,32 @@
       ],
       "processed_date": "2026-09-07",
       "posted_ts": "1788800539.948379"
+    },
+    {
+      "source_file_ids": [
+        "F07MV0V4PTR",
+        "F0B5X9EAP39",
+        "F0ASFVBEVR9"
+      ],
+      "source_dates": [
+        "2024-09-20",
+        "2026-05-27",
+        "2026-04-14"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "triple-mask",
+      "effects": [
+        "mask_composite",
+        "mask_composite",
+        "channel_shift",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-09-08",
+      "posted_ts": "1788882017.069089"
     }
   ]
 }
