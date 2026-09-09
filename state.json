@@ -7274,6 +7274,36 @@
       ],
       "processed_date": "2026-09-08",
       "posted_ts": "1788882017.069089"
+    },
+    {
+      "source_file_ids": [
+        "F0AP0H6RV4L",
+        "F04V33H15EC",
+        "F0B991X56TT",
+        "F041GGP560K"
+      ],
+      "source_dates": [
+        "2026-03-25",
+        "2023-03-16",
+        "2026-06-09",
+        "2022-09-07"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "displacement-blend-spectral",
+      "effects": [
+        "spectral",
+        "ancient_displacement",
+        "blend",
+        "spectral",
+        "dither"
+      ],
+      "processed_date": "2026-09-09",
+      "posted_ts": "1788967846.950359"
     }
   ]
 }
