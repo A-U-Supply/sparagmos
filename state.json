@@ -7330,6 +7330,32 @@
       ],
       "processed_date": "2026-09-10",
       "posted_ts": "1789053980.135629"
+    },
+    {
+      "source_file_ids": [
+        "F0ARKQRFS9E",
+        "F09B55KGN9X",
+        "F075VHN5AP3"
+      ],
+      "source_dates": [
+        "2026-04-03",
+        "2025-08-18",
+        "2024-05-28"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "curvy-corruption",
+      "effects": [
+        "ancient_curvylinescreen",
+        "byte_corrupt",
+        "crt_vhs",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-09-11",
+      "posted_ts": "1789140503.061869"
     }
   ]
 }
