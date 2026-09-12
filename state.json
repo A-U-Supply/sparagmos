@@ -7356,6 +7356,32 @@
       ],
       "processed_date": "2026-09-11",
       "posted_ts": "1789140503.061869"
+    },
+    {
+      "source_file_ids": [
+        "F080SMT860N",
+        "F0BGMSRPXV3",
+        "F050DLFUHQU"
+      ],
+      "source_dates": [
+        "2024-11-15",
+        "2026-07-11",
+        "2023-03-26"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TA650DEZ",
+        "U03TA650DEZ"
+      ],
+      "recipe": "sixshooter-linescreen",
+      "effects": [
+        "ancient_sixshooter",
+        "ancient_sixshooter",
+        "ancient_linescreen",
+        "channel_shift"
+      ],
+      "processed_date": "2026-09-12",
+      "posted_ts": "1789223710.064719"
     }
   ]
 }
