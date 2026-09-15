@@ -7438,6 +7438,29 @@
       ],
       "processed_date": "2026-09-14",
       "posted_ts": "1789405966.711169"
+    },
+    {
+      "source_file_ids": [
+        "F0BG8HHFNNP",
+        "F09U4KH5D2B",
+        "F0B3REP8JB1"
+      ],
+      "source_dates": [
+        "2026-07-10",
+        "2025-11-21",
+        "2026-05-15"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "ancients-halationedge",
+      "effects": [
+        "ancient_halationedge"
+      ],
+      "processed_date": "2026-09-15",
+      "posted_ts": "1789487538.188719"
     }
   ]
 }
