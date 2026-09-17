@@ -7486,6 +7486,44 @@
       ],
       "processed_date": "2026-09-16",
       "posted_ts": "1789573484.301129"
+    },
+    {
+      "source_file_ids": [
+        "F07JSAQH9GB",
+        "F07TVM703KQ",
+        "F084NSW0HQQ",
+        "F0B8F735UAX",
+        "F06BKJFFH52"
+      ],
+      "source_dates": [
+        "2024-08-27",
+        "2024-10-30",
+        "2024-12-06",
+        "2026-06-05",
+        "2023-12-25"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "hallucination-collage",
+      "effects": [
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "collage",
+        "fragment",
+        "mask_composite",
+        "channel_shift",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-09-17",
+      "posted_ts": "1789663050.946959"
     }
   ]
 }
