@@ -7551,6 +7551,45 @@
       ],
       "processed_date": "2026-09-18",
       "posted_ts": "1789745062.430429"
+    },
+    {
+      "source_file_ids": [
+        "F0ASQ3SEZHP",
+        "F0A65GDJALS",
+        "F07G6MLCCEQ",
+        "F08751BAJ5Q",
+        "F0BAL29HLJX"
+      ],
+      "source_dates": [
+        "2026-04-12",
+        "2025-12-30",
+        "2024-08-08",
+        "2025-01-03",
+        "2026-06-15"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "composite-quilt",
+      "effects": [
+        "pixel_sort",
+        "crt_vhs",
+        "spectral",
+        "dither",
+        "pca_decompose",
+        "fragment",
+        "mask_composite",
+        "fragment",
+        "mask_composite",
+        "channel_shift",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-09-19",
+      "posted_ts": "1789830017.609859"
     }
   ]
 }
