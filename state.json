@@ -7735,6 +7735,39 @@
       ],
       "processed_date": "2026-09-24",
       "posted_ts": "1790265958.161659"
+    },
+    {
+      "source_file_ids": [
+        "F08QX8USMJS",
+        "F0B3SJZ7UG1",
+        "F0BSPJSSWG2",
+        "F08HYNAUCMN",
+        "F0AULBGSKBK"
+      ],
+      "source_dates": [
+        "2025-05-06",
+        "2026-05-14",
+        "2026-08-25",
+        "2025-03-12",
+        "2026-04-21"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "fragment-displacement",
+      "effects": [
+        "pixel_sort",
+        "channel_shift",
+        "fragment",
+        "ancient_displacement",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-09-25",
+      "posted_ts": "1790352416.194669"
     }
   ]
 }
