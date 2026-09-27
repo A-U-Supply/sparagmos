@@ -7804,6 +7804,29 @@
       ],
       "processed_date": "2026-09-26",
       "posted_ts": "1790436016.778569"
+    },
+    {
+      "source_file_ids": [
+        "F0B910A4CKV",
+        "F06B38PR4TD",
+        "F08ET6AAYDV"
+      ],
+      "source_dates": [
+        "2026-06-09",
+        "2023-12-20",
+        "2025-02-26"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "ancients-silver",
+      "effects": [
+        "ancient_silver"
+      ],
+      "processed_date": "2026-09-27",
+      "posted_ts": "1790524702.537459"
     }
   ]
 }
