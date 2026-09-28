@@ -7827,6 +7827,26 @@
       ],
       "processed_date": "2026-09-27",
       "posted_ts": "1790524702.537459"
+    },
+    {
+      "source_file_ids": [
+        "F0865BC8SGP",
+        "F0AU5AG3HU6"
+      ],
+      "source_dates": [
+        "2024-12-26",
+        "2026-04-21"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "glim-oilslick",
+      "effects": [
+        "iridesce"
+      ],
+      "processed_date": "2026-09-28",
+      "posted_ts": "1790621694.073369"
     }
   ]
 }
