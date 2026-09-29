@@ -7847,6 +7847,27 @@
       ],
       "processed_date": "2026-09-28",
       "posted_ts": "1790621694.073369"
+    },
+    {
+      "source_file_ids": [
+        "F093MQV41U6",
+        "F04E3V22C2H"
+      ],
+      "source_dates": [
+        "2025-07-01",
+        "2022-12-07"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "omo-medallion",
+      "effects": [
+        "ancient_kaleidoscope",
+        "mask_composite"
+      ],
+      "processed_date": "2026-09-29",
+      "posted_ts": "1790701969.323409"
     }
   ]
 }
