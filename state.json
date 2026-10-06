@@ -8017,6 +8017,41 @@
       ],
       "processed_date": "2026-10-04",
       "posted_ts": "1791130089.468729"
+    },
+    {
+      "source_file_ids": [
+        "F04E3NSNACV",
+        "F081C1KK26M",
+        "F04RDL2MF8U",
+        "F09F36J9A21"
+      ],
+      "source_dates": [
+        "2022-12-07",
+        "2024-11-15",
+        "2023-02-26",
+        "2025-09-14"
+      ],
+      "source_users": [
+        "U03TA650DEZ",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "mask-erosion",
+      "effects": [
+        "channel_shift",
+        "spectral",
+        "dither",
+        "pca_decompose",
+        "mask_composite",
+        "mask_composite",
+        "fragment",
+        "mask_composite",
+        "crt_vhs",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-10-06",
+      "posted_ts": "1791308095.716639"
     }
   ]
 }
