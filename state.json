@@ -8193,6 +8193,31 @@
       ],
       "processed_date": "2026-10-11",
       "posted_ts": "1791737884.397739"
+    },
+    {
+      "source_file_ids": [
+        "F0B5ZKTATC6",
+        "F0ALYJ8L62V",
+        "F0ANZCHCQP9"
+      ],
+      "source_dates": [
+        "2026-05-25",
+        "2026-03-14",
+        "2026-03-28"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TFJBRK2Q",
+        "U03TFJBRK2Q"
+      ],
+      "recipe": "omo-specimen",
+      "effects": [
+        "ancient_sixshooter",
+        "ancient_stencil",
+        "dither"
+      ],
+      "processed_date": "2026-10-12",
+      "posted_ts": "1791837242.122609"
     }
   ]
 }
