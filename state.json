@@ -8218,6 +8218,42 @@
       ],
       "processed_date": "2026-10-12",
       "posted_ts": "1791837242.122609"
+    },
+    {
+      "source_file_ids": [
+        "F09UPM4CB5F",
+        "F0B85A1CRSB",
+        "F08QHKKBSCD",
+        "F0BPV8A80DQ"
+      ],
+      "source_dates": [
+        "2025-11-20",
+        "2026-06-05",
+        "2025-05-01",
+        "2026-08-12"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "threshold-cascade",
+      "effects": [
+        "channel_shift",
+        "dither",
+        "pixel_sort",
+        "spectral",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "pixel_sort",
+        "sonify",
+        "crt_vhs"
+      ],
+      "processed_date": "2026-10-13",
+      "posted_ts": "1791916749.905759"
     }
   ]
 }
