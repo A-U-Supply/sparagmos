@@ -8254,6 +8254,39 @@
       ],
       "processed_date": "2026-10-13",
       "posted_ts": "1791916749.905759"
+    },
+    {
+      "source_file_ids": [
+        "F04GWUDEEQ2",
+        "F0ATGDYQJE4",
+        "F06G5NCS151",
+        "F0437BXRR1P"
+      ],
+      "source_dates": [
+        "2022-12-29",
+        "2026-04-13",
+        "2024-01-29",
+        "2022-09-17"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "tectonic-overlap",
+      "effects": [
+        "imagemagick",
+        "deepdream",
+        "sonify",
+        "dither",
+        "fragment",
+        "collage",
+        "seam_carve",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-10-14",
+      "posted_ts": "1791994430.481859"
     }
   ]
 }
