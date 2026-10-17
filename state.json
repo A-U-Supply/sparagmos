@@ -8364,6 +8364,41 @@
       ],
       "processed_date": "2026-10-16",
       "posted_ts": "1792166280.051539"
+    },
+    {
+      "source_file_ids": [
+        "F09C4AL9HFB",
+        "F0AU7QQGCCS",
+        "F099X43N14Y",
+        "F0BAANJMYD8"
+      ],
+      "source_dates": [
+        "2025-08-23",
+        "2026-04-21",
+        "2025-08-06",
+        "2026-06-13"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "neural-mask-cascade",
+      "effects": [
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "mask_composite",
+        "pixel_sort",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-10-17",
+      "posted_ts": "1792248081.062139"
     }
   ]
 }
