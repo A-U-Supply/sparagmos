@@ -8690,6 +8690,40 @@
       ],
       "processed_date": "2026-10-27",
       "posted_ts": "1793120411.523389"
+    },
+    {
+      "source_file_ids": [
+        "F0AU5ARR27Q",
+        "F094X7UE8TC",
+        "F080SPJJ1B5",
+        "F09EEMTMFD4"
+      ],
+      "source_dates": [
+        "2026-04-21",
+        "2025-07-08",
+        "2024-11-14",
+        "2025-09-10"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "collage-mask-collage",
+      "effects": [
+        "dither",
+        "channel_shift",
+        "collage",
+        "mask_composite",
+        "collage",
+        "mask_composite",
+        "mask_composite",
+        "dither",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-10-28",
+      "posted_ts": "1793208935.533499"
     }
   ]
 }
