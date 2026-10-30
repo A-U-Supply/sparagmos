@@ -8747,6 +8747,46 @@
       ],
       "processed_date": "2026-10-29",
       "posted_ts": "1793295956.767379"
+    },
+    {
+      "source_file_ids": [
+        "F0AQ0SFNR16",
+        "F0AP4H7BS8N",
+        "F0B85A1CRSB",
+        "F0B69FQU937",
+        "F0AQ0S2AF0Q"
+      ],
+      "source_dates": [
+        "2026-03-27",
+        "2026-03-27",
+        "2026-06-05",
+        "2026-05-27",
+        "2026-03-27"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "dream-archaeology",
+      "effects": [
+        "pca_decompose",
+        "pca_decompose",
+        "pca_decompose",
+        "pca_decompose",
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "deepdream",
+        "collage",
+        "mask_composite",
+        "dither",
+        "channel_shift"
+      ],
+      "processed_date": "2026-10-30",
+      "posted_ts": "1793382119.082019"
     }
   ]
 }
