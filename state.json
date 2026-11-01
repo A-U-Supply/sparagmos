@@ -8813,6 +8813,36 @@
       ],
       "processed_date": "2026-10-31",
       "posted_ts": "1793464158.401199"
+    },
+    {
+      "source_file_ids": [
+        "F07FDGXSV71",
+        "F0BGQE9BSM8",
+        "F04UDBS5HPS"
+      ],
+      "source_dates": [
+        "2024-08-07",
+        "2026-07-11",
+        "2023-03-13"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD7FSUAE",
+        "U03TA650DEZ"
+      ],
+      "recipe": "wax-museum",
+      "effects": [
+        "style_transfer",
+        "style_transfer",
+        "style_transfer",
+        "blend",
+        "blend",
+        "seam_carve",
+        "pixel_sort",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-11-01",
+      "posted_ts": "1793554655.183529"
     }
   ]
 }
