@@ -8915,6 +8915,29 @@
       ],
       "processed_date": "2026-11-03",
       "posted_ts": "1793731626.668609"
+    },
+    {
+      "source_file_ids": [
+        "F04HJMTVBF0",
+        "F0ASB6NN7K4",
+        "F09BPU8KMDK"
+      ],
+      "source_dates": [
+        "2023-01-06",
+        "2026-04-12",
+        "2025-08-23"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "oil-spiral-cells-bleed",
+      "effects": [
+        "oilspiralcellsbleed"
+      ],
+      "processed_date": "2026-11-05",
+      "posted_ts": "1793906073.258639"
     }
   ]
 }
