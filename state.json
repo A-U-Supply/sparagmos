@@ -9068,6 +9068,36 @@
       ],
       "processed_date": "2026-11-09",
       "posted_ts": "1794260642.678149"
+    },
+    {
+      "source_file_ids": [
+        "F0C4F7LGEMP",
+        "F09CZC60ZKL",
+        "F0C3UF44U3W",
+        "F0B3UEQBZ7H"
+      ],
+      "source_dates": [
+        "2026-09-25",
+        "2025-09-01",
+        "2026-09-22",
+        "2026-05-16"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "wobble-curvyscreen-dither",
+      "effects": [
+        "ancient_wobbleeye",
+        "ancient_wobbleeye",
+        "ancient_curvylinescreen",
+        "mask_composite",
+        "dither"
+      ],
+      "processed_date": "2026-11-10",
+      "posted_ts": "1794337315.260899"
     }
   ]
 }
