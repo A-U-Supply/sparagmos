@@ -9314,6 +9314,45 @@
       ],
       "processed_date": "2026-11-17",
       "posted_ts": "1794946310.178169"
+    },
+    {
+      "source_file_ids": [
+        "F05JBFJAR7S",
+        "F0CCQS1G38V",
+        "F0400QBJYHY",
+        "F0BE3TNSPRB",
+        "F0B5C33AQH5"
+      ],
+      "source_dates": [
+        "2023-07-18",
+        "2026-10-28",
+        "2022-08-27",
+        "2026-06-30",
+        "2026-05-23"
+      ],
+      "source_users": [
+        "U03TA650DEZ",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TFJBRK2Q"
+      ],
+      "recipe": "masked-archaeology",
+      "effects": [
+        "pca_decompose",
+        "pca_decompose",
+        "pca_decompose",
+        "pca_decompose",
+        "channel_shift",
+        "mask_composite",
+        "collage",
+        "mask_composite",
+        "dither",
+        "byte_corrupt",
+        "channel_shift"
+      ],
+      "processed_date": "2026-11-18",
+      "posted_ts": "1795032264.663389"
     }
   ]
 }
