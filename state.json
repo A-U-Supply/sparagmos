@@ -9353,6 +9353,32 @@
       ],
       "processed_date": "2026-11-18",
       "posted_ts": "1795032264.663389"
+    },
+    {
+      "source_file_ids": [
+        "F03V86ENYR4",
+        "F0AU426HNJ1",
+        "F0AQWE11A0G"
+      ],
+      "source_dates": [
+        "2022-08-27",
+        "2026-04-21",
+        "2026-03-31"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "spectral-silver",
+      "effects": [
+        "spectral",
+        "spectral",
+        "ancient_silver",
+        "dither"
+      ],
+      "processed_date": "2026-11-19",
+      "posted_ts": "1795117438.203159"
     }
   ]
 }
