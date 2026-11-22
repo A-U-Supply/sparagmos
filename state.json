@@ -9402,6 +9402,31 @@
       ],
       "processed_date": "2026-11-21",
       "posted_ts": "1795285595.435649"
+    },
+    {
+      "source_file_ids": [
+        "F0AQW9DKBRB",
+        "F06BG153M9P"
+      ],
+      "source_dates": [
+        "2026-04-05",
+        "2023-12-20"
+      ],
+      "source_users": [
+        "U03TD7FSUAE",
+        "U03TFJBRK2Q"
+      ],
+      "recipe": "double-exposure",
+      "effects": [
+        "spectral",
+        "sonify",
+        "blend",
+        "blend",
+        "sonify",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-11-22",
+      "posted_ts": "1795373326.826589"
     }
   ]
 }
