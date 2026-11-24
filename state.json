@@ -9469,6 +9469,29 @@
       ],
       "processed_date": "2026-11-23",
       "posted_ts": "1795474936.224819"
+    },
+    {
+      "source_file_ids": [
+        "F0410EL0PT9",
+        "F0AQYUJPX5Y",
+        "F0922RT8TGT"
+      ],
+      "source_dates": [
+        "2022-09-07",
+        "2026-04-05",
+        "2025-06-20"
+      ],
+      "source_users": [
+        "U03TD4SUDKL",
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL"
+      ],
+      "recipe": "spiral-screen",
+      "effects": [
+        "spiralscreen"
+      ],
+      "processed_date": "2026-11-24",
+      "posted_ts": "1795556511.109239"
     }
   ]
 }
