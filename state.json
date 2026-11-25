@@ -9492,6 +9492,41 @@
       ],
       "processed_date": "2026-11-24",
       "posted_ts": "1795556511.109239"
+    },
+    {
+      "source_file_ids": [
+        "F06BG164MS5",
+        "F05LPJGTC83",
+        "F0CJ682R6R3",
+        "F0BHB9RQGDQ"
+      ],
+      "source_dates": [
+        "2023-12-20",
+        "2023-08-07",
+        "2026-11-17",
+        "2026-07-14"
+      ],
+      "source_users": [
+        "U03TFJBRK2Q",
+        "U03TD4SUDKL",
+        "U03TD7FSUAE",
+        "U03TD7FSUAE"
+      ],
+      "recipe": "mask-erosion",
+      "effects": [
+        "channel_shift",
+        "spectral",
+        "dither",
+        "pca_decompose",
+        "mask_composite",
+        "mask_composite",
+        "fragment",
+        "mask_composite",
+        "crt_vhs",
+        "jpeg_destroy"
+      ],
+      "processed_date": "2026-11-25",
+      "posted_ts": "1795639850.961329"
     }
   ]
 }
